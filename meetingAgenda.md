@@ -6,6 +6,7 @@ For February 2, 2026:
 - [ ] Finalize roles we need 
 - [ ] Talk more about website design
 - [ ] How are we going to host it (AWS?)
-- [ ] Timeline for project 
+- [ ] Timeline for project
+- [ ] What we want to present for 3 demos
 - [ ] To dos for everyone this week
   - [ ] Create issues for everyone
