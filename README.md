@@ -3,7 +3,7 @@ A strava like app for musicians that allows them to share what they practiced an
 
 Contributors:
 * Tessa Andersen (Project Manager)
-* Foster Curtis (chief Architect)
+* Foster Curtis (Chief Architect)
 * Kona Vainerere (UI/UX Frontend)
 * Hudson Stohl (Backend 1)
 * Sam Gerlach (Backend 2)
