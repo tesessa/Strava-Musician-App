@@ -3,7 +3,7 @@ import { APP_CONFIG } from "@strava-musician-app/shared";
 import React, { useState } from 'react';
 import '../index.css'
 
-const LoginPage = () => {
+const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [forgotPassword, setForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -145,4 +145,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Login;
