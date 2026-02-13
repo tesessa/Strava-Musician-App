@@ -1,0 +1,272 @@
+/* ============================= */
+/* GLOBAL */
+/* ============================= */
+
+.container {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #6c4ef6;
+  color: #222;
+}
+
+/* ============================= */
+/* BACKGROUND */
+/* ============================= */
+
+.purple-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #6c4ef6, #5a3fe0);
+  overflow: hidden;
+}
+
+/* Large subtle music note */
+.purple-bg::after {
+  content: "♪";
+  position: absolute;
+  font-size: 550px;
+  color: rgba(0, 0, 0, 0.08);
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -60%) rotate(-15deg);
+  pointer-events: none;
+}
+
+/* ============================= */
+/* BOTTOM SHEET */
+/* ============================= */
+
+.bottom-sheet {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 28px 28px 0 0;
+  padding: 28px 24px 30px 24px;
+  height: 320px;
+  transition: height 0.35s ease;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.bottom-sheet.expanded {
+  height: 560px;
+}
+
+.drag-handle {
+  width: 45px;
+  height: 6px;
+  background: #ddd;
+  margin: 0 auto 20px auto;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* ============================= */
+/* TIMERS */
+/* ============================= */
+
+.timer-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.timer-box {
+  flex: 1;
+}
+
+.timer-box h3 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+/* Practice Timer */
+.practice-timer {
+  font-size: 52px;
+  font-weight: 700;
+  color: #6c4ef6;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+/* Record Timer */
+.record-timer {
+  font-size: 52px;
+  font-weight: 700;
+  color: #d62828;
+  margin: 0;
+  letter-spacing: 2px;
+}
+.post-record-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+
+/* Blinking animation */
+@keyframes blinkRed {
+  0% { color: #d62828; }
+  50% { opacity: 0; }
+  100% { color: #d62828; }
+}
+
+.blink {
+  animation: blinkRed 1s infinite;
+}
+
+/* ============================= */
+/* BUTTON ROW */
+/* ============================= */
+
+.buttons {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -15px;
+}
+
+/* Center Practice Button */
+.buttons .primary {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ============================= */
+/* BUTTONS */
+/* ============================= */
+
+button {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+/* Practice Button */
+.primary {
+  background: linear-gradient(135deg, #ff9f1c, #ff7b00);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 123, 0, 0.3);
+}
+
+.primary:hover {
+  transform: translateX(-50%) scale(1.03);
+}
+
+/* Secondary Buttons */
+.secondary {
+  background: #f3f4f6;
+  color: #333;
+}
+
+.secondary:hover {
+  background: #e5e7eb;
+}
+
+/* ============================= */
+/* DROPDOWN */
+/* ============================= */
+
+.instrument-wrapper {
+  position: relative;
+}
+
+.dropdown-up {
+  position: absolute;
+  bottom: 120%;
+  left: 0;
+  background: #ffffff;
+  border-radius: 12px;
+  width: 140px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.dropdown-up div {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dropdown-up div:hover {
+  background: #f3f4f6;
+}
+
+/* ============================= */
+/* TIME PICKER */
+/* ============================= */
+
+.time-picker {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.picker-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.start-btn {
+  background: #6c4ef6;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.start-btn:hover {
+  background: #5a3fe0;
+}
+
+/* ============================= */
+/* EXPANDED BUTTONS */
+/* ============================= */
+
+.extra-buttons {
+  margin-top: 100px;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+
+.extra-buttons button {
+  background: #f3f4f6;       /* same as secondary */
+  color: #333;               /* darker font */
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* subtle shadow for depth */
+}
+
+.extra-buttons button:hover {
+  background: #e5e7eb;       /* hover effect */
+  color: #111;               /* darker on hover */
+  transform: translateY(-1px);
+}
+
