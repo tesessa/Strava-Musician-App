@@ -2,12 +2,14 @@
 // import type { User } from "@strava-musician-app/shared";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from './pages/Login';
+import PracticePage from "./pages/record";
 
 function App() {
     return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/practice" element={<PracticePage/>} />
       </Routes>
     </BrowserRouter>
   );
