@@ -30,6 +30,6 @@ export interface AppConfig {
 
 // Default app config
 export const APP_CONFIG: AppConfig = {
-  appName: "Strava Musician App",
+  appName: "Koda",
   version: "1.0.0",
 };

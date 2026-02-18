@@ -37,6 +37,7 @@ const Login = () => {
       console.log('Registration attempted with:', formData);
       // Input info into database, check that password === confirmPassword, navigate to next page
     }
+    // navigate("/practice");
   };
 
   return (

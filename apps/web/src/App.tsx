@@ -3,10 +3,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from './pages/Login';
 import Home from './pages/Home';
-// import PracticePage from './pages/record';
-// import Calendar from './pages/calendar';
-// import Profile from './pages/profile';
-
+import PracticePage from "./pages/record";
+import Post from "./pages/Post"
 
 function App() {
     return (
@@ -17,6 +15,8 @@ function App() {
         <Route path="/record" element={<div style={{ padding: 24 }}>Record (ADD PRACTICE PAGE)</div>} />
         <Route path="/calendar" element={<div style={{ padding: 24 }}>Calendar (TBD)</div>} />
         <Route path="/profile" element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>} />
+        <Route path="/practice" element={<PracticePage/>} />
+        <Route path="/post" element={<Post/>} />
       </Routes>
     </BrowserRouter>
   );

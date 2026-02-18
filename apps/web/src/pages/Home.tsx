@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../index.css";
+import "../home.css";
 
 type Instrument = "All" | "Piano" | "Violin" | "Clarinet" | "Other";
 
