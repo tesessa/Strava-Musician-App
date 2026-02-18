@@ -2,8 +2,10 @@ import { APP_CONFIG } from "@strava-musician-app/shared";
 // import type { User } from "@strava-musician-app/shared";
 import React, { useState } from 'react';
 import '../index.css'
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [forgotPassword, setForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,6 +28,8 @@ const Login = () => {
     if (isLogin) {
       console.log('Login attempted with:', { email: formData.email, password: formData.password });
       // Look up information in database to make sure it is valid (then navigate to next page)
+      navigate("/home");
+      // route to /home after logging in
     } else if (forgotPassword) {
       console.log('Forgot password attempted with:', { email: formData.email })
       // not sure if we want to keep this, but sends email to user to reset password

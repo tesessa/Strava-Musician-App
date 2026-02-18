@@ -21,15 +21,14 @@
 
 body {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin: 0;
+  display: block; /* scroll feature */
 }
 
 #root {
   width: 100%;
-  max-width: 800px;
-  padding: 2rem;
+  max-width: 100vh;
+  padding: 0; /* padding determined by page */
 }
 
 .app {
@@ -244,5 +243,409 @@ body {
   
   .login-box {
     padding: 24px;
+  }
+}
+
+/*
+Home-Feed page css
+*/
+
+/******/
+/* PAGE WRAPPER */
+/******/
+
+.home-container {
+  min-height: 100vh;
+  background: #0f0f12;
+  color: white;
+  position: relative;
+  padding-bottom: 72px; /* space for bottom nav */
+}
+
+/*****/
+/* SEARCH BAR */
+/*****/
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+}
+
+.search-panel {
+  width: 100%;
+  max-width: 760px;
+  margin-top: 12px;
+  background: rgba(15, 15, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+}
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.search-title {
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.search-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.search-close:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: rgba(108, 78, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(108, 78, 246, 0.22);
+}
+
+.search-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+
+/*******/
+/* TOP BAR */
+/*******/
+
+.home-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(15, 15, 18, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.home-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.home-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.home-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.home-icon-btn:active {
+  transform: scale(0.98);
+}
+
+/*******/
+/* DROPDOWN FILTER BAR */
+/*******/
+
+.feed-filterbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.filter-select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: rgba(108, 78, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(108, 78, 246, 0.2);
+}
+
+.filter-status {
+  font-size: 12px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/*******/
+/* FEED LAYOUT */
+/*******/
+
+.home-feed {
+  padding: 14px 12px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-empty {
+  padding: 18px 12px;
+  opacity: 0.9;
+}
+
+/*******/
+/* FEED CARD */
+/*******/
+
+.feed-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Header */
+.feed-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 10px;
+}
+
+.feed-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #6c4ef6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.feed-meta {
+  flex: 1;
+}
+
+.feed-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.feed-subtitle {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.feed-more {
+  background: transparent;
+  border: none;
+  color: white;
+  opacity: 0.8;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.feed-more:hover {
+  opacity: 1;
+}
+
+/* Body */
+.feed-card-body {
+  padding: 0 14px 12px;
+}
+
+.feed-post-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.feed-post-details {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* Optional debug tag */
+.feed-instrument-tag {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Temp media */
+.feed-media-placeholder {
+  height: 220px;
+  background: rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* bottom nav bar actions */
+.feed-card-footer {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 8px;
+}
+
+.feed-action-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  opacity: 0.9;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.feed-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.feed-action-btn:active {
+  transform: scale(0.98);
+}
+
+/*********/
+/* FLOATING ACTION BUTTON */
+/*********/
+
+.home-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 86px; /* above bottom nav */
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: none;
+  background: #ff6a00;
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.home-fab:hover {
+  filter: brightness(1.05);
+}
+
+.home-fab:active {
+  transform: scale(0.98);
+}
+
+/*********/
+/* BOTTOM NAV (4 main pages) */
+/*********/
+
+.home-bottomnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 68px;
+  background: rgba(15, 15, 18, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  opacity: 0.72;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 0.9;
+}
+
+.nav-btn-active {
+  opacity: 1;
+  background: rgba(108, 78, 246, 0.18);
+}
+
+/*******/
+/* RESPONSIVE */
+/*******/
+
+@media (min-width: 900px) {
+  .home-feed {
+    max-width: 760px;
+    margin: 0 auto;
   }
 }
