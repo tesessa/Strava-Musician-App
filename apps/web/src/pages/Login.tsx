@@ -2,8 +2,10 @@ import { APP_CONFIG } from "@strava-musician-app/shared";
 // import type { User } from "@strava-musician-app/shared";
 import React, { useState } from 'react';
 import '../index.css'
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [forgotPassword, setForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,6 +35,7 @@ const Login = () => {
       console.log('Registration attempted with:', formData);
       // Input info into database, check that password === confirmPassword, navigate to next page
     }
+    // navigate("/practice");
   };
 
   return (
