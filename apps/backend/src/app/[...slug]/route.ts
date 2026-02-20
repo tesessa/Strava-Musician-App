@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as authHandlers from "../../../lib/apiHandlers/auth";
+import * as authHandlers from "../../lib/apiHandlers/auth";
 // import { dumpState } from "../../../lib/authStore";
 
 export async function GET(req: Request) {return dispatch(req, "GET"); }
@@ -9,7 +9,7 @@ export async function DELETE(req: Request) { return dispatch(req, "DELETE");}
 
 async function dispatch(req: Request, method: string) {
   const url = new URL(req.url);
-  const parts = url.pathname.replace(/^\/api\/?/, "").split("/").filter(Boolean);
+  const parts = url.pathname.replace(/^\/+/, "").split("/").filter(Boolean);
   const [resource, action] = parts; // e.g. ["auth", "login"]
 
   let res: Response | NextResponse | null = null;

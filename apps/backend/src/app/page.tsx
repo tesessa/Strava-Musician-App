@@ -13,53 +13,53 @@ export default function Home() {
 
   const routes = [
     {
-      path: "/api/health",
+      path: "/health",
       method: "GET",
       purpose: "Backend health check",
       requestBody: "none",
       responseBody: "{ status: 'ok', timestamp: string }",
-      exampleCurl: `curl -i http://localhost:3001/api/health`,
+      exampleCurl: `curl -i http://localhost:3001/health`,
     },
     {
-      path: "/api/auth/register",
+      path: "/auth/register",
       method: "POST",
       purpose: "Create a new user account",
       requestBody:
         "{ email: string, username: string, password: string, displayName?: string, imageUrl?: string, bio?: string, instruments?: string[]}",
       responseBody: "{ token: string, expiresAt: number, user: User } (201) or { error } (4xx/409)",
-      exampleCurl: `curl -i -X POST http://localhost:3001/api/auth/register \\
+      exampleCurl: `curl -i -X POST http://localhost:3001/auth/register \\
   -H "Content-Type: application/json" \\
   -d '{"email":"alice@example.com","username":"alice","password":"secret","displayName":"Alice"}'`,
     },
     {
-      path: "/api/auth/login",
+      path: "/auth/login",
       method: "POST",
       purpose: "Authenticate and receive an auth token + full user profile",
       requestBody: "{ email: string, password: string }",
       responseBody: "{ token: string, expiresAt: number, user: User } (200) or { error } (401/400)",
-      exampleCurl: `curl -i -X POST http://localhost:3001/api/auth/login \\
+      exampleCurl: `curl -i -X POST http://localhost:3001/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"alice@example.com","password":"secret"}'`,
     },
     {
-      path: "/api/auth/logout",
+      path: "/auth/logout",
       method: "POST",
       purpose: "Revoke the current session token",
       requestBody: "none (must send Authorization header)",
       responseBody: "204 No Content on success, or { error } (401) on failure",
-      exampleCurl: `curl -i -X POST http://localhost:3001/api/auth/logout \\
+      exampleCurl: `curl -i -X POST http://localhost:3001/auth/logout \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
     {
-      path: "/api/auth/me",
+      path: "/auth/me",
       method: "GET",
       purpose: "Return the authenticated user's profile",
       requestBody: "none (must send Authorization header)",
       responseBody: "{ user: User } (200) or { error } (401)",
-      exampleCurl: `curl -i http://localhost:3001/api/auth/me -H "Authorization: Bearer <TOKEN>"`,
+      exampleCurl: `curl -i http://localhost:3001/auth/me -H "Authorization: Bearer <TOKEN>"`,
     },
     // {
-    //   path: "/api/sessions",
+    //   path: "/sessions",
     //   method: "POST",
     //   purpose: "Create a practice session",
     //   requestBody:
@@ -67,14 +67,14 @@ export default function Home() {
     //   responseBody: "{ session: PracticeSession } (201) or { error }",
     // },
     // {
-    //   path: "/api/sessions/feed",
+    //   path: "/sessions/feed",
     //   method: "GET or POST (page body)",
     //   purpose: "Get one page of sessions visible to the current user",
     //   requestBody: "{ lastItem?: string, pageSize?: number } (if POST) or query params for GET",
     //   responseBody: "{ sessions: PracticeSession[], lastItem?: string } (200)",
     // },
     // {
-    //   path: "/api/sessions/:sessionId",
+    //   path: "/sessions/:sessionId",
     //   method: "GET | PATCH | DELETE",
     //   purpose: "Fetch, update, or delete a specific session",
     //   requestBody:
@@ -82,7 +82,7 @@ export default function Home() {
     //   responseBody: "GET: { session }; PATCH: { session }; DELETE: 204 on success",
     // },
     // {
-    //   path: "/api/friends /api/friend-requests",
+    //   path: "/friends /friend-requests",
     //   method: "varies",
     //   purpose: "Friend list and friend-request management (see API spec)",
     //   requestBody: "varies by endpoint (mostly no body for send/accept/reject)",
