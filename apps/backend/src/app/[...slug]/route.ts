@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import * as authHandlers from "../../lib/apiHandlers/auth";
-// import { dumpState } from "../../../lib/authStore";
+import * as authHandlers from "../../api/handlers/authHandlers";
 
 export async function GET(req: Request) {return dispatch(req, "GET"); }
 export async function POST(req: Request) { return dispatch(req, "POST"); }
@@ -14,6 +13,10 @@ async function dispatch(req: Request, method: string) {
 
   let res: Response | NextResponse | null = null;
 
+  if (resource === "health" && method === "GET") {
+    res = NextResponse.json({ status: "ok" });
+  }
+  
   if (resource === "auth") {
     if (action === "login" && method === "POST") res = await authHandlers.login(req);
     else if (action === "logout" && method === "POST") res = await authHandlers.logout(req);
@@ -23,20 +26,8 @@ async function dispatch(req: Request, method: string) {
 
   // fallback: 404
   if (!res) {
-    res = NextResponse.json({ error: "not_found" }, { status: 404 });
+    res = NextResponse.json({ error: "path_not_found" }, { status: 404 });
   }
-
-  // // DEBUG: print current in-memory state after handling the request
-  // try {
-  //   const snapshot = dumpState();
-  //   // pretty print to server console
-  //   console.log("[API STATE SNAPSHOT]", JSON.stringify(snapshot, null, 2));
-  //   // optionally, write to a file for later inspection:
-  //   // import fs from "fs";
-  //   // fs.appendFileSync("./tmp/api-state.log", new Date().toISOString() + " " + JSON.stringify(snapshot) + "\n");
-  // } catch (err) {
-  //   console.error("failed to dump state", err);
-  // }
 
   return res;
 }
