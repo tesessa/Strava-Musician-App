@@ -15,7 +15,7 @@ export interface User {
   email: string;
   displayName: string;
   createdAt: Date;
-  imageUrl: string;
+  imageUrl?: string;
   bio?: string;
   instruments?: string[];
 }
