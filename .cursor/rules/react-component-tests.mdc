@@ -1,0 +1,17 @@
+---
+description: Every React component must have a mirror test file under test/
+globs: apps/web/src/**/*.tsx
+alwaysApply: false
+---
+
+# React Component Test Files
+
+For the **web app** (`apps/web`), every React component must have an equivalent test file.
+
+**Path rule:** The test file lives under the `test/` directory and mirrors the path under `src/`, with a `.test.tsx` suffix.
+
+- `src/components/Table.tsx` → `test/components/Table.test.tsx`
+- `src/components/feed/PostCard.tsx` → `test/components/feed/PostCard.test.tsx`
+- `src/pages/Login.tsx` → `test/pages/Login.test.tsx`
+
+When adding or renaming a component under `apps/web/src`, add or move the corresponding file under `apps/web/test/` with the same relative path and the `.test.tsx` extension.
