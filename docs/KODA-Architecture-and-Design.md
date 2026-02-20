@@ -14,10 +14,19 @@ All frontend components/pages should follow this pattern for getting data from t
 
 - **Components** — Handle display logic only
 - **Services** — Keep business logic and data manipulation outside of main components
-- **Server Facade** — Interface for server endpoints; uses Client Communicator
-- **Client Communicator** — Handles HTTP requests
+- **Server API layer** — See [Server API and dependency injection](#server-api-and-dependency-injection) below
+- **Client Communicator** — Handles HTTP requests (used by ServerFacade)
 
 Frontend services should look nearly identical to backend services in terms of number/name of services and function definitions/types in parallel services.
+
+#### Server API and dependency injection
+
+The frontend defines a single **KodaServerApi** interface implemented by:
+
+- **ServerFacade** — Calls the actual API (uses Client Communicator for HTTP).
+- **FakeDataServer** — Returns fake data for demo/development.
+
+Which implementation is used is determined by an environment variable (e.g. demo mode ⇒ FakeDataServer). The chosen implementation is **dependency-injected into singleton instances of each service**. Services are, in turn, **dependency-injected into the components or hooks** that use them.
 
 ### Backend Pattern
 
