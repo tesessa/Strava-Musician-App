@@ -29,6 +29,7 @@ body {
   width: 100%;
   max-width: 100vh;
   padding: 0; /* padding determined by page */
+  margin: 0 auto;
 }
 
 .app {
@@ -311,6 +312,11 @@ body {
   color: white;
   cursor: pointer;
   font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .search-close:hover {
@@ -365,9 +371,11 @@ body {
 .home-title {
   font-size: 22px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .home-actions {
+  margin-left: auto;
   display: flex;
   gap: 10px;
   align-items: center;
@@ -383,6 +391,16 @@ body {
   cursor: pointer;
   font-weight: 700;
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .home-icon-btn:hover {
@@ -604,9 +622,11 @@ body {
 
 .home-bottomnav {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 0;
+  width: 100%;
+  max-width: 100vh;
   height: 68px;
   background: rgba(15, 15, 18, 0.95);
   backdrop-filter: blur(8px);

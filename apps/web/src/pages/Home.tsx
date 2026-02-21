@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Search } from 'lucide-react';
 import "../index.css";
 
 type Instrument = "All" | "Piano" | "Violin" | "Clarinet" | "Other";
@@ -93,7 +94,16 @@ const Home = () => {
             aria-label="Search"
             onClick={() => setSearchOpen(true)}
           >
-            search icon
+            <Search size ={20}/>
+    
+            {/* <span style={{ fontSize: '1.2rem' }}>⌕</span> */}
+          </button>
+                    <button
+            className="home-icon-btn"
+            aria-label="Profile"
+            onClick={() => navigate("/profile")}
+          >
+            {/* 👤 */}
           </button>
 
         </div>

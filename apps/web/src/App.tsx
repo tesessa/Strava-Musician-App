@@ -12,10 +12,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/record" element={<div style={{ padding: 24 }}>Record (ADD PRACTICE PAGE)</div>} />
+        <Route path="/record" element={<PracticePage/>} />
         <Route path="/calendar" element={<div style={{ padding: 24 }}>Calendar (TBD)</div>} />
         <Route path="/profile" element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>} />
-        <Route path="/practice" element={<PracticePage/>} />
         <Route path="/post" element={<Post/>} />
       </Routes>
     </BrowserRouter>
