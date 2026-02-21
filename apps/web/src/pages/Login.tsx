@@ -28,6 +28,8 @@ const Login = () => {
     if (isLogin) {
       console.log('Login attempted with:', { email: formData.email, password: formData.password });
       // Look up information in database to make sure it is valid (then navigate to next page)
+      navigate("/home");
+      // route to /home after logging in
     } else if (forgotPassword) {
       console.log('Forgot password attempted with:', { email: formData.email })
       // not sure if we want to keep this, but sends email to user to reset password
