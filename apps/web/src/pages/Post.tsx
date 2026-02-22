@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./post.css"
 import { useNavigate } from "react-router-dom";
+
+type MediaFile = {
+    file: File;
+    preview: string;
+    type: "image" | "video" | "audio" | "pdf";
+}
 
 const Post = () => {
     const navigate = useNavigate();
@@ -9,7 +15,61 @@ const Post = () => {
     const [privateNotes, setPrivateNotes] = useState("");
     const [visibility, setVisibility] = useState<"public" | "private" | "friends">("public");
     const [instrument, setInstrument] = useState("");
-    // const ret = 0;
+    const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const getFileType = (file: File): MediaFile["type"] => {
+        if (file.type.startsWith("image/")) return "image";
+        if (file.type.startsWith("video/")) return "video";
+        if (file.type.startsWith("audio/")) return "audio";
+        return "pdf";
+    }     
+    
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const newMedia: MediaFile[] = files.map((file) => ({
+            file,
+            type: getFileType(file),
+            preview: file.type.startsWith("image/") || file.type.startsWith("video/")
+                ? URL.createObjectURL(file) : "",
+        }));
+        setMediaFiles((prev) => [...prev, ...newMedia]);
+        e.target.value = "";
+    } ;
+
+    const removeFile = (index: number) => {
+        setMediaFiles((prev) => {
+            const updated = [...prev];
+            if (updated[index].preview) URL.revokeObjectURL(updated[index].preview);
+            updated.splice(index, 1);
+            return updated;
+        });
+    };
+
+    const renderPreview = (media: MediaFile, index: number) => {
+                switch (media.type) {
+            case "image":
+                return <img src={media.preview} alt="preview" className="media-preview-img" />;
+            case "video":
+                return <video src={media.preview} controls className="media-preview-img" />;
+            case "audio":
+                return (
+                    <div className="media-preview-audio">
+                        <span>🎵</span>
+                        <audio src={URL.createObjectURL(media.file)} controls />
+                    </div>
+                );
+            case "pdf":
+                return (
+                    <div className="media-preview-pdf">
+                        <span>📄</span>
+                        <span>{media.file.name}</span>
+                    </div>
+                );
+        }
+    }
+
+
     return (
         <div className="post-container">
 
@@ -36,9 +96,31 @@ const Post = () => {
                     <div className="activity-meta">45 min · Scales, repertoire</div>
                 </div>
 
-                {/* Media */}
+                {/* Media Upload */}
                 <div className="media-upload">
-                    <button className="media-btn">➕ Add Photos / Videos</button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*,audio/*,.pdf"
+                        multiple
+                        style={{ display: "none" }}
+                        onChange={handleFileChange}
+                    />
+                    <button className="media-btn" onClick={() => fileInputRef.current?.click()}>
+                        ➕ Add Photos / Videos / Audio / PDFs
+                    </button>
+
+                    {/* Previews */}
+                    {mediaFiles.length > 0 && (
+                        <div className="media-preview-grid">
+                            {mediaFiles.map((media, index) => (
+                                <div key={index} className="media-preview-item">
+                                    {renderPreview(media, index)}
+                                    <button className="media-remove-btn" onClick={() => removeFile(index)}>✕</button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <h2 className="section-title">Details</h2>

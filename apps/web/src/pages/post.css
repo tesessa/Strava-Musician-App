@@ -128,6 +128,66 @@
   cursor: pointer;
 }
 
+.media-preview-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.media-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.media-preview-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+.media-preview-audio,
+.media-preview-pdf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    width: 120px;
+    min-height: 80px;
+    font-size: 12px;
+    text-align: center;
+    gap: 6px;
+    word-break: break-word;
+}
+
+.media-preview-audio span,
+.media-preview-pdf span:first-child {
+    font-size: 28px;
+}
+
+.media-remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Visibility */
 .visibility-row {
   display: flex;
