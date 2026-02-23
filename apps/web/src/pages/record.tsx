@@ -1,58 +1,49 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./record.css";
 
 export default function PracticePage() {
+  const navigate = useNavigate();
+
   const [expanded, setExpanded] = useState(false);
 
   const [instrument, setInstrument] = useState("");
   const [showInstrumentOptions, setShowInstrumentOptions] = useState(false);
 
-  // PRACTICE TIMER
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
-  const [practiceTimeLeft, setPracticeTimeLeft] = useState(0);
+  /* ============================= */
+  /* PRACTICE TIMER (COUNT UP)     */
+  /* ============================= */
+
+  const [practiceTime, setPracticeTime] = useState(0);
   const [practiceRunning, setPracticeRunning] = useState(false);
-  const [practiceFinished, setPracticeFinished] = useState(false);
-  const stopPractice = () => {
-    setPracticeRunning(false);
-    setPracticeTimeLeft(0);
-    setPracticeFinished(false); // remove blinking
-  };
+  const [practicePaused, setPracticePaused] = useState(false);
 
+  /* ============================= */
+  /* RECORD TIMER (COUNT UP)       */
+  /* ============================= */
 
-
-  // RECORD TIMER
   const [recordTime, setRecordTime] = useState(0);
   const [recordRunning, setRecordRunning] = useState(false);
-
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [showPostRecordButtons, setShowPostRecordButtons] = useState(false);
 
+  /* ============================= */
+  /* PRACTICE COUNT UP EFFECT      */
+  /* ============================= */
 
-  // PRACTICE COUNTDOWN
   useEffect(() => {
     if (!practiceRunning) return;
 
-    if (practiceTimeLeft <= 0) {
-  setPracticeRunning(false);
-
-    if (practiceTimeLeft === 0) {
-      setPracticeFinished(true);
-      }
-
-      return;
-  }
-
-
     const interval = setInterval(() => {
-      setPracticeTimeLeft((prev) => prev - 1);
+      setPracticeTime((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [practiceRunning, practiceTimeLeft]);
+  }, [practiceRunning]);
 
-  // RECORD COUNT UP
+  /* ============================= */
+  /* RECORD COUNT UP EFFECT        */
+  /* ============================= */
+
   useEffect(() => {
     if (!recordRunning) return;
 
@@ -63,26 +54,40 @@ export default function PracticePage() {
     return () => clearInterval(interval);
   }, [recordRunning]);
 
-  const startPractice = () => {
-    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-    if (totalSeconds === 0) return;
+  /* ============================= */
+  /* PRACTICE AUTO-STOPS RECORD    */
+  /* ============================= */
 
-    setPracticeFinished(false); 
-    setPracticeTimeLeft(totalSeconds);
-    setPracticeRunning(true);
-    setShowTimePicker(false);
-  };
+  useEffect(() => {
+    if (!practiceRunning && recordRunning) {
+      setRecordRunning(false);
+    }
+  }, [practiceRunning]);
+
+  /* ============================= */
+  /* METRONOME STATE               */
+  /* ============================= */
+
+  const [showMetronome, setShowMetronome] = useState(false);
+  const [bpm, setBpm] = useState(80);
+  const [metronomeRunning, setMetronomeRunning] = useState(false);
+
+  /* ============================= */
+  /* BUTTON HANDLERS               */
+  /* ============================= */
 
   const startRecord = () => {
+    if (!practiceRunning || practicePaused) return;
+
     setRecordTime(0);
     setRecordRunning(true);
+    setShowPostRecordButtons(false);
   };
 
   const stopRecord = () => {
-  setRecordRunning(false);
-  setShowPostRecordButtons(true); // show Save/Delete buttons
-};
-
+    setRecordRunning(false);
+    setShowPostRecordButtons(true);
+  };
 
   const formatTime = (total: number) => {
     const h = Math.floor(total / 3600);
@@ -96,55 +101,55 @@ export default function PracticePage() {
 
   return (
     <div className="container">
+    <button
+      className="back-arrow"
+      onClick={() => navigate("/feed")}
+    >
+      ←
+    </button>
       <div className="purple-bg"></div>
 
       <div className={`bottom-sheet ${expanded ? "expanded" : ""}`}>
         <div
           className="drag-handle"
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => !practicePaused && setExpanded(!expanded)}
         ></div>
 
+        {/* Timers */}
         <div className="timer-row">
-        {/* Practice Timer */}
-        <div className="timer-box">
-          <h3>Practice Timer</h3>
-          <h1
-            className={`practice-timer ${
-              practiceFinished ? "blink" : ""
-            }`}
-          >
-            {formatTime(practiceTimeLeft)}
-          </h1>
+          <div className="timer-box">
+            <h3>Practice Timer</h3>
+            <h1 className="practice-timer">
+              {formatTime(practiceTime)}
+            </h1>
+          </div>
 
+          <div className="timer-box">
+            <h3>Record Timer</h3>
+            <h1 className="record-timer">
+              {formatTime(recordTime)}
+            </h1>
+          </div>
         </div>
 
-        {/* Record Timer */}
-        <div className="timer-box">
-          <h3>Record Timer</h3>
-          <h1 className="record-timer">
-            {formatTime(recordTime)}
-          </h1>
-        </div>
-      </div>
-
-
-
+        {/* Buttons */}
         <div className="buttons">
           {/* Instrument */}
           <div className="instrument-wrapper">
             <button
               className="secondary"
+              disabled={practicePaused}
               onClick={() =>
                 setShowInstrumentOptions(!showInstrumentOptions)
               }
             >
               {instrument
-                ? instrument.charAt(0).toUpperCase() + instrument.slice(1)
+                ? instrument.charAt(0).toUpperCase() +
+                  instrument.slice(1)
                 : "Instrument"}
-
             </button>
 
-            {showInstrumentOptions && (
+            {showInstrumentOptions && !practicePaused && (
               <div className="dropdown-up">
                 {["piano", "violin", "other"].map((item) => (
                   <div
@@ -164,101 +169,167 @@ export default function PracticePage() {
           {/* Practice */}
           <button
             className="primary"
+            disabled={practicePaused}
             onClick={() => {
-              if (practiceRunning || practiceFinished) {
-                // Stop countdown immediately
-                setPracticeRunning(false);
-                setPracticeTimeLeft(0);
-                setPracticeFinished(false); // remove blinking
-                setShowTimePicker(false);   // hide time picker if open
+              if (!practiceRunning) {
+                setPracticeRunning(true);
+                setPracticePaused(false);
               } else {
-                setShowTimePicker(!showTimePicker);
+                setPracticeRunning(false);
+                setPracticePaused(true);
               }
             }}
           >
-            {practiceRunning || practiceFinished ? "Stop Practice" : "Practice"}
+            {practiceRunning ? "Stop Practice" : "Practice"}
           </button>
-
 
           {/* Record */}
           {!recordRunning && !showPostRecordButtons ? (
-              <button className="secondary" onClick={startRecord}>
-                Record
-              </button>
-            ) : recordRunning ? (
-              <button className="secondary" onClick={stopRecord}>
-                Stop
-              </button>
-            ) : showPostRecordButtons ? (
-              <div className="post-record-buttons">
-                <button
-                  className="secondary"
-                  onClick={() => {
-                    // Save action (you can add save logic here)
-                    setRecordTime(0);
-                    setShowPostRecordButtons(false);
-                  }}
-                >
-                  Save
-                </button>
-                <button
-                  className="secondary"
-                  onClick={() => {
-                    // Delete action
-                    setRecordTime(0);
-                    setShowPostRecordButtons(false);
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            ) : null}
-
-        </div>
-
-        {/* Time Picker */}
-        {showTimePicker && (
-          <div className="time-picker">
-            <div className="picker-row">
-              <select value={hours} onChange={(e) => setHours(Number(e.target.value))}>
-                {Array.from({ length: 6 }, (_, i) => (
-                  <option key={i} value={i}>
-                    {i.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </select>
-
-              <select value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
-                {Array.from({ length: 60 }, (_, i) => (
-                  <option key={i} value={i}>
-                    {i.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </select>
-
-              <select value={seconds} onChange={(e) => setSeconds(Number(e.target.value))}>
-                {Array.from({ length: 60 }, (_, i) => (
-                  <option key={i} value={i}>
-                    {i.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button className="start-btn" onClick={startPractice}>
-              Start Countdown
+            <button
+              className="secondary"
+              disabled={!practiceRunning || practicePaused}
+              onClick={startRecord}
+            >
+              Record
             </button>
-          </div>
-        )}
+          ) : recordRunning ? (
+            <button
+              className="secondary"
+              disabled={practicePaused}
+              onClick={stopRecord}
+            >
+              Stop
+            </button>
+          ) : showPostRecordButtons ? (
+            <div className="post-record-buttons">
+              <button
+                className="secondary"
+                disabled={practicePaused}
+                onClick={() => {
+                  setRecordTime(0);
+                  setShowPostRecordButtons(false);
+                }}
+              >
+                Save
+              </button>
+              <button
+                className="secondary"
+                disabled={practicePaused}
+                onClick={() => {
+                  setRecordTime(0);
+                  setShowPostRecordButtons(false);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          ) : null}
+        </div>
 
         {expanded && (
           <div className="extra-buttons">
-            <button>Tuner</button>
-            <button>Metronome</button>
-            <button>Settings</button>
+            <button
+              disabled={practicePaused}
+              onClick={() => navigate("/tuner")}
+            >
+              Tuner
+            </button>
+            {!metronomeRunning ? (
+              <button
+                disabled={practicePaused}
+                onClick={() => setShowMetronome(true)}
+              >
+                Metronome
+              </button>
+            ) : (
+              <button
+                className="metronome-stop"
+                onClick={() => setMetronomeRunning(false)}
+              >
+                {bpm} BPM
+              </button>
+            )}
+            <button
+              disabled={practicePaused}
+              onClick={() => navigate("/settings")}
+            >
+              Settings
+            </button>
           </div>
         )}
       </div>
+
+      {showMetronome && !metronomeRunning && (
+        <div className="metronome-popup">
+          <h3>Select BPM</h3>
+
+          <input
+            type="range"
+            min="1"
+            max="250"
+            value={bpm}
+            onChange={(e) => setBpm(Number(e.target.value))}
+          />
+
+          <div className="bpm-display">{bpm} BPM</div>
+
+          <div className="bpm-adjust">
+            <button onClick={() => setBpm(prev => Math.max(1, prev - 5))}>-5</button>
+            <button onClick={() => setBpm(prev => Math.max(1, prev - 1))}>-1</button>
+            <button onClick={() => setBpm(prev => Math.min(250, prev + 1))}>+1</button>
+            <button onClick={() => setBpm(prev => Math.min(250, prev + 5))}>+5</button>
+          </div>
+          <div className="metronome-buttons">
+            <button
+              onClick={() => {
+                setMetronomeRunning(true);
+                setShowMetronome(false);
+              }}
+            >
+              Start
+            </button>
+
+            <button
+              onClick={() => setShowMetronome(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Pause Overlay */}
+      {practicePaused && (
+        <div className="practice-overlay">
+          <div className="practice-popup">
+            <button
+              className="resume-btn"
+              onClick={() => {
+                // Reset record timer completely
+                setRecordTime(0);
+                setRecordRunning(false);
+                setShowPostRecordButtons(false);
+
+                // Resume practice
+                setPracticeRunning(true);
+                setPracticePaused(false);
+              }}
+            >
+              Resume
+            </button>
+
+
+            <button
+              className="finish-btn"
+              onClick={() => {
+                navigate("/upload");
+              }}
+            >
+              Finish
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

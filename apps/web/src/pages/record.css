@@ -11,6 +11,18 @@
   color: #222;
 }
 
+.back-arrow {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: white;
+  cursor: pointer;
+  z-index: 10;
+}
+
 /* ============================= */
 /* BACKGROUND */
 /* ============================= */
@@ -19,10 +31,8 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #6c4ef6, #5a3fe0);
-  overflow: hidden;
 }
 
-/* Large subtle music note */
 .purple-bg::after {
   content: "♪";
   position: absolute;
@@ -31,7 +41,6 @@
   top: 35%;
   left: 50%;
   transform: translate(-50%, -60%) rotate(-15deg);
-  pointer-events: none;
 }
 
 /* ============================= */
@@ -87,7 +96,6 @@
   margin-bottom: 8px;
 }
 
-/* Practice Timer */
 .practice-timer {
   font-size: 52px;
   font-weight: 700;
@@ -96,7 +104,6 @@
   letter-spacing: 2px;
 }
 
-/* Record Timer */
 .record-timer {
   font-size: 52px;
   font-weight: 700;
@@ -104,25 +111,9 @@
   margin: 0;
   letter-spacing: 2px;
 }
-.post-record-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-
-/* Blinking animation */
-@keyframes blinkRed {
-  0% { color: #d62828; }
-  50% { opacity: 0; }
-  100% { color: #d62828; }
-}
-
-.blink {
-  animation: blinkRed 1s infinite;
-}
 
 /* ============================= */
-/* BUTTON ROW */
+/* BUTTONS */
 /* ============================= */
 
 .buttons {
@@ -130,19 +121,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: -15px;
 }
-
-/* Center Practice Button */
-.buttons .primary {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* ============================= */
-/* BUTTONS */
-/* ============================= */
 
 button {
   padding: 12px 18px;
@@ -154,8 +133,10 @@ button {
   transition: all 0.2s ease;
 }
 
-/* Practice Button */
 .primary {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   background: linear-gradient(135deg, #ff9f1c, #ff7b00);
   color: white;
   box-shadow: 0 4px 12px rgba(255, 123, 0, 0.3);
@@ -165,7 +146,6 @@ button {
   transform: translateX(-50%) scale(1.03);
 }
 
-/* Secondary Buttons */
 .secondary {
   background: #f3f4f6;
   color: #333;
@@ -173,6 +153,11 @@ button {
 
 .secondary:hover {
   background: #e5e7eb;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ============================= */
@@ -197,8 +182,6 @@ button {
 .dropdown-up div {
   padding: 10px 14px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .dropdown-up div:hover {
@@ -206,67 +189,136 @@ button {
 }
 
 /* ============================= */
-/* TIME PICKER */
-/* ============================= */
-
-.time-picker {
-  margin-top: 25px;
-  text-align: center;
-}
-
-.picker-row {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-select {
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-.start-btn {
-  background: #6c4ef6;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-}
-
-.start-btn:hover {
-  background: #5a3fe0;
-}
-
-/* ============================= */
 /* EXPANDED BUTTONS */
 /* ============================= */
 
 .extra-buttons {
-  margin-top: 100px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-top: 80px;
+}
+
+/* Left button */
+.extra-buttons button:first-child {
+  justify-self: start;
+}
+
+/* Middle (Metronome) */
+.extra-buttons button:nth-child(2) {
+  justify-self: center;
+}
+
+/* Right button */
+.extra-buttons button:last-child {
+  justify-self: end;
+}
+
+/* ============================= */
+/* PAUSE OVERLAY */
+/* ============================= */
+
+.practice-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.practice-popup {
+  background: white;
+  padding: 30px;
+  border-radius: 18px;
+  display: flex;
   gap: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
+.resume-btn {
+  background: linear-gradient(135deg, #ff9f1c, #ff7b00);
+  color: white;
+}
 
-.extra-buttons button {
-  background: #f3f4f6;       /* same as secondary */
-  color: #333;               /* darker font */
+.finish-btn {
+  background: #d62828;
+  color: white;
+}
+
+/* ============================= */
+/* METRONOME */
+/* ============================= */
+
+.metronome-popup {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f7f7f7; /* soft light purple background */
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  width: 80%;
+  max-width: 320px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.metronome-popup h3 {
+  color: #6c4ef6; /* use your main purple hex */
+  margin-bottom: 10px;
+}
+
+.bpm-display {
+  font-size: 20px;
+  margin: 10px 0;
+  color: #6c4ef6;
   font-weight: 600;
-  font-size: 14px;
-  padding: 12px 18px;
-  border-radius: 12px;
+}
+
+.metronome-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.metronome-buttons button {
+  padding: 8px 16px;
+  border-radius: 10px;
   border: none;
+  background: #6c4ef6; /* match your purple */
+  color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* subtle shadow for depth */
+  transition: 0.2s ease;
 }
 
-.extra-buttons button:hover {
-  background: #e5e7eb;       /* hover effect */
-  color: #111;               /* darker on hover */
-  transform: translateY(-1px);
+.metronome-buttons button:hover {
+  opacity: 0.85;
 }
 
+.metronome-stop {
+  background: #d62828 !important;
+  color: white;
+}
+
+.bpm-adjust {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.bpm-adjust button {
+  background: #f7f7f7;
+  border: none;
+  color: #6c4ef6; /* match your purple */
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 8px;
+}
+
+.bpm-adjust button:hover {
+  opacity: 0.7;
+}
