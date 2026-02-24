@@ -1,12 +1,11 @@
-import crypto from "crypto";
 import type { User } from "@strava-musician-app/shared";
 import type { UserDAO } from "../daos/userDao";
 
 type UserRecord = User & { passwordHashPerm: string };
 
-const usersById = new Map<string, UserRecord>();
-const usersByEmail = new Map<string, UserRecord>();
-const usersByUsername = new Map<string, UserRecord>();
+export const usersById = new Map<string, UserRecord>();
+export const usersByEmail = new Map<string, UserRecord>();
+export const usersByUsername = new Map<string, UserRecord>();
 
 export const UserDao: UserDAO = {
   async validateCredentials(email: string, passwordHash: string): Promise<User | null> {

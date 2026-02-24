@@ -1,7 +1,7 @@
 import { User } from "@shared/index";
 import type { AuthDAO } from "../../db/dao/daos/authDao";
 import type { UserDAO } from "../../db/dao/daos/userDao";
-import { hashPassword } from "../utils/utils";
+import { hashPassword } from "../utils/hashPassword";
 
 export class AuthService {
   constructor(

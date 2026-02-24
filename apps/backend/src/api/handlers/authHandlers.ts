@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { AuthService } from "../services/authServices";
 import { createAuthDAO } from "../../db/dao/factories/authDaoFactory";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
+import { withAuth } from "../utils/withAuth"
+
 
 const authDao = createAuthDAO();
 const userDao = createUserDAO();
@@ -23,26 +25,12 @@ export async function login(req: Request) {
   }
 }
 
-export async function logout(req: Request) {
-  try {
-    const authHeader = req.headers.get("authorization") ?? "";
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    if (!token)
-      return NextResponse.json(
-        { error: "missing_authorization" },
-        { status: 401 },
-      );
-    const result = await authService.logout(token);
-    if (result.error)
-      return NextResponse.json(
-        { error: result.error },
-        { status: result.status },
-      );
-    return new NextResponse(null, { status: result.status });
-  } catch {
-    return NextResponse.json({ error: "invalid request" }, { status: 400 });
-  }
-}
+export const logout = withAuth(async (req: Request, token: string) => {
+  const result = await authService.logout(token);
+  if (result.error)
+    return NextResponse.json({ error: result.error }, { status: result.status });
+  return new NextResponse(null, { status: result.status });
+});
 
 export async function register(req: Request) {
   try {
@@ -59,23 +47,9 @@ export async function register(req: Request) {
   }
 }
 
-export async function me(req: Request) {
-  try {
-    const authHeader = req.headers.get("authorization") ?? "";
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    if (!token)
-      return NextResponse.json(
-        { error: "missing_authorization" },
-        { status: 401 },
-      );
-    const result = await authService.me(token);
-    if (result.error)
-      return NextResponse.json(
-        { error: result.error },
-        { status: result.status },
-      );
-    return NextResponse.json({ user: result.user }, { status: result.status });
-  } catch {
-    return NextResponse.json({ error: "invalid_request" }, { status: 400 });
-  }
-}
+export const me = withAuth(async (req: Request, token: string) => {
+  const result = await authService.me(token);
+  if (result.error)
+    return NextResponse.json({ error: result.error }, { status: result.status });
+  return NextResponse.json({ user: result.user }, { status: result.status });
+});
