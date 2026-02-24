@@ -1,5 +1,5 @@
 import type { User } from "@strava-musician-app/shared";
-import type { UserDAO } from "../dao/daos/userDao";
+import type { UserDAO } from "../../db/dao/daos/userDao";
 
 export class UserService {
   constructor(private dao: UserDAO) {}
