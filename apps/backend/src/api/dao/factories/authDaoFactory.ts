@@ -1,4 +1,4 @@
-import type { AuthDAO } from "../daos/authDao";
+import type { AuthDAO } from "../daoInterfaces/authDao";
 import { AuthDao } from "../inMemoryDaos/inMemoryAuthDao";
 // import { prismaAuthDao } from "./prismaAuthDao"; // for DB-backed implementation
 

@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import type { User } from "@strava-musician-app/shared";
-import type { UserDAO } from "../daos/userDao";
+import type { UserDAO } from "../daoInterfaces/userDao";
 
 type UserRecord = User & { passwordHashPerm: string };
 

@@ -1,5 +1,5 @@
-import type { AuthDAO } from "../dao/daos/authDao";
-import type { UserDAO } from "../dao/daos/userDao";
+import type { AuthDAO } from "../dao/daoInterfaces/authDao";
+import type { UserDAO } from "../dao/daoInterfaces/userDao";
 import { hashPassword } from "../utils/utils";
 
 export class AuthService {

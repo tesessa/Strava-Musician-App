@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import type { User } from "@strava-musician-app/shared";
-import type { AuthDAO } from "../daos/authDao";
+import type { AuthDAO } from "../daoInterfaces/authDao";
 import { UserDao } from "./inMemoryUserDao";
 import { AuthToken } from "@shared/index";
 
