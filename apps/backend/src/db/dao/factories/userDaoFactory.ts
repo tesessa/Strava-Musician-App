@@ -1,4 +1,4 @@
-import type { UserDAO } from "../daoInterfaces/userDao";
+import type { UserDAO } from "../daos/userDao";
 import { UserDao } from "../inMemoryDaos/inMemoryUserDao";
 // import { prismaUserDao } from "./prismaUserDao"; // for DB-backed implementation
 

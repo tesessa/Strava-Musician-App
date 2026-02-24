@@ -1,9 +1,13 @@
-import type { AuthDAO } from "../dao/daoInterfaces/authDao";
-import type { UserDAO } from "../dao/daoInterfaces/userDao";
+import { User } from "@shared/index";
+import type { AuthDAO } from "../../db/dao/daos/authDao";
+import type { UserDAO } from "../../db/dao/daos/userDao";
 import { hashPassword } from "../utils/utils";
 
 export class AuthService {
-  constructor(private userDao: UserDAO, private authDao: AuthDAO) {}
+  constructor(
+    private userDao: UserDAO,
+    private authDao: AuthDAO,
+  ) {}
 
   async login(email: string, password: string) {
     const hashedPassword = hashPassword(password);
@@ -34,7 +38,17 @@ export class AuthService {
     const existing = await this.userDao.findUserByEmail(data.email);
     if (existing) return { error: "email_already_exists", status: 409 };
     const hashedPassword = hashPassword(data.password);
-    const user = await this.userDao.createUser({ ...data, passwordHash: hashedPassword });
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      email: data.email,
+      username: data.username,
+      displayName: data.displayName ?? data.username,
+      createdAt: new Date(),
+      imageUrl: data.imageUrl ?? undefined,
+      bio: data.bio ?? undefined,
+      instruments: data.instruments ?? undefined,
+    }
+    const user = await this.userDao.createUser(newUser, hashedPassword);
     const AuthToken = await this.authDao.createTokenForUser(user.id);
     return { AuthToken, user, status: 201 };
   }

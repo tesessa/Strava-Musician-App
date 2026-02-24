@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import type { User } from "@strava-musician-app/shared";
-import type { AuthDAO } from "../daoInterfaces/authDao";
+import type { AuthDAO } from "../daos/authDao";
 import { UserDao } from "./inMemoryUserDao";
 import { AuthToken } from "@shared/index";
 
@@ -31,5 +31,12 @@ export const AuthDao: AuthDAO = {
       return null;
     }
     return UserDao.findUserById(rec.userId);
+  },
+
+    async refreshSession(token: string): Promise<void> {
+    const rec = tokens.get(token);
+    if (!rec) return;
+    const newExpiresAt = Date.now() + TOKEN_TTL_MS;
+    tokens.set(token, { userId: rec.userId, expiresAt: newExpiresAt });
   },
 };
