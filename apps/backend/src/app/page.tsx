@@ -58,36 +58,58 @@ export default function Home() {
       responseBody: "{ user: User } (200) or { error } (401)",
       exampleCurl: `curl -i http://localhost:3001/auth/me -H "Authorization: Bearer <TOKEN>"`,
     },
-    // {
-    //   path: "/sessions",
-    //   method: "POST",
-    //   purpose: "Create a practice session",
-    //   requestBody:
-    //     "{ title?, postText?, privateText?, instrument?, duration, tempo?, pieceTitle?, composer?, visibility? }",
-    //   responseBody: "{ session: PracticeSession } (201) or { error }",
-    // },
-    // {
-    //   path: "/sessions/feed",
-    //   method: "GET or POST (page body)",
-    //   purpose: "Get one page of sessions visible to the current user",
-    //   requestBody: "{ lastItem?: string, pageSize?: number } (if POST) or query params for GET",
-    //   responseBody: "{ sessions: PracticeSession[], lastItem?: string } (200)",
-    // },
-    // {
-    //   path: "/sessions/:sessionId",
-    //   method: "GET | PATCH | DELETE",
-    //   purpose: "Fetch, update, or delete a specific session",
-    //   requestBody:
-    //     "GET: none; PATCH: partial session fields; DELETE: none (Authorization required for protected ops)",
-    //   responseBody: "GET: { session }; PATCH: { session }; DELETE: 204 on success",
-    // },
-    // {
-    //   path: "/friends /friend-requests",
-    //   method: "varies",
-    //   purpose: "Friend list and friend-request management (see API spec)",
-    //   requestBody: "varies by endpoint (mostly no body for send/accept/reject)",
-    //   responseBody: "Lists or status codes; { error } on failure",
-    // },
+    // --- Practice Session Routes ---
+    {
+      path: "/sessions",
+      method: "POST",
+      purpose: "Create a new practice session",
+      requestBody:
+        "{ title: string, durationMinutes: number, visibility: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
+      responseBody: "{ session: PracticeSession } (201) or { error } (400/401)",
+      exampleCurl: `curl -X POST http://localhost:3001/sessions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <TOKEN>" \\
+  -d '{"title":"Practice Piano","durationMinutes":60,"visibility":"public"}'`,
+    },
+    {
+      path: "/sessions/feed",
+      method: "GET",
+      purpose: "Get a paginated feed of your practice sessions",
+      requestBody: "none (must send Authorization header, use query params: lastItemId?, pageSize?)",
+      responseBody: "{ sessions: PracticeSession[] } (200) or { error } (400/401)",
+      exampleCurl: `curl -X GET "http://localhost:3001/sessions/feed?lastItemId=<last_id>&pageSize=5" \\
+-H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/sessions/:sessionId",
+      method: "GET",
+      purpose: "Get a specific practice session by ID",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ session: PracticeSession } (200) or { error } (404/401)",
+      exampleCurl: `curl -X GET http://localhost:3001/sessions/<sessionId> \\
+  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/sessions/:sessionId",
+      method: "PATCH",
+      purpose: "Update a practice session by ID",
+      requestBody:
+        "{ title?: string, durationMinutes?: number, visibility?: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
+      responseBody: "{ session: PracticeSession } (200) or { error } (404/401)",
+      exampleCurl: `curl -X PATCH http://localhost:3001/sessions/<sessionId> \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <TOKEN>" \\
+  -d '{"postText":"Updated notes"}'`,
+    },
+    {
+      path: "/sessions/:sessionId",
+      method: "DELETE",
+      purpose: "Delete a practice session by ID",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (404/401)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/sessions/<sessionId> \\
+  -H "Authorization: Bearer <TOKEN>"`,
+    },
   ];
 
   return (
@@ -133,8 +155,6 @@ export default function Home() {
       </section>
 
       <section style={{ marginTop: 24 }}>
-        <h2>Example Practice Session</h2>
-        <pre style={{ background: "#f5f5f5", padding: 12, borderRadius: 6 }}>{JSON.stringify(exampleSession, null, 2)}</pre>
 
         <ul style={{ marginTop: 12, color: "#444" }}>
           <li>Preferred examples for frontend devs: use programmatic HTTP calls (fetch/axios) from the client code.</li>
