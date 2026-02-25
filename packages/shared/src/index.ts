@@ -24,10 +24,16 @@ export interface User {
 export interface PracticeSession {
   id: string;
   userId: string;
-  instrument: string;
+  title: string;
   durationMinutes: number;
-  notes?: string;
   createdAt: Date;
+  visibility: "public" | "private" | "friends";
+  postText?: string;
+  privateText?: string;
+  instrument?: string;
+  tempo?: number;
+  pieceTitle?: string;
+  composer?: string;
 }
 
 // Application configuration

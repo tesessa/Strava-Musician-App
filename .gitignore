@@ -31,3 +31,7 @@ npm-debug.log*
 
 # Testing
 coverage/
+
+# backend specific
+apps/backend/src/app/api/memory-view/route.ts
+apps/backend/src/app/memory-view/page.tsx

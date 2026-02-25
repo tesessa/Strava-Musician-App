@@ -6,7 +6,7 @@ import { AuthToken } from "@shared/index";
 
 type TokenRecord = { userId: string; expiresAt: number };
 
-const tokens = new Map<string, TokenRecord>();
+export const tokens = new Map<string, TokenRecord>();
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
 export const AuthDao: AuthDAO = {
@@ -31,5 +31,12 @@ export const AuthDao: AuthDAO = {
       return null;
     }
     return UserDao.findUserById(rec.userId);
+  },
+
+    async refreshSession(token: string): Promise<void> {
+    const rec = tokens.get(token);
+    if (!rec) return;
+    const newExpiresAt = Date.now() + TOKEN_TTL_MS;
+    tokens.set(token, { userId: rec.userId, expiresAt: newExpiresAt });
   },
 };
