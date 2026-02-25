@@ -39,14 +39,4 @@ export const AuthDao: AuthDAO = {
     const newExpiresAt = Date.now() + TOKEN_TTL_MS;
     tokens.set(token, { userId: rec.userId, expiresAt: newExpiresAt });
   },
-
-  async validateToken(token: string): Promise<boolean> {
-    const rec = tokens.get(token);
-    if (!rec) return false;
-    if (Date.now() > rec.expiresAt) {
-      tokens.delete(token);
-      return false;
-    }
-    return true;
-  },
 };

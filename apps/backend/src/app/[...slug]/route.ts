@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import * as authHandlers from "../../api/handlers/authHandlers";
 import * as sessionHandlers from "../../api/handlers/sessionHandlers";
+import * as userHandlers from "../../api/handlers/userHandlers";
 
 export async function GET(req: Request) { return dispatch(req, "GET"); }
 export async function POST(req: Request) { return dispatch(req, "POST"); }
@@ -25,6 +26,14 @@ async function dispatch(req: Request, method: string) {
     else if (parts[1] === "logout" && method === "POST") res = await authHandlers.logout(req);
     else if (parts[1] === "register" && method === "POST") res = await authHandlers.register(req);
     else if (parts[1] === "me" && method === "GET") res = await authHandlers.me?.(req) || NextResponse.json({ error: "not_implemented" }, { status: 501 });
+  }
+
+    // /users/*
+  if (parts[0] === "users") {
+    if (parts[1] === "search" && method === "GET") res = await userHandlers.searchUsers(req);
+    else if (parts.length === 2 && method === "GET") res = await userHandlers.getUser(req, parts[1]);
+    else if (parts.length === 2 && method === "PATCH") res = await userHandlers.updateUser(req, parts[1]);
+    else if (parts.length === 2 && method === "DELETE") res = await userHandlers.deleteUser(req, parts[1]);
   }
 
   // /sessions, /sessions/feed, /sessions/:sessionId

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { AuthService } from "../services/authServices";
 import { createAuthDAO } from "../../db/dao/factories/authDaoFactory";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
-import { withAuth } from "../utils/withAuth"
+import { authenticateToken } from "../utils/authenticateToken";
 
 
 const authDao = createAuthDAO();
@@ -25,12 +25,15 @@ export async function login(req: Request) {
   }
 }
 
-export const logout = withAuth(async (req: Request, token: string) => {
+export async function logout(req: Request) {
+  const { user, token, error } = await authenticateToken(req);
+  if (error) return error;
+
   const result = await authService.logout(token);
   if (result.error)
     return NextResponse.json({ error: result.error }, { status: result.status });
   return new NextResponse(null, { status: result.status });
-});
+}
 
 export async function register(req: Request) {
   try {
@@ -47,9 +50,12 @@ export async function register(req: Request) {
   }
 }
 
-export const me = withAuth(async (req: Request, token: string) => {
+export async function me(req: Request) {
+  const { user, token, error } = await authenticateToken(req);
+  if (error) return error;
+
   const result = await authService.me(token);
   if (result.error)
     return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ user: result.user }, { status: result.status });
-});
+}

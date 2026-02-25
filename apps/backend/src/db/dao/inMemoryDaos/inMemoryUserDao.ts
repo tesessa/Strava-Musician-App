@@ -73,11 +73,12 @@ async createUser(user: User, passwordHash: string): Promise<User> {
       .map(({ passwordHashPerm, ...user }) => user as User);
   },
 
-  async deleteUser(userId: string): Promise<void> {
+  async deleteUser(userId: string): Promise<boolean> {
     const rec = usersById.get(userId);
-    if (!rec) return;
+    if (!rec) return false;
     usersById.delete(userId);
     usersByEmail.delete(rec.email.toLowerCase());
     usersByUsername.delete(rec.username);
+    return true;
   }
 };

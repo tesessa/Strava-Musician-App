@@ -7,6 +7,6 @@ export interface UserDAO {
   findUserById(id: string): Promise<User | null>;
   findUserByUsername(username: string): Promise<User | null>;
   updateUser(id: string, patch: Partial<User>): Promise<User | null>;
-  deleteUser(userId: string): Promise<void>;
+  deleteUser(userId: string): Promise<boolean>;
   searchUsers(query: string): Promise<User[]>;
 }

@@ -2,15 +2,6 @@ import { APP_CONFIG } from "@strava-musician-app/shared";
 import type { PracticeSession } from "@strava-musician-app/shared";
 
 export default function Home() {
-  const exampleSession: PracticeSession = {
-    id: "1",
-    userId: "user-1",
-    instrument: "Piano",
-    durationMinutes: 30,
-    notes: "Practiced scales and a new piece",
-    createdAt: new Date(),
-  };
-
   const routes = [
     {
       path: "/health",
@@ -57,6 +48,45 @@ export default function Home() {
       requestBody: "none (must send Authorization header)",
       responseBody: "{ user: User } (200) or { error } (401)",
       exampleCurl: `curl -i http://localhost:3001/auth/me -H "Authorization: Bearer <TOKEN>"`,
+    },
+    // --- User Routes ---
+    {
+      path: "/users/:userId",
+      method: "GET",
+      purpose: "Get a user's profile (must be the user)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ user: User } (200) or { error } (404/401/403)",
+      exampleCurl: `curl -X GET http://localhost:3001/users/<userId> \\
+  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/users/:userId",
+      method: "PATCH",
+      purpose: "Update a user's profile (must be the user)",
+      requestBody: "{ displayName?: string, imageUrl?: string, bio?: string, instruments?: string[] } (must send Authorization header)",
+      responseBody: "{ user: User } (200) or { error } (404/401/403)",
+      exampleCurl: `curl -X PATCH http://localhost:3001/users/<userId> \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer <TOKEN>" \\
+  -d '{"displayName":"Alice Updated"}'`,
+    },
+    {
+      path: "/users/:userId",
+      method: "DELETE",
+      purpose: "Delete a user's account (must be the user)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (404/401/403)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/users/<userId> \\
+  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/users/search",
+      method: "GET",
+      purpose: "Search for users by query string",
+      requestBody: "none (must send Authorization header, use query param: query)",
+      responseBody: "{ users: User[] } (200) or { error } (401)",
+      exampleCurl: `curl -X GET "http://localhost:3001/users/search?query=alice" \\
+  -H "Authorization: Bearer <TOKEN>"`,
     },
     // --- Practice Session Routes ---
     {

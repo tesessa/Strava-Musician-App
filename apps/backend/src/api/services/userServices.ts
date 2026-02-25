@@ -12,6 +12,10 @@ export class UserService {
     return await this.dao.updateUser(id, patch);
   }
 
+  async deleteUser(id: string) {
+    return await this.dao.deleteUser(id);
+  }
+
   async searchUsers(query: string) {
     return await this.dao.searchUsers(query);
   }

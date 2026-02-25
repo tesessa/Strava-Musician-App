@@ -6,5 +6,4 @@ export interface AuthDAO {
   revokeToken(token: string): Promise<boolean>;
   getUserByToken(token: string): Promise<User | null>;
   refreshSession(token: string): Promise<void>;
-  validateToken(token: string): Promise<boolean>;
 }

@@ -5,7 +5,7 @@ import { createAuthDAO } from "../../db/dao/factories/authDaoFactory";
 export class SessionService {
   constructor(private sessionDao: SessionDAO) {}
 
-async createSession(
+  async createSession(
     data: Omit<PracticeSession, "id" | "createdAt" | "userId">,
     token: string
   ): Promise<PracticeSession> {

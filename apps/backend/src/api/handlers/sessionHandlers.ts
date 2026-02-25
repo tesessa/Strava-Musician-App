@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { SessionService } from "../services/sessionServices";
 import { createSessionDAO } from "../../db/dao/factories/sessionDaoFactory";
-import { withAuth } from "../utils/withAuth";
+import { authenticateToken, authenticateTokenToUserId } from "../utils/authenticateToken";
 
 const sessionService = new SessionService(createSessionDAO());
 
-export const createSession = withAuth(async (req: Request, token: string) => {
+export const createSession = async (req: Request) => {
+  const { user, token, error } = await authenticateToken(req);
+  if (error) return error;
+
   try {
     const body = await req.json();
 
@@ -40,9 +43,12 @@ export const createSession = withAuth(async (req: Request, token: string) => {
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-});
+};
 
-export const getFeed = withAuth(async (req: Request, token: string) => {
+export const getFeed = async (req: Request) => {
+  const { user, token, error } = await authenticateToken(req);
+  if (error) return error;
+
   try {
     const url = new URL(req.url);
     const lastItemId = url.searchParams.get("lastItemId") ?? null;
@@ -52,9 +58,12 @@ export const getFeed = withAuth(async (req: Request, token: string) => {
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-});
+};
 
-export const getSession = withAuth(async (req: Request, token: string, sessionId: string) => {
+export const getSession = async (req: Request, sessionId: string) => {
+  const { user, token, error } = await authenticateToken(req);
+  if (error) return error;
+
   try {
     const session = await sessionService.getSession(sessionId);
     if (!session) return NextResponse.json({ error: "session_not_found" }, { status: 404 });
@@ -62,9 +71,14 @@ export const getSession = withAuth(async (req: Request, token: string, sessionId
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-});
+};
 
-export const updateSession = withAuth(async (req: Request, token: string, sessionId: string) => {
+export const updateSession = async (req: Request, sessionId: string) => {
+  const session = await sessionService.getSession(sessionId);
+  if (!session) return NextResponse.json({ error: "session_not_found" }, { status: 404 });
+  const { user, token, error } = await authenticateTokenToUserId(req, session.userId);
+  if (error) return error;
+
   try {
     const body = await req.json();
     const session = await sessionService.updateSession(sessionId, body);
@@ -73,9 +87,14 @@ export const updateSession = withAuth(async (req: Request, token: string, sessio
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-});
+};
 
-export const deleteSession = withAuth(async (req: Request, token: string, sessionId: string) => {
+export const deleteSession = async (req: Request, sessionId: string) => {
+const session = await sessionService.getSession(sessionId);
+  if (!session) return NextResponse.json({ error: "session_not_found" }, { status: 404 });
+  const { user, token, error } = await authenticateTokenToUserId(req, session.userId);
+  if (error) return error;
+
   try {
     const ok = await sessionService.deleteSession(sessionId);
     if (!ok) return NextResponse.json({ error: "session_not_found" }, { status: 404 });
@@ -83,4 +102,4 @@ export const deleteSession = withAuth(async (req: Request, token: string, sessio
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-});
+};
