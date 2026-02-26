@@ -11,10 +11,20 @@
     "start": "concurrently --names \"web,backend\" --kill-others \"npm run start:web\" \"npm run start:backend\"",
     "start:web": "npm run dev -w apps/web",
     "start:backend": "npm run dev -w apps/backend",
-    "build": "npm run build -w packages/shared && npm run build -w apps/web && npm run build -w apps/backend"
+    "build": "npm run build -w packages/shared && npm run build -w apps/web && npm run build -w apps/backend",
+    "database_test": "NODE_ENV=test jest --runInBand"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
-    "concurrently": "^8.2.2"
+    "@types/jest": "^30.0.0",
+    "concurrently": "^8.2.2",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "knex": "^3.1.0",
+    "pg": "^8.19.0",
+    "postgres": "^3.4.8"
   }
 }
