@@ -8,6 +8,8 @@ import Post from "./pages/Post"
 import Login from "./components/authentication/Login"
 import Register from "./components/authentication/Register";
 import ForgotPassword from "./components/authentication/ForgotPassword";
+import CalendarPage from "./pages/calendar";
+
 
 function App() {
     return (
@@ -16,11 +18,13 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/record" element={<PracticePage/>} />
+        {/* <Route path="/record" element={<PracticePage/>} /> */}
         <Route path="/calendar" element={<div style={{ padding: 24 }}>Calendar (TBD)</div>} />
         <Route path="/profile" element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>} />
         <Route path="/post" element={<Post/>} />
         <Route path="/forgotPassword" element={<ForgotPassword/>} />
+        <Route path="/practice" element={<PracticePage/>} />
+        <Route path="/calendar" element={<CalendarPage />} />
       </Routes>
     </BrowserRouter>
   );
