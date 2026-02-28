@@ -27,7 +27,7 @@ body {
 
 #root {
   width: 100%;
-  max-width: 100vh;
+  /* max-width: 100vh; */
   padding: 0; /* padding determined by page */
   margin: 0 auto;
 }
@@ -109,7 +109,10 @@ body {
 
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* background: rgba(255, 255, 255, 0.10); */
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  /* #6c4ef6;*/
+  background: linear-gradient(135deg, #6c4ef6 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -626,7 +629,7 @@ body {
   transform: translateX(-50%);
   bottom: 0;
   width: 100%;
-  max-width: 100vh;
+  /* max-width: 100vh; */
   height: 68px;
   background: rgba(15, 15, 18, 0.95);
   backdrop-filter: blur(8px);

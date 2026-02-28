@@ -3,6 +3,7 @@ import { APP_CONFIG } from "@strava-musician-app/shared";
 import React, { useState } from 'react';
 import '../index.css'
 import { useNavigate } from "react-router-dom";
+import { userService } from "../model";
 
 const Login = () => {
   const navigate = useNavigate();
