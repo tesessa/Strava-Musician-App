@@ -6,14 +6,12 @@
  * on save or discard.
  */
 
-// ─── Session storage keys ────────────────────────────────────────────────────
 
 export const SESSION_KEY  = "koda_practice_session";
 export const REC_META_KEY = "koda_recordings_meta";
 export const UP_META_KEY  = "koda_uploads_meta";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
+// this is basically what lives in session storage so timer doesn't get reset on refresh
 export type PersistedSession = {
   startTimestamp: number;       // ms epoch when practice began
   pausedMs:       number;       // total ms already spent paused
@@ -21,6 +19,7 @@ export type PersistedSession = {
   instrument:     string;
 };
 
+// these 2 types are used to store in indexDB
 export type RecordingEntry = {
   id:          string;
   type:        "audio" | "video";
@@ -40,7 +39,7 @@ export type UploadedFile = {
   file:        File;
 };
 
-// Metadata-only shapes — stored in sessionStorage (blobs live in IDB)
+// these types are used to store in session storage (specifically id)
 export type PersistedRecordingMeta = {
   id:          string;
   type:        "audio" | "video";
@@ -57,7 +56,6 @@ export type PersistedUploadMeta = {
   mimeType: string;
 };
 
-// ─── Session storage helpers ─────────────────────────────────────────────────
 
 export function loadSession(): PersistedSession | null {
   try {
@@ -78,9 +76,7 @@ export function clearPracticeSession(): void {
   sessionStorage.removeItem(UP_META_KEY);
 }
 
-// ─── IndexedDB helpers ───────────────────────────────────────────────────────
-// Blobs can't live in sessionStorage (text-only) so they go in IDB.
-// Survives refresh within the same tab; cleared on finish/discard.
+// This allows audio/video files to persist across rerenders on client side without having to save all media files to backend DB
 
 const IDB_NAME  = "koda_practice";
 const IDB_STORE = "blobs";
@@ -130,15 +126,13 @@ export async function idbClearAll(): Promise<void> {
   });
 }
 
-// ─── Combined clear (used by Post on save / discard) ─────────────────────────
 
 export async function clearAllPracticeStorage(): Promise<void> {
   clearPracticeSession();
   await idbClearAll();
 }
 
-// ─── Utility ─────────────────────────────────────────────────────────────────
-
+// formats time on Practice.tsx
 export function formatTime(totalSec: number): string {
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);

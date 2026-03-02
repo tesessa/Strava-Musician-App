@@ -32,7 +32,7 @@ export function usePracticeMedia() {
   const videoPreviewRef  = useRef<HTMLVideoElement>(null);
   const uploadRef        = useRef<HTMLInputElement>(null);
 
-  // ── Restore from IDB on mount ─────────────────────────────────────────────
+  // restores data from indexDB on rerender
   useEffect(() => {
     async function restoreMedia() {
       try {
@@ -69,7 +69,7 @@ export function usePracticeMedia() {
     restoreMedia();
   }, []);
 
-  // Persist recording metadata whenever it changes (after first restore)
+
   useEffect(() => {
     if (!mediaRestored) return;
     const metas: PersistedRecordingMeta[] = recordings.map((r) => ({
@@ -79,7 +79,7 @@ export function usePracticeMedia() {
     sessionStorage.setItem(REC_META_KEY, JSON.stringify(metas));
   }, [recordings, mediaRestored]);
 
-  // Persist upload metadata whenever it changes (after first restore)
+
   useEffect(() => {
     if (!mediaRestored) return;
     const metas: PersistedUploadMeta[] = uploads.map((u) => ({
@@ -88,7 +88,7 @@ export function usePracticeMedia() {
     sessionStorage.setItem(UP_META_KEY, JSON.stringify(metas));
   }, [uploads, mediaRestored]);
 
-  // ── Record timers ─────────────────────────────────────────────────────────
+ 
   useEffect(() => {
     if (!audioRecording) return;
     const id = setInterval(() => setAudioRecordTime((t) => t + 1), 1000);
@@ -101,7 +101,7 @@ export function usePracticeMedia() {
     return () => clearInterval(id);
   }, [videoRecording]);
 
-  // ── Audio recording ───────────────────────────────────────────────────────
+  // starts audio recording when you click button
   const startAudio = async () => {
     try {
       const stream   = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -188,7 +188,6 @@ export function usePracticeMedia() {
     await idbDelete(id);
   };
 
-  // ── Upload ────────────────────────────────────────────────────────────────
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     for (const file of files) {

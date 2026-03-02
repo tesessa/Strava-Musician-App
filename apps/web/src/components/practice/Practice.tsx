@@ -31,12 +31,12 @@ export default function Practice() {
     deleteRecording, deleteUpload,
   } = usePracticeMedia();
 
-  // ── UI-only state (no persistence needed) ────────────────────────────────
-  const [showMetronome, setShowMetronome]       = useState(false);
-  const [bpm, setBpm]                           = useState(80);
+  // useState/useRef/const variables
+  const [showMetronome, setShowMetronome] = useState(false);
+  const [bpm, setBpm] = useState(80);
   const [metronomeRunning, setMetronomeRunning] = useState(false);
-  const [drawerOpen, setDrawerOpen]             = useState(false);
-  const [previewUrl, setPreviewUrl]             = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
 
   const metronomeRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -44,7 +44,7 @@ export default function Practice() {
 
   const hasMedia = recordings.length > 0 || uploads.length > 0;
 
-  // ── Metronome ─────────────────────────────────────────────────────────────
+  // Claude coded this nice metronome for us, can look into it more later for deliverable 2
   const startMetronome = () => {
     audioCtxRef.current = new AudioContext();
     const ctx      = audioCtxRef.current;
@@ -70,9 +70,8 @@ export default function Practice() {
     setMetronomeRunning(false);
   };
 
-  // ── Finish → /post ────────────────────────────────────────────────────────
-  // Session + IDB are intentionally NOT cleared here.
-  // Post page owns cleanup on save or discard, so Resume still works.
+
+  // navigate to /post page with right state variables
   const handleFinish = () => {
     navigate("/post", {
       state: {
@@ -84,17 +83,13 @@ export default function Practice() {
     });
   };
 
-  // ── Leave practice without saving ─────────────────────────────────────────
+  // for navigating home from practice page
   const handleConfirmLeave = () => {
     clearPracticeSession();
     idbClearAll();
     navigate("/home");
   };
 
-
-  // ─────────────────────────────────────────────────────────────────────────
-  //  Render
-  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="record-page">

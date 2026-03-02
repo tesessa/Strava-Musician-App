@@ -8,7 +8,6 @@ import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
 
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type LocationState = {
   audioClips?: Blob[];
@@ -25,18 +24,13 @@ type MediaEntry = {
   kind: "audio" | "video";
 };
 
-// ─── Component ───────────────────────────────────────────────────────────────
 
 const Post = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state ?? {}) as LocationState;
-
-  // ── Values passed in from Practice page ───────────────────────────────────
   const durationMinutes = state.durationMinutes ?? 0;
-//   const sheetMusicFiles: File[] = state.sheetMusic ?? [];
 
-  // Build playable media entries from blobs passed via navigation state
   const [mediaEntries] = useState<MediaEntry[]>(() => {
     const entries: MediaEntry[] = [];
     (state.audioClips ?? []).forEach((blob, i) => {
@@ -48,7 +42,6 @@ const Post = () => {
     return entries;
   });
 
-  // ── Post fields ────────────────────────────────────────────────────────────
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [privateNotes, setPrivateNotes] = useState("");
@@ -57,7 +50,7 @@ const Post = () => {
   const [loading, setLoading] = useState(false);
 
 
-  // ── Format duration ────────────────────────────────────────────────────────
+
   const formatDuration = (mins: number) => {
     if (mins < 60) return `${mins} min`;
     const h = Math.floor(mins / 60);
@@ -65,7 +58,7 @@ const Post = () => {
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   };
 
-  // ── Save ───────────────────────────────────────────────────────────────────
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -90,7 +83,7 @@ const Post = () => {
     }
   };
 
-  // ── Discard ────────────────────────────────────────────────────────────────
+
   const handleDiscard = async () => {
     setLoading(true);
     try {
