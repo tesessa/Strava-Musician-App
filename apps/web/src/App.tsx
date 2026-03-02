@@ -18,7 +18,6 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/calendar" element={<div style={{ padding: 24 }}>Calendar (TBD)</div>} />
         <Route path="/profile" element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>} />
         <Route path="/practice" element={<Practice />} />
         <Route path="/post" element={<Post/>} />
