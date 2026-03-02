@@ -3,7 +3,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import Login from './pages/Login';
 import Home from './pages/Home';
-import PracticePage from "./pages/record";
 import Post from './components/practice/Post'
 // import Post from "./pages/Post"
 import Login from "./components/authentication/Login"
@@ -19,7 +18,6 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/record2" element={<PracticePage/>} />
         <Route path="/calendar" element={<div style={{ padding: 24 }}>Calendar (TBD)</div>} />
         <Route path="/profile" element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>} />
         <Route path="/practice" element={<Practice />} />
