@@ -25,15 +25,15 @@ export interface PracticeSession {
   sessionId: string;
   userId: string;
   title: string;
+  durationMinutes: number;
+  createdAt: Date;
+  visibility: "public" | "private" | "friends";
   postText?: string;
   privateText?: string;
   instrument?: string;
-  visibility: PostVisibility;
-  duration: number;
   tempo?: number;
   pieceTitle?: string;
   composer?: string;
-  createdAt: Date;
 }
 
 // export interface PracticeSession {

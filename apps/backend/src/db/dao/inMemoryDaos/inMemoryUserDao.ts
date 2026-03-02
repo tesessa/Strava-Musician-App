@@ -1,12 +1,11 @@
-import crypto from "crypto";
 import type { User } from "@strava-musician-app/shared";
 import type { UserDAO } from "../daos/userDao";
 
 type UserRecord = User & { passwordHashPerm: string };
 
-const usersById = new Map<string, UserRecord>();
-const usersByEmail = new Map<string, UserRecord>();
-const usersByUsername = new Map<string, UserRecord>();
+export const usersById = new Map<string, UserRecord>();
+export const usersByEmail = new Map<string, UserRecord>();
+export const usersByUsername = new Map<string, UserRecord>();
 
 export const UserDao: UserDAO = {
   async validateCredentials(email: string, passwordHash: string): Promise<User | null> {
@@ -24,27 +23,16 @@ export const UserDao: UserDAO = {
     return user as User;
   },
 
-  async createUser(input): Promise<User> {
-    const id = crypto.randomUUID();
-    const email = input.email.toLowerCase();
-    const username = input.username;
-    const now = new Date();
+async createUser(user: User, passwordHash: string): Promise<User> {
     const rec: UserRecord = {
-      id,
-      username,
-      email,
-      displayName: input.displayName ?? username,
-      createdAt: now,
-      passwordHashPerm: input.passwordHash,
-      imageUrl: input.imageUrl ?? undefined,
-      bio: input.bio ?? undefined,
-      instruments: input.instruments ?? undefined,
+      ...user,
+      passwordHashPerm: passwordHash,
     };
-    usersById.set(id, rec);
-    usersByEmail.set(email, rec);
-    usersByUsername.set(username, rec);
-    const { passwordHashPerm, ...user } = rec;
-    return user as User;
+    usersById.set(user.id, rec);
+    usersByEmail.set(user.email.toLowerCase(), rec);
+    usersByUsername.set(user.username, rec);
+    const { passwordHashPerm, ...userWithoutHash } = rec;
+    return userWithoutHash as User;
   },
 
   async findUserById(id: string): Promise<User | null> {
@@ -85,11 +73,12 @@ export const UserDao: UserDAO = {
       .map(({ passwordHashPerm, ...user }) => user as User);
   },
 
-  async deleteUser(userId: string): Promise<void> {
+  async deleteUser(userId: string): Promise<boolean> {
     const rec = usersById.get(userId);
-    if (!rec) return;
+    if (!rec) return false;
     usersById.delete(userId);
     usersByEmail.delete(rec.email.toLowerCase());
     usersByUsername.delete(rec.username);
+    return true;
   }
 };
