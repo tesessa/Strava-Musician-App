@@ -13,11 +13,11 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  displayName: string;
   createdAt: Date;
   imageUrl?: string;
   bio?: string;
   instruments?: string[];
+  visibility: "public" | "private" | "friends";
 }
 
 // Example Practice session logged by a musician

@@ -1,4 +1,4 @@
-import { User } from "@shared/index";
+import type { User } from "@strava-musician-app/shared";
 import type { AuthDAO } from "../../db/dao/daos/authDao";
 import type { UserDAO } from "../../db/dao/daos/userDao";
 import { hashPassword } from "../utils/hashPassword";
@@ -27,10 +27,10 @@ export class AuthService {
     username: string;
     email: string;
     password: string;
-    displayName?: string;
     imageUrl?: string;
     bio?: string;
     instruments?: string[];
+    visibility?: "public" | "private" | "friends";
   }) {
     if (!data.email || !data.username || !data.password) {
       return { error: "email, username and password required", status: 400 };
@@ -42,11 +42,11 @@ export class AuthService {
       id: crypto.randomUUID(),
       email: data.email,
       username: data.username,
-      displayName: data.displayName ?? data.username,
       createdAt: new Date(),
       imageUrl: data.imageUrl ?? undefined,
       bio: data.bio ?? undefined,
       instruments: data.instruments ?? undefined,
+      visibility: data.visibility ?? "public",
     }
     const user = await this.userDao.createUser(newUser, hashedPassword);
     const AuthToken = await this.authDao.createTokenForUser(user.id);
