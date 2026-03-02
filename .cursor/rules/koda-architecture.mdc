@@ -1,0 +1,28 @@
+---
+description: Koda design and architecture conventions (frontend and backend)
+alwaysApply: true
+---
+
+# Koda Architecture and Design
+
+Follow the architecture in `docs/KODA-Architecture-and-Design.md`. Summary of design rules:
+
+## Frontend
+
+- **Components**: Handle display logic only. No business logic or data manipulation in components.
+- **Services**: Hold business logic and data manipulation. Frontend service names and function signatures should mirror backend services.
+- **Server API**: One interface **KodaServerApi** with two implementations:
+  - **ServerFacade** — calls the real API (uses Client Communicator for HTTP).
+  - **FakeDataServer** — returns fake data for demo/development.
+- **Dependency injection**: Server implementation is chosen by environment (e.g. demo mode ⇒ FakeDataServer) and injected into **singleton** instances of each service. Services are injected into components/hooks that use them.
+- **Shared enums**: Use a single shared enum for visibility and for every "this | that" union type (e.g. post visibility, profile visibility, challenge visibility). Keep consistency across the app.
+
+## Backend
+
+- **Handlers**: One handler per endpoint.
+- **Services**: Auth, User, PracticeSession, Event, Challenge. Handlers call services.
+- **DAOs**: Define each DAO by an interface; provide concrete implementations via the **factory pattern** (Auth DAO, User DAO, P. Session DAO, Event DAO, Challenge DAO).
+
+## Data / feed-style lists
+
+- Use **keyset pagination** (e.g. on `createdAt`) for infinite-scroll or feed-style lists; avoid offset pagination for large lists.
