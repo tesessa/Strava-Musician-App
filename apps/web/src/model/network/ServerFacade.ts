@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "./KodaServerApi";
-import type { PostVisibility, User } from "@strava-musician-app/shared";
+import type { PostVisibility, User, FeedPost } from "@strava-musician-app/shared";
 
 /**
  * Calls the actual Koda API. Uses Client Communicator for HTTP.
@@ -33,5 +33,24 @@ export class ServerFacade implements KodaServerApi {
 
   }
 
+  async getFeed(): Promise<FeedPost[]> {
+    return [];
+  }
+
+  async likePost(postId: string): Promise<void> {
+    console.log("TODO real likePost", postId);
+  }
+
+  async unlikePost(postId: string): Promise<void> {
+    console.log("TODO real unlikePost", postId);
+  }
+
+  async commentOnPost(postId: string, text: string): Promise<void> {
+    console.log("TODO real commentOnPost", postId, text);
+  }
+
+  async sharePost(postId: string): Promise<void> {
+    console.log("TODO real sharePost", postId);
+  }
 
 }

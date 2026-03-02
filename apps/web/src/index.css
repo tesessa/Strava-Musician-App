@@ -263,96 +263,8 @@ body {
   background: #0f0f12;
   color: white;
   position: relative;
-  padding-bottom: 72px; /* space for bottom nav */
+  padding-bottom: 72px;
 }
-
-/*****/
-/* SEARCH BAR */
-/*****/
-
-.search-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 16px;
-}
-
-.search-panel {
-  width: 100%;
-  max-width: 760px;
-  margin-top: 12px;
-  background: rgba(15, 15, 18, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(10px);
-}
-
-.search-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.search-title {
-  font-size: 14px;
-  font-weight: 700;
-  opacity: 0.95;
-}
-
-.search-close {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
-  cursor: pointer;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  line-height: 1;
-}
-
-.search-close:hover {
-  background: rgba(255, 255, 255, 0.10);
-}
-
-.search-input {
-  width: 100%;
-  padding: 12px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.search-input::placeholder {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: rgba(108, 78, 246, 0.65);
-  box-shadow: 0 0 0 3px rgba(108, 78, 246, 0.22);
-}
-
-.search-hint {
-  margin-top: 10px;
-  font-size: 12px;
-  opacity: 0.75;
-}
-
 
 /*******/
 /* TOP BAR */
@@ -369,6 +281,7 @@ body {
   justify-content: space-between;
   padding: 16px 16px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 64px;
 }
 
 .home-title {
@@ -414,9 +327,60 @@ body {
   transform: scale(0.98);
 }
 
-/*******/
+/********/
+/* HEADER SEARCH */
+/********/
+
+.header-search-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.header-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.header-search-input:focus {
+  outline: none;
+  border-color: rgba(108, 78, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(108, 78, 246, 0.22);
+}
+
+.header-search-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-search-close:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/******************/
 /* DROPDOWN FILTER BAR */
-/*******/
+/******************/
 
 .feed-filterbar {
   display: flex;
@@ -460,9 +424,9 @@ body {
   white-space: nowrap;
 }
 
-/*******/
+/********/
 /* FEED LAYOUT */
-/*******/
+/********/
 
 .home-feed {
   padding: 14px 12px 90px;
@@ -476,9 +440,9 @@ body {
   opacity: 0.9;
 }
 
-/*******/
+/********/
 /* FEED CARD */
-/*******/
+/********/
 
 .feed-card {
   background: rgba(255, 255, 255, 0.06);
@@ -504,6 +468,9 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 800;
+  border: none;
+  color: white;
+  cursor: pointer;
 }
 
 .feed-meta {
@@ -549,7 +516,6 @@ body {
   opacity: 0.85;
 }
 
-/* Optional debug tag */
 .feed-instrument-tag {
   margin-top: 8px;
   font-size: 12px;
@@ -564,7 +530,7 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* bottom nav bar actions */
+/* Actions */
 .feed-card-footer {
   display: flex;
   justify-content: space-around;
@@ -591,14 +557,92 @@ body {
   transform: scale(0.98);
 }
 
-/*********/
+/********/
+/* COMMENT BOX */
+/********/
+
+.comment-box {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comment-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.comment-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: rgba(108, 78, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(108, 78, 246, 0.22);
+}
+
+.comment-send {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(108, 78, 246, 0.95);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.comment-send:hover {
+  background: rgba(108, 78, 246, 1);
+}
+
+.comment-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 0;
+}
+
+.comment-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.comment-author {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.comment-text {
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+/********/
 /* FLOATING ACTION BUTTON */
-/*********/
+/********/
 
 .home-fab {
   position: fixed;
   right: 18px;
-  bottom: 86px; /* above bottom nav */
+  bottom: 86px;
   width: 56px;
   height: 56px;
   border-radius: 999px;
@@ -619,9 +663,9 @@ body {
   transform: scale(0.98);
 }
 
-/*********/
-/* BOTTOM NAV (4 main pages) */
-/*********/
+/********/
+/* BOTTOM NAV */
+/********/
 
 .home-bottomnav {
   position: fixed;
@@ -629,7 +673,6 @@ body {
   transform: translateX(-50%);
   bottom: 0;
   width: 100%;
-  /* max-width: 100vh; */
   height: 68px;
   background: rgba(15, 15, 18, 0.95);
   backdrop-filter: blur(8px);
@@ -662,9 +705,9 @@ body {
   background: rgba(108, 78, 246, 0.18);
 }
 
-/*******/
+/********/
 /* RESPONSIVE */
-/*******/
+/********/
 
 @media (min-width: 900px) {
   .home-feed {

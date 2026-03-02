@@ -45,6 +45,29 @@ export interface PracticeSession {
 //   createdAt: Date;
 // }
 
+// Example post for feed
+export interface FeedPost {
+  id: string;
+  userId?: string;
+  name: string;
+  title: string;
+  details: string;
+  instrument: Instrument;
+  createdAt: Date;
+  likeCount?: number;
+  likedByMe?: boolean;
+  commentCount?: number;
+  comments?: FeedComment[];
+}
+
+// Example comment for posts
+export interface FeedComment {
+  id: string;
+  authorName: string;
+  text: string;
+  createdAt: Date;
+}
+
 // Application configuration
 export interface AppConfig {
   appName: string;
