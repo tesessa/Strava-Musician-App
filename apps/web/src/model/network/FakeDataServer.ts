@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "./KodaServerApi";
-import type { User } from "@strava-musician-app/shared";
+import type { PostVisibility, User } from "@strava-musician-app/shared";
 
 /** Fake user for demo mode. */
 const FAKE_USER: User = {
@@ -22,7 +22,9 @@ export class FakeDataServer implements KodaServerApi {
   }
 
   async login(email: string, password: string): Promise<User | null> {
-    // const found = fakeUsers.find(u => u.email === email && u.password == password);
+    
+    const found = fakeUsers.find(u => u.email === email && u.password == password);
+    console.log(found);
     // return found ? { ...found } : null;
     return { ...FAKE_USER }
   }
@@ -32,24 +34,27 @@ export class FakeDataServer implements KodaServerApi {
     email: string,
     password: string
   ): Promise<User> {
-    // const newUser: User & { password: string } = {
-    //   id: `user-${Date.now()}`,
-    //   username,
-    //   email,
-    //   displayName: "",
-    //   createdAt: new Date(),
-    //   password,
-    // };
-    // fakeUsers.push(newUser);
+    const newUser: User & { password: string } = {
+      id: `user-${Date.now()}`,
+      username,
+      email,
+      displayName: "",
+      createdAt: new Date(),
+      password,
+    };
+    fakeUsers.push(newUser);
     return { ...FAKE_USER };
   }
 
-  async savePost(post: string): Promise<void> {
-
+  async savePost(userId: string, title: string, visibility: PostVisibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string> {
+    const fakeId = `post-${Date.now()}`;
+    console.log("[FakeDataServer] Saving post:", fakeId, title);
+    return fakeId;
   }
   
-  async discardPost(postId: string): Promise<void> {
-
+  async discardPost(sessionId: string): Promise<void> {
+    console.log("[FakeDataServer] Discarding post:", sessionId);
   }
+
 
 }

@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./record.css";
+
+// type RecordingEntry
 
 export default function PracticePage() {
   const navigate = useNavigate();
@@ -99,11 +101,13 @@ export default function PracticePage() {
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  // function getFileType(file: File): UploadFi
+
   return (
     <div className="container">
     <button
       className="back-arrow"
-      onClick={() => navigate("/feed")}
+      onClick={() => navigate("/home")}
     >
       ←
     </button>
@@ -322,7 +326,7 @@ export default function PracticePage() {
             <button
               className="finish-btn"
               onClick={() => {
-                navigate("/upload");
+                navigate("/post");
               }}
             >
               Finish

@@ -46,7 +46,7 @@ const Post = () => {
         });
     };
 
-    const renderPreview = (media: MediaFile, index: number) => {
+    const renderPreview = (media: MediaFile) => {
                 switch (media.type) {
             case "image":
                 return <img src={media.preview} alt="preview" className="media-preview-img" />;
@@ -115,7 +115,7 @@ const Post = () => {
                         <div className="media-preview-grid">
                             {mediaFiles.map((media, index) => (
                                 <div key={index} className="media-preview-item">
-                                    {renderPreview(media, index)}
+                                    {renderPreview(media)}
                                     <button className="media-remove-btn" onClick={() => removeFile(index)}>✕</button>
                                 </div>
                             ))}

@@ -1,4 +1,4 @@
-import type { User } from "@strava-musician-app/shared";
+import type { User, PostVisibility } from "@strava-musician-app/shared";
 
 /**
  * Single API surface for the Koda frontend. Implemented by ServerFacade (real API)
@@ -10,8 +10,9 @@ export interface KodaServerApi {
   getMe(): Promise<User | null>;
   login(email: string, password: string): Promise<User | null>;
   register(username: string, email: string, password: string): Promise<User>;
-  savePost(post: string): Promise<void>;
-  discardPost(postId: string): Promise<void>;
+  // might want to have this function return PracticeSession
+  savePost(userId: string, title: string, visibility: PostVisibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string>;
+  discardPost(sessionId: string): Promise<void>;
 }
 
 export type PostData = {

@@ -22,19 +22,71 @@ export interface User {
 
 // Example Practice session logged by a musician
 export interface PracticeSession {
-  id: string;
+  sessionId: string;
   userId: string;
-  instrument: string;
-  durationMinutes: number;
-  notes?: string;
+  title: string;
+  postText?: string;
+  privateText?: string;
+  instrument?: string;
+  visibility: PostVisibility;
+  duration: number;
+  tempo?: number;
+  pieceTitle?: string;
+  composer?: string;
   createdAt: Date;
 }
+
+// export interface PracticeSession {
+//   id: string;
+//   userId: string;
+//   instrument: string;
+//   durationMinutes: number;
+//   notes?: string;
+//   createdAt: Date;
+// }
 
 // Application configuration
 export interface AppConfig {
   appName: string;
   version: string;
 }
+
+/**
+ * Canonical list of instruments shared between frontend and backend.
+ * Import from @strava-musician-app/shared.
+ */
+export const INSTRUMENTS = [
+  "Piano",
+  "Violin",
+  "Viola",
+  "Cello",
+  "Double Bass",
+  "Acoustic Guitar",
+  "Electric Guitar",
+  "Bass Guitar",
+  "Ukulele",
+  "Flute",
+  "Clarinet",
+  "Oboe",
+  "Bassoon",
+  "Saxophone",
+  "Trumpet",
+  "Trombone",
+  "French Horn",
+  "Tuba",
+  "Drums",
+  "Percussion",
+  "Harp",
+  "Banjo",
+  "Mandolin",
+  "Accordion",
+  "Singing",
+  "Other",
+] as const;
+
+export type Instrument = (typeof INSTRUMENTS)[number];
+
+export type PostVisibility = "public" | "private" | "friends";
 
 // Default app config
 export const APP_CONFIG: AppConfig = {

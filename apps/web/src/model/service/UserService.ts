@@ -18,12 +18,14 @@ export class UserService {
   }
 
   async login(email: string, password: string): Promise<User | null> {
+    // should return user & authToken (to be implemented later)
     const user = await this.server.login(email, password);
     this.currentUser = user;
     return user;
   }
 
   async register(username: string, email: string, password: string): Promise<User> {
+    // should return user & authToken (to be implemented later)
     const user = await this.server.register(username, email, password);
     this.currentUser = user;
     return user;

@@ -2,6 +2,7 @@ import type { KodaServerApi } from "./network/KodaServerApi";
 import { ServerFacade } from "./network/ServerFacade";
 import { FakeDataServer } from "./network/FakeDataServer";
 import { UserService } from "./service/UserService";
+import { PostService } from "./service/PostService";
 
 /**
  * This file sets up singleton services to be used by components and hooks.
@@ -20,3 +21,4 @@ const server: KodaServerApi = createServer();
 
 /** Singleton UserService with server implementation injected (demo vs real from env). */
 export const userService = new UserService(server);
+export const postService = new PostService(server);
