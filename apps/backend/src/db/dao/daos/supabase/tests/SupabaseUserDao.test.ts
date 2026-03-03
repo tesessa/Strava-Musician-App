@@ -15,12 +15,12 @@ describe("SupabaseUserDao", () => {
     const user: User = {
       id: "123",
       email: "test@example.com",
-      displayName: "testuser",
       createdAt: new Date(),
       username: "testuser",
       imageUrl: "",
       bio: "",
       instruments: [],
+      visibility: "private",
     };
     const passwordHash = "hashedpassword";
 
@@ -29,22 +29,22 @@ describe("SupabaseUserDao", () => {
     expect(createdUser).toMatchObject({
       id: "123",
       email: "test@example.com",
-      displayName: "testuser",
       username: "testuser",
       imageUrl: "",
       bio: "",
       instruments: [],
+      visibility: "private",
     });
 
     const foundUser = await userDao.findUserByEmail("test@example.com");
     expect(foundUser).toMatchObject({
       id: "123",
       email: "test@example.com",
-      displayName: "testuser",
       username: "testuser",
       imageUrl: "",
       bio: "",
       instruments: [],
+      visibility: "private",
     });
   });
 
