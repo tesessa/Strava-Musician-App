@@ -11,12 +11,11 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
     id: supabaseUser.id.toString(),
     email: supabaseUser.email,
-    displayName: supabaseUser.username,
     createdAt: supabaseUser.created_at,
     username: supabaseUser.username,
     imageUrl: supabaseUser.image_url,
     bio: supabaseUser.bio,
-    // postVisibility: supabaseUser.post_visibility,
+    visibility: supabaseUser.post_visibility,
     instruments: supabaseUser.instruments,
   };
 }

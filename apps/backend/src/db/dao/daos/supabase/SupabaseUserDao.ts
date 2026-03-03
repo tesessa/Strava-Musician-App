@@ -7,12 +7,11 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
     id: supabaseUser.id.toString(),
     email: supabaseUser.email,
-    displayName: supabaseUser.username,
     createdAt: supabaseUser.created_at,
     username: supabaseUser.username,
     imageUrl: supabaseUser.image_url,
     bio: supabaseUser.bio,
-    // postVisibility: supabaseUser.post_visibility,
+    visibility: supabaseUser.post_visibility,
     instruments: supabaseUser.instruments,
   };
 }
@@ -83,7 +82,6 @@ export class SupabaseUserDao implements UserDAO {
     const updateData: Partial<SupabaseUser> = {};
     if (patch.email) updateData.email = patch.email;
     if (patch.username) updateData.username = patch.username;
-    if (patch.displayName) updateData.username = patch.displayName;
     if (patch.imageUrl) {
       updateData.image_url = patch.imageUrl;
     }
