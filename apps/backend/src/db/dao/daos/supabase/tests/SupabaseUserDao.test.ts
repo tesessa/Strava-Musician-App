@@ -1,18 +1,17 @@
-import { before } from "node:test";
 import db from "../config/SupabaseKnexConnection";
 import { SupabaseUserDao } from "../SupabaseUserDao";
 import { User } from "@strava-musician-app/shared";
-import { create } from "domain";
+import { randomUUID } from "crypto";
 
 describe("SupabaseUserDao", () => {
   const userDao = new SupabaseUserDao();
-
+  const testUserId1 = randomUUID();
   beforeAll(async () => {
     // Clear the User table before running tests
     await db("User").del();
     // create base user
     const user: User = {
-      id: "321",
+      id: testUserId1,
       email: "tester@example.com",
       createdAt: new Date(),
       username: "testyuser",
@@ -27,8 +26,9 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should create a user an check it's there", async () => {
+    const testUserId2 = randomUUID();
     const user: User = {
-      id: "123",
+      id: testUserId2,
       email: "test@example.com",
       createdAt: new Date(),
       username: "testuser",
@@ -42,7 +42,7 @@ describe("SupabaseUserDao", () => {
     const createdUser = await userDao.createUser(user, passwordHash);
 
     expect(createdUser).toMatchObject({
-      id: "123",
+      id: testUserId2,
       email: "test@example.com",
       username: "testuser",
       imageUrl: "",
@@ -53,7 +53,7 @@ describe("SupabaseUserDao", () => {
 
     const foundUser = await userDao.findUserByEmail("test@example.com");
     expect(foundUser).toMatchObject({
-      id: "123",
+      id: testUserId2,
       email: "test@example.com",
       username: "testuser",
       imageUrl: "",
@@ -64,9 +64,9 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should get user by id", async () => {
-    const foundUser = await userDao.findUserById("321");
+    const foundUser = await userDao.findUserById(testUserId1);
     expect(foundUser).toMatchObject({
-      id: "321",
+      id: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
       imageUrl: "",
@@ -77,14 +77,15 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should return null for non-existent id", async () => {
-    const foundUser = await userDao.findUserById("-1");
+    const notRealID = randomUUID();
+    const foundUser = await userDao.findUserById(notRealID);
     expect(foundUser).toBeNull();
   });
 
   it("should get user by username", async () => {
     const foundUser = await userDao.findUserByUsername("testyuser");
     expect(foundUser).toMatchObject({
-      id: "321",
+      id: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
       imageUrl: "",
@@ -102,7 +103,7 @@ describe("SupabaseUserDao", () => {
   it("should get by email", async () => {
     const foundUser = await userDao.findUserByEmail("tester@example.com");
     expect(foundUser).toMatchObject({
-      id: "321",
+      id: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
       imageUrl: "",
@@ -123,7 +124,7 @@ describe("SupabaseUserDao", () => {
       "hashedpassword",
     );
     expect(validUser).toMatchObject({
-      id: "321",
+      id: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
       imageUrl: "",
@@ -150,12 +151,12 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should update user", async () => {
-    const updatedUser = await userDao.updateUser("321", {
+    const updatedUser = await userDao.updateUser(testUserId1, {
       bio: "Updated bio",
       instruments: ["guitar", "piano"],
     });
     expect(updatedUser).toMatchObject({
-      id: "321",
+      id: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
       imageUrl: "",
@@ -166,15 +167,17 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should return null when updating non-existent user", async () => {
-    const updatedUser = await userDao.updateUser("-1", {
+    const notRealID = randomUUID();
+    const updatedUser = await userDao.updateUser(notRealID, {
       bio: "Updated bio",
     });
     expect(updatedUser).toBeNull();
   });
 
   it("should search users", async () => {
+    const testUserId2 = randomUUID();
     const user2: User = {
-      id: "456",
+      id: testUserId2,
       createdAt: new Date(),
       email: "testyuser2@example.com",
       username: "user2",
@@ -187,7 +190,7 @@ describe("SupabaseUserDao", () => {
 
     const searchResults = await userDao.searchUsers("testy");
     expect(searchResults).toContainEqual({
-      id: "456",
+      id: testUserId2,
       createdAt: expect.any(Date),
       email: "testyuser2@example.com",
       username: "user2",
@@ -197,7 +200,7 @@ describe("SupabaseUserDao", () => {
       visibility: "private",
     });
     expect(searchResults).toContainEqual({
-      id: "321",
+      id: testUserId1,
       createdAt: expect.any(Date),
       email: "tester@example.com",
       username: "testyuser",
@@ -209,10 +212,10 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should delete user", async () => {
-    const deleteResult = await userDao.deleteUser("321");
+    const deleteResult = await userDao.deleteUser(testUserId1);
     expect(deleteResult).toBe(true);
 
-    const foundUser = await userDao.findUserById("321");
+    const foundUser = await userDao.findUserById(testUserId1);
     expect(foundUser).toBeNull();
   });
 

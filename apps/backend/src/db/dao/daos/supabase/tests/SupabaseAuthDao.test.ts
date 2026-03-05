@@ -1,9 +1,11 @@
 import { SupabaseAuthDao } from "../SupabaseAuthDao";
 import db from "../config/SupabaseKnexConnection";
+import { randomUUID } from "crypto";
 //import { User } from "@strava-musician-app/shared";
 
 describe("SupabaseAuthDao", () => {
   const authDao = new SupabaseAuthDao();
+  const testUserId = randomUUID();
   beforeAll(async () => {
     // Clear the AuthSession table before running tests
     await db("AuthSession").del();
@@ -11,7 +13,7 @@ describe("SupabaseAuthDao", () => {
     await db("User").del();
     // create base user
     await db("User").insert({
-      id: 321,
+      id: testUserId,
       email: "test@example.com",
       username: "testuser",
       password: "hashedpassword",
@@ -23,12 +25,12 @@ describe("SupabaseAuthDao", () => {
   });
 
   it("should create a token for user and find user by token", async () => {
-    const authToken = await authDao.createTokenForUser("321");
+    const authToken = await authDao.createTokenForUser(testUserId);
     expect(authToken).toHaveProperty("token");
     expect(authToken).toHaveProperty("timestamp");
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toMatchObject({
-      id: "321",
+      id: testUserId,
       email: "test@example.com",
       createdAt: expect.any(Date),
       username: "testuser",
@@ -40,13 +42,13 @@ describe("SupabaseAuthDao", () => {
   });
 
   it("should refresh token", async () => {
-    const authToken = await authDao.createTokenForUser("321");
+    const authToken = await authDao.createTokenForUser(testUserId);
     const oldTimestamp = authToken.timestamp;
     await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1 second to ensure timestamp will be different
     await authDao.refreshSession(authToken.token);
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toMatchObject({
-      id: "321",
+      id: testUserId,
       email: "test@example.com",
       createdAt: expect.any(Date),
       username: "testuser",
@@ -61,7 +63,7 @@ describe("SupabaseAuthDao", () => {
   });
 
   it("should check and refresh token", async () => {
-    const authToken = await authDao.createTokenForUser("321");
+    const authToken = await authDao.createTokenForUser(testUserId);
     const isValid = await authDao.checkAndRefreshSession(authToken.token);
     expect(isValid).toBe(true);
   });
@@ -71,7 +73,7 @@ describe("SupabaseAuthDao", () => {
     const originalTokenTtl = (authDao as any).TOKEN_TTL_MS;
     (authDao as any).TOKEN_TTL_MS = 1000; // 1 second
 
-    const authToken = await authDao.createTokenForUser("321");
+    const authToken = await authDao.createTokenForUser(testUserId);
     await new Promise((resolve) => setTimeout(resolve, 2000)); // wait 2 seconds to ensure token is expired
     const isValid = await authDao.checkAndRefreshSession(authToken.token);
     expect(isValid).toBe(false);
@@ -81,7 +83,7 @@ describe("SupabaseAuthDao", () => {
   });
 
   it("should revoke token", async () => {
-    const authToken = await authDao.createTokenForUser("321");
+    const authToken = await authDao.createTokenForUser(testUserId);
     await authDao.revokeToken(authToken.token);
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toBeNull();
@@ -94,7 +96,7 @@ describe("SupabaseAuthDao", () => {
     const originalTokenTtl = (authDao as any).TOKEN_TTL_MS;
     (authDao as any).TOKEN_TTL_MS = 1000; // 1 second
 
-    const authToken = await authDao.createTokenForUser("321");
+    const authToken = await authDao.createTokenForUser(testUserId);
     await new Promise((resolve) => setTimeout(resolve, 2000)); // wait 2 seconds to ensure token is expired
     await authDao.cleanupExpiredSessions();
     const user = await authDao.getUserByToken(authToken.token);

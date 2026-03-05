@@ -7,7 +7,7 @@ import { User as SupabaseUser, AuthSession } from "./config/SupabaseTableTypes";
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    id: supabaseUser.id.toString(),
+    id: supabaseUser.id,
     email: supabaseUser.email,
     createdAt: supabaseUser.created_at,
     username: supabaseUser.username,
@@ -25,7 +25,7 @@ export class SupabaseAuthDao implements AuthDAO {
     const token = randomUUID();
     const expiresAt = Date.now() + this.TOKEN_TTL_MS;
     await db<AuthSession>("AuthSession").insert({
-      user_id: parseInt(userId, 10),
+      user_id: userId,
       token,
       expires_at: new Date(expiresAt),
     });
