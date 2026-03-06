@@ -128,14 +128,14 @@ const Home = () => {
 
             <input
               className="search-input"
-              placeholder="Search stuff yuh yuh"
+              placeholder="Search"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               autoFocus
             />
 
             <div className="search-hint">
-              (add backend hehe).
+              {/* Search for friends! (add backend) */}
             </div>
           </div>
         </div>
