@@ -27,7 +27,7 @@ export default function Home() {
       method: "POST",
       purpose: "Authenticate and receive an auth token + full user profile",
       requestBody: "{ email: string, password: string }",
-      responseBody: "{ token: string, expiresAt: number, user: User } (200) or { error } (401/400)",
+      responseBody: "{ authToken: { token: string, expiresAt: number }, user: User } (200) or { error } (401/400)",
       exampleCurl: `curl -i -X POST http://localhost:3001/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"alice@example.com","password":"secret"}'`,

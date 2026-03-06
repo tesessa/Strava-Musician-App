@@ -67,7 +67,6 @@ async createUser(user: User, passwordHash: string): Promise<User> {
         u =>
           u.username.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
-          (u.displayName && u.displayName.toLowerCase().includes(q)) ||
           (u.bio && u.bio.toLowerCase().includes(q))
       )
       .map(({ passwordHashPerm, ...user }) => user as User);

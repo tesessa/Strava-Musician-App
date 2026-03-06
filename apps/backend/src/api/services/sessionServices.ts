@@ -6,7 +6,7 @@ export class SessionService {
   constructor(private sessionDao: SessionDAO) {}
 
   async createSession(
-    data: Omit<PracticeSession, "id" | "createdAt" | "userId">,
+    data: Omit<PracticeSession, "sessionId" | "createdAt" | "userId">,
     token: string
   ): Promise<PracticeSession> {
     // Extract user from token
@@ -17,7 +17,7 @@ export class SessionService {
     const createdAt = new Date();
     const session: PracticeSession = {
       ...data,
-      id,
+      sessionId: id,
       createdAt,
       userId: user.id, // Set userId from token
     };
