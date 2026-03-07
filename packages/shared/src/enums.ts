@@ -48,3 +48,38 @@ export const CHALLENGE_TASK_VALUES = [
   "numHrsPracticed",
 ] as const;
 export type ChallengeTask = (typeof CHALLENGE_TASK_VALUES)[number];
+
+/**
+ * Canonical list of instruments shared between frontend and backend.
+ * Import from @strava-musician-app/shared.
+ */
+export const INSTRUMENTS = [
+  "Piano",
+  "Violin",
+  "Viola",
+  "Cello",
+  "Double Bass",
+  "Acoustic Guitar",
+  "Electric Guitar",
+  "Bass Guitar",
+  "Ukulele",
+  "Flute",
+  "Clarinet",
+  "Oboe",
+  "Bassoon",
+  "Saxophone",
+  "Trumpet",
+  "Trombone",
+  "French Horn",
+  "Tuba",
+  "Drums",
+  "Percussion",
+  "Harp",
+  "Banjo",
+  "Mandolin",
+  "Accordion",
+  "Singing",
+  "Other",
+] as const;
+
+export type Instrument = (typeof INSTRUMENTS)[number];

@@ -1,50 +1,27 @@
 /**
  * Shared types and utilities for Strava Musician App.
- * DTOs and enums are in ./dto (schema- and API-aligned).
+ * Schema- and API-aligned types and enums.
  */
 
-export * from "./dto";
+export * from "./enums";
+export * from "./sessions";
+export * from "./users";
+export * from "./auth";
+export * from "./friends";
+export * from "./friend-requests";
+export * from "./media";
+export * from "./likes";
+export * from "./comments";
+export * from "./challenges";
+export * from "./notifications";
+export * from "./events";
+export * from "./optional";
 
 // Application configuration
 export interface AppConfig {
   appName: string;
   version: string;
 }
-
-/**
- * Canonical list of instruments shared between frontend and backend.
- * Import from @strava-musician-app/shared.
- */
-export const INSTRUMENTS = [
-  "Piano",
-  "Violin",
-  "Viola",
-  "Cello",
-  "Double Bass",
-  "Acoustic Guitar",
-  "Electric Guitar",
-  "Bass Guitar",
-  "Ukulele",
-  "Flute",
-  "Clarinet",
-  "Oboe",
-  "Bassoon",
-  "Saxophone",
-  "Trumpet",
-  "Trombone",
-  "French Horn",
-  "Tuba",
-  "Drums",
-  "Percussion",
-  "Harp",
-  "Banjo",
-  "Mandolin",
-  "Accordion",
-  "Singing",
-  "Other",
-] as const;
-
-export type Instrument = (typeof INSTRUMENTS)[number];
 
 // Default app config
 export const APP_CONFIG: AppConfig = {
