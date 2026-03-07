@@ -1,49 +1,9 @@
 /**
- * Shared types and utilities for Strava Musician App
- * Below are example types. They are not set in stone and will be updated as we go.
+ * Shared types and utilities for Strava Musician App.
+ * DTOs and enums are in ./dto (schema- and API-aligned).
  */
 
-//Prototype Auth Token
-export interface AuthToken {
-  token: string;
-  timestamp: Date;
-}
-// Example User type for the application
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  createdAt: Date;
-  imageUrl?: string;
-  bio?: string;
-  instruments?: string[];
-  visibility: "public" | "private" | "friends";
-}
-
-// Example Practice session logged by a musician
-export interface PracticeSession {
-  sessionId: string;
-  userId: string;
-  title: string;
-  durationMinutes: number;
-  createdAt: Date;
-  visibility: "public" | "private" | "friends";
-  postText?: string;
-  privateText?: string;
-  instrument?: string;
-  tempo?: number;
-  pieceTitle?: string;
-  composer?: string;
-}
-
-// export interface PracticeSession {
-//   id: string;
-//   userId: string;
-//   instrument: string;
-//   durationMinutes: number;
-//   notes?: string;
-//   createdAt: Date;
-// }
+export * from "./dto";
 
 // Application configuration
 export interface AppConfig {
@@ -85,8 +45,6 @@ export const INSTRUMENTS = [
 ] as const;
 
 export type Instrument = (typeof INSTRUMENTS)[number];
-
-export type PostVisibility = "public" | "private" | "friends";
 
 // Default app config
 export const APP_CONFIG: AppConfig = {

@@ -8,8 +8,7 @@ export const sessions = new Map<string, PracticeSession>();
 
 export const SessionDao: SessionDAO = {
   async createSession(session: PracticeSession) {
-    const id = session.id;
-    sessions.set(id, session);
+    sessions.set(session.sessionId, session);
     return session;
   },
 
@@ -19,8 +18,8 @@ export const SessionDao: SessionDAO = {
 
     // Get all sessions for this user, sorted chronologically by createdAt
     const userSessions = Array.from(sessions.values())
-      .filter(session => session.userId === user.id)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      .filter((session) => session.userId === user.userId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
     // If lastItemId is null, return the first pageSize items
     if (!lastItemId) {
@@ -28,7 +27,7 @@ export const SessionDao: SessionDAO = {
     }
 
     // Find the index of the lastItemId
-    const idx = userSessions.findIndex(s => s.id === lastItemId);
+    const idx = userSessions.findIndex((s) => s.sessionId === lastItemId);
 
     // If lastItemId not found or is the last item, return empty list
     if (idx === -1 || idx === userSessions.length - 1) {

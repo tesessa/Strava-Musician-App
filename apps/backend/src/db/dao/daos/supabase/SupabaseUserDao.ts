@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { UserDAO } from "../userDao";
 import { User } from "@strava-musician-app/shared";
 import db from "./config/SupabaseKnexConnection";
@@ -5,32 +6,33 @@ import { User as SupabaseUser } from "./config/SupabaseTableTypes";
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    id: supabaseUser.id.toString(),
+    userId: supabaseUser.id,
     email: supabaseUser.email,
-    createdAt: supabaseUser.created_at,
     username: supabaseUser.username,
-    imageUrl: supabaseUser.image_url,
-    bio: supabaseUser.bio,
-    visibility: supabaseUser.post_visibility,
-    instruments: supabaseUser.instruments,
+    profilePhoto: supabaseUser.image_url || undefined,
+    bio: supabaseUser.bio || undefined,
+    postVisibility: supabaseUser.post_visibility,
+    instruments: supabaseUser.instruments ?? [],
   };
 }
 
 export class SupabaseUserDao implements UserDAO {
-  async createUser(user: User, passwordHash: string) {
+  async createUser(user: Omit<User, "userId">, passwordHash: string) {
+    const id = randomUUID();
     const [createdUser] = await db<SupabaseUser>("User")
       .insert({
-        id: parseInt(user.id, 10),
+        id, // User.id and AuthSession.user_id are UUID (string) per architecture
         email: user.email,
         username: user.username,
         password: passwordHash,
-        image_url: user.imageUrl || "",
-        bio: user.bio || "",
-        post_visibility: "private",
-        instruments: user.instruments || [],
+        image_url: user.profilePhoto ?? "",
+        bio: user.bio ?? "",
+        post_visibility: user.postVisibility,
+        instruments: user.instruments ?? [],
       })
       .returning("*");
 
+    if (!createdUser) throw new Error("User insert failed");
     return mapSupabaseUserToUser(createdUser);
   }
 
@@ -57,9 +59,8 @@ export class SupabaseUserDao implements UserDAO {
   }
 
   async findUserById(userId: string) {
-    const userIdNum = parseInt(userId, 10);
     const user = await db<SupabaseUser>("User")
-      .where({ id: userIdNum })
+      .where({ id: userId })
       .first();
     if (!user) {
       return null;
@@ -78,18 +79,16 @@ export class SupabaseUserDao implements UserDAO {
   }
 
   async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
-    const userIdNum = parseInt(id, 10);
     const updateData: Partial<SupabaseUser> = {};
     if (patch.email) updateData.email = patch.email;
     if (patch.username) updateData.username = patch.username;
-    if (patch.imageUrl) {
-      updateData.image_url = patch.imageUrl;
-    }
-    if (patch.bio) updateData.bio = patch.bio;
+    if (patch.profilePhoto !== undefined) updateData.image_url = patch.profilePhoto;
+    if (patch.bio !== undefined) updateData.bio = patch.bio;
+    if (patch.postVisibility !== undefined) updateData.post_visibility = patch.postVisibility;
     if (patch.instruments) updateData.instruments = patch.instruments;
 
     const [updatedUser] = await db<SupabaseUser>("User")
-      .where({ id: userIdNum })
+      .where({ id })
       .update(updateData)
       .returning("*");
 
@@ -102,7 +101,7 @@ export class SupabaseUserDao implements UserDAO {
   async deleteUser(userId: string): Promise<boolean> {
     try {
       await db<SupabaseUser>("User")
-        .where({ id: parseInt(userId, 10) })
+        .where({ id: userId })
         .del();
     } catch (error) {
       console.error("Error deleting user:", error);

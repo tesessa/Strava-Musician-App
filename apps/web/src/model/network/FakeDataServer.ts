@@ -1,17 +1,17 @@
 import type { KodaServerApi } from "./KodaServerApi";
-import type { PostVisibility, User } from "@strava-musician-app/shared";
+import type { User, Visibility } from "@strava-musician-app/shared";
 
 /** Fake user for demo mode. */
 const FAKE_USER: User = {
-  id: "demo-user-1",
+  userId: "demo-user-1",
   username: "demomusician",
   email: "demo@koda.example",
-  displayName: "Demo Musician",
-  createdAt: new Date("2024-01-15T12:00:00Z"),
+  postVisibility: "public",
+  instruments: [],
 };
 
 const fakeUsers: Array<User & { password: string }> = [
-  { ...FAKE_USER, password: "password123"}
+  { ...FAKE_USER, password: "password123" },
 ];
 /**
  * Returns fake data for demo/development. No network calls.
@@ -22,11 +22,8 @@ export class FakeDataServer implements KodaServerApi {
   }
 
   async login(email: string, password: string): Promise<User | null> {
-    
-    const found = fakeUsers.find(u => u.email === email && u.password == password);
-    console.log(found);
-    // return found ? { ...found } : null;
-    return { ...FAKE_USER }
+    const found = fakeUsers.find((u) => u.email === email && u.password === password);
+    return found ? { userId: found.userId, username: found.username, email: found.email, postVisibility: found.postVisibility, instruments: found.instruments } : null;
   }
 
   async register(
@@ -35,23 +32,23 @@ export class FakeDataServer implements KodaServerApi {
     password: string
   ): Promise<User> {
     const newUser: User & { password: string } = {
-      id: `user-${Date.now()}`,
+      userId: `user-${Date.now()}`,
       username,
       email,
-      displayName: "",
-      createdAt: new Date(),
+      postVisibility: "friends",
+      instruments: [],
       password,
     };
     fakeUsers.push(newUser);
-    return { ...FAKE_USER };
+    return { userId: newUser.userId, username: newUser.username, email: newUser.email, postVisibility: newUser.postVisibility, instruments: newUser.instruments };
   }
 
-  async savePost(userId: string, title: string, visibility: PostVisibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string> {
+  async savePost(userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
     const fakeId = `post-${Date.now()}`;
-    console.log("[FakeDataServer] Saving post:", fakeId, title);
+    console.log("[FakeDataServer] Saving post:", fakeId, title, "for user", userId);
     return fakeId;
   }
-  
+
   async discardPost(sessionId: string): Promise<void> {
     console.log("[FakeDataServer] Discarding post:", sessionId);
   }

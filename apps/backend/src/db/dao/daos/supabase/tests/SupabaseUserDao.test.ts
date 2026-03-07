@@ -11,40 +11,37 @@ describe("SupabaseUserDao", () => {
     await db("User").del();
   });
 
-  it("should create a user an check it's there", async () => {
-    const user: User = {
-      id: "123",
+  it("should create a user and check it's there", async () => {
+    const user: Omit<User, "userId"> = {
       email: "test@example.com",
-      createdAt: new Date(),
       username: "testuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     };
     const passwordHash = "hashedpassword";
 
     const createdUser = await userDao.createUser(user, passwordHash);
 
     expect(createdUser).toMatchObject({
-      id: "123",
       email: "test@example.com",
       username: "testuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
+    expect(createdUser.userId).toBeDefined();
 
     const foundUser = await userDao.findUserByEmail("test@example.com");
     expect(foundUser).toMatchObject({
-      id: "123",
       email: "test@example.com",
       username: "testuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
   });
 

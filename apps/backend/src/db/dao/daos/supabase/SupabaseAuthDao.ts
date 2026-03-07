@@ -9,14 +9,13 @@ const TOKEN_TTL_MS = 1000 * 60 * 30; // 30 minutes
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    id: supabaseUser.id.toString(),
+    userId: supabaseUser.id,
     email: supabaseUser.email,
-    createdAt: supabaseUser.created_at,
     username: supabaseUser.username,
-    imageUrl: supabaseUser.image_url,
-    bio: supabaseUser.bio,
-    visibility: supabaseUser.post_visibility,
-    instruments: supabaseUser.instruments,
+    profilePhoto: supabaseUser.image_url || undefined,
+    bio: supabaseUser.bio || undefined,
+    postVisibility: supabaseUser.post_visibility,
+    instruments: supabaseUser.instruments ?? [],
   };
 }
 
@@ -25,7 +24,7 @@ export class SupabaseAuthDao implements AuthDAO {
     const token = randomUUID();
     const expiresAt = Date.now() + TOKEN_TTL_MS;
     await db<AuthSession>("AuthSession").insert({
-      user_id: parseInt(userId, 10),
+      user_id: userId,
       token,
       expires_at: new Date(expiresAt),
     });

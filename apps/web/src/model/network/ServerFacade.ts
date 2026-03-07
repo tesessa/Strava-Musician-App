@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "./KodaServerApi";
-import type { PostVisibility, User } from "@strava-musician-app/shared";
+import type { User, Visibility } from "@strava-musician-app/shared";
 
 /**
  * Calls the actual Koda API. Uses Client Communicator for HTTP.
@@ -11,27 +11,25 @@ export class ServerFacade implements KodaServerApi {
     return null;
   }
 
-  async login(email: string, password: string): Promise<User | null> {
+  async login(_email: string, _password: string): Promise<User | null> {
     return null;
   }
 
-  async register(username: string, email: string, password: string): Promise<User> {
+  async register(_username: string, email: string, _password: string): Promise<User> {
     return {
-      id: "1",
-      username: username,
-      email: email,
-      displayName: "Demo Musician",
-      createdAt: new Date("2024-01-15T12:00:00Z"),
-    }
+      userId: "1",
+      username: _username,
+      email,
+      postVisibility: "friends",
+      instruments: [],
+    };
   }
 
-  async savePost(userId: string, title: string, visibility: PostVisibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string> {
+  async savePost(_userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
     return title;
   }
 
-  async discardPost(sessionId: string): Promise<void> {
-
-  }
+  async discardPost(_sessionId: string): Promise<void> {}
 
 
 }

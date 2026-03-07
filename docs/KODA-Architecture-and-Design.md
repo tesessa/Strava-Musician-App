@@ -38,7 +38,7 @@ All backend routes should follow this pattern for handling requests:
 
 DAOs should be defined by interfaces; concrete implementations should be created using the factory pattern.
 
-**Visibility:** Use a shared enum for visibility (and all other "this | that" types) everywhere it appears: Friend Preview, Post visibility, Challenge Visibility, Profile Photo visibility, Instrument visibility.
+**Visibility:** Use a shared enum for visibility (and all other "this | that" types) everywhere it appears: Friend Preview, Post visibility, Challenge Visibility, Profile Photo visibility, Instrument visibility. **Post visibility is defined only on the User** (as `postVisibility`) and is the user's default; it applies to all of their practice sessions (there is no per-session visibility override).
 
 ---
 
@@ -58,12 +58,12 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 
 ## Data Access and Database Layer
 
-**Database tables:**
+**Database tables:** Primary and foreign key IDs (userId, sessionId, etc.) are UUIDs (string type in application and DB).
 
-- **User** — userId (PK), email, username, password (encrypted), profilePhoto, bio, postVisibility, instruments[]
+- **User** — userId (PK, UUID), email, username, password (encrypted), profilePhoto, bio, postVisibility, instruments[]
 - **Friends** — userId (FK), friendId (FK), friendsSince; PK (userId, friendId). Store two rows per friendship: (1,2) and (2,1). Delete both when they unfriend.
 - **FriendRequests** — requestId (PK), senderId (FK), receiverId (FK), status (pending | accepted | rejected | canceled), createdAt, respondedAt
-- **practiceSession** — userID (FK), sessionID (PK), title, postText?, privateText?, instrument?, createdAt, visibility (public | private | friends), duration, tempo?, pieceTitle?, composer? (additional AI analysis fields may be added later)
+- **practiceSession** — userID (FK), sessionID (PK), title, postText?, privateText?, instrument?, createdAt, durationMinutes (number), tempo?, pieceTitle?, composer? (additional AI analysis fields may be added later). Visibility for a session is determined by the session owner's User.postVisibility (see User); there is no per-session visibility field.
 - **Challenges** — challengeId (PK), description, task, targetNumber, instrument?
 - **completedChallenges** — userId (FK), challengeId (FK), completedAt
 - **Events** — eventId (PK), title, description, date, startTime, endTime, isAllDay, location, reminderMinBefore, eventType (practice | lesson | performance), visibility (public | private | friends)
@@ -71,7 +71,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 - **Likes** — userId (FK), sessionId (FK), createdAt; PK (userId, sessionId)
 - **Comments** — commentId (PK), sessionId (FK), userId (FK), text, createdAt
 - **Notifications** — notificationId (PK), userId (FK), actorId (FK), type (like | comment | friendRequest | challengeCompleted), entityType (session | user | challenge), entityId, createdAt, isRead
-- **authSessions** — authSessionId (PK), userId (FK), tokenHash, createdAt, expiresAt (~1hr), revokedAt
+- **authSessions** — authSessionId (PK), userId (FK, UUID), tokenHash, createdAt, expiresAt (~1hr), revokedAt
 
 **For Challenges:** The description string should be something like "Complete 5 practice sessions"; then targetNumber = 5 and task = numPracticeSessions. Instrument is optional for instrument-specific challenges. Possible challenge tasks: numPracticeSessions, numAudioRecordings, numVideoRecordings, numFriends, numHrsPracticed (per instrument).
 
@@ -86,7 +86,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 
 | Method | Path                    | Description                                                     | Body                                                                             |
 | ------ | ----------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| POST   | /auth/register          | Create a new user.                                              | { email, username, password, profilePhoto?, bio?, instruments?, postVisibility } |
+| POST   | /auth/register          | Create a new user. New users get postVisibility "friends" by default.           | { email, username, password, profilePhoto?, bio?, instruments? }                 |
 | POST   | /auth/login             | Authenticate and return a token.                                | { email, password }                                                              |
 | POST   | /auth/logout            | Revoke current session token (delete or mark revoked).          | none                                                                             |
 | GET    | /auth/me                | Return the authenticated user's profile if token is valid.      | none                                                                             |
@@ -124,7 +124,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 
 | Method | Path                 | Description                                   | Body                                                                                                  |
 | ------ | -------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| POST   | /sessions            | Create a practice session.                    | { title, postText?, privateText?, instrument?, duration, tempo?, pieceTitle?, composer?, visibility } |
+| POST   | /sessions            | Create a practice session.                    | { title, postText?, privateText?, instrument?, durationMinutes (number), tempo?, pieceTitle?, composer? } (visibility is the authenticated user's postVisibility from their profile) |
 | GET    | /sessions/feed       | Get one page of sessions visible to the user. | { lastItem, pageSize }                                                                                |
 | GET    | /sessions/:sessionId | Fetch a single session.                       | none                                                                                                  |
 | PATCH  | /sessions/:sessionId | Update a session.                             | any editable session fields                                                                           |
@@ -260,7 +260,7 @@ User can upload a PDF (or select from a list). File explorer opens; user selects
 
 ### End session
 
-Timer is stopped on the server. User sees a form to set: post visibility (default from profile), which audio/video clips to include/exclude, practice tempo, pieces practiced (title, composer), optional text. Post is optimistically shown at the top of the user’s feed; full post data is sent to the backend. When the backend receives the new practice session, it updates challenge progress. If a challenge was completed in that session, the user should see a banner (unless a websocket is added, completed challenges may need to be part of the “create post” response so the frontend can show the banner).
+Timer is stopped on the server. User sees a form to set: which audio/video clips to include/exclude, practice tempo, pieces practiced (title, composer), optional text. Post visibility is always the user's profile postVisibility (no per-session override). Post is optimistically shown at the top of the user’s feed; full post data is sent to the backend. When the backend receives the new practice session, it updates challenge progress. If a challenge was completed in that session, the user should see a banner (unless a websocket is added, completed challenges may need to be part of the “create post” response so the frontend can show the banner).
 
 ### Comment / Like a post
 

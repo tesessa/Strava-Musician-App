@@ -2,7 +2,7 @@ import crypto from "crypto";
 import type { User } from "@strava-musician-app/shared";
 import type { AuthDAO } from "../daos/authDao";
 import { UserDao } from "./inMemoryUserDao";
-import { AuthToken } from "@shared/index";
+import type { AuthToken } from "@strava-musician-app/shared";
 
 type TokenRecord = { userId: string; expiresAt: number };
 

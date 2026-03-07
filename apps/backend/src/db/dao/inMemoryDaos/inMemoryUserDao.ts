@@ -23,12 +23,14 @@ export const UserDao: UserDAO = {
     return user as User;
   },
 
-async createUser(user: User, passwordHash: string): Promise<User> {
+async createUser(user: Omit<User, "userId">, passwordHash: string): Promise<User> {
+    const userId = crypto.randomUUID();
+    const fullUser: User = { ...user, userId };
     const rec: UserRecord = {
-      ...user,
+      ...fullUser,
       passwordHashPerm: passwordHash,
     };
-    usersById.set(user.id, rec);
+    usersById.set(userId, rec);
     usersByEmail.set(user.email.toLowerCase(), rec);
     usersByUsername.set(user.username, rec);
     const { passwordHashPerm, ...userWithoutHash } = rec;
@@ -67,7 +69,6 @@ async createUser(user: User, passwordHash: string): Promise<User> {
         u =>
           u.username.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
-          (u.displayName && u.displayName.toLowerCase().includes(q)) ||
           (u.bio && u.bio.toLowerCase().includes(q))
       )
       .map(({ passwordHashPerm, ...user }) => user as User);
