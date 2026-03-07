@@ -23,9 +23,10 @@ export const UserDao: UserDAO = {
     return user as User;
   },
 
-async createUser(user: Omit<User, "userId">, passwordHash: string): Promise<User> {
+async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwordHash: string): Promise<User> {
     const userId = crypto.randomUUID();
-    const fullUser: User = { ...user, userId };
+    const now = new Date().toISOString();
+    const fullUser: User = { ...user, userId, createdAt: now, updatedAt: now };
     const rec: UserRecord = {
       ...fullUser,
       passwordHashPerm: passwordHash,
@@ -54,7 +55,7 @@ async createUser(user: Omit<User, "userId">, passwordHash: string): Promise<User
   async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
     const rec = usersById.get(id);
     if (!rec) return null;
-    const updated = { ...rec, ...patch };
+    const updated = { ...rec, ...patch, updatedAt: new Date().toISOString() };
     usersById.set(id, updated);
     if (patch.email) usersByEmail.set(patch.email.toLowerCase(), updated);
     if (patch.username) usersByUsername.set(patch.username, updated);

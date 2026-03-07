@@ -38,7 +38,7 @@ export class AuthService {
     const existing = await this.userDao.findUserByEmail(data.email);
     if (existing) return { error: "email_already_exists", status: 409 };
     const hashedPassword = hashPassword(data.password);
-    const newUser: Omit<User, "userId"> = {
+    const newUser: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
       email: data.email,
       username: data.username,
       profilePhoto: data.profilePhoto ?? data.imageUrl,

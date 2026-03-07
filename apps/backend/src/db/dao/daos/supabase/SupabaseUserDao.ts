@@ -13,15 +13,26 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
     bio: supabaseUser.bio || undefined,
     postVisibility: supabaseUser.post_visibility,
     instruments: supabaseUser.instruments ?? [],
+    createdAt:
+      supabaseUser.created_at instanceof Date
+        ? supabaseUser.created_at.toISOString()
+        : new Date(supabaseUser.created_at).toISOString(),
+    updatedAt:
+      supabaseUser.updated_at instanceof Date
+        ? supabaseUser.updated_at.toISOString()
+        : new Date(supabaseUser.updated_at).toISOString(),
   };
 }
 
 export class SupabaseUserDao implements UserDAO {
-  async createUser(user: Omit<User, "userId">, passwordHash: string) {
+  async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwordHash: string) {
     const id = randomUUID();
+    const now = new Date();
     const [createdUser] = await db<SupabaseUser>("User")
       .insert({
         id, // User.id and AuthSession.user_id are UUID (string) per architecture
+        created_at: now,
+        updated_at: now,
         email: user.email,
         username: user.username,
         password: passwordHash,
@@ -79,7 +90,9 @@ export class SupabaseUserDao implements UserDAO {
   }
 
   async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
-    const updateData: Partial<SupabaseUser> = {};
+    const updateData: Partial<SupabaseUser> = {
+      updated_at: new Date(),
+    };
     if (patch.email) updateData.email = patch.email;
     if (patch.username) updateData.username = patch.username;
     if (patch.profilePhoto !== undefined) updateData.image_url = patch.profilePhoto;

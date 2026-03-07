@@ -2,6 +2,7 @@
 export interface User {
   id: string;
   created_at: Date;
+  updated_at: Date;
   email: string;
   username: string;
   password: string;

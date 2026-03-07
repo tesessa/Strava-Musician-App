@@ -12,7 +12,7 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should create a user and check it's there", async () => {
-    const user: Omit<User, "userId"> = {
+    const user: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
       email: "test@example.com",
       username: "testuser",
       profilePhoto: "",
@@ -33,6 +33,8 @@ describe("SupabaseUserDao", () => {
       instruments: [],
     });
     expect(createdUser.userId).toBeDefined();
+    expect(createdUser.createdAt).toBeDefined();
+    expect(createdUser.updatedAt).toBeDefined();
 
     const foundUser = await userDao.findUserByEmail("test@example.com");
     expect(foundUser).toMatchObject({

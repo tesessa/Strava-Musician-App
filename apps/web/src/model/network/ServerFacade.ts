@@ -16,12 +16,15 @@ export class ServerFacade implements KodaServerApi {
   }
 
   async register(_username: string, email: string, _password: string): Promise<User> {
+    const now = new Date().toISOString();
     return {
       userId: "1",
       username: _username,
       email,
       postVisibility: "friends",
       instruments: [],
+      createdAt: now,
+      updatedAt: now,
     };
   }
 

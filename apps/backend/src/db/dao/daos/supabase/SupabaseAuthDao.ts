@@ -16,6 +16,14 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
     bio: supabaseUser.bio || undefined,
     postVisibility: supabaseUser.post_visibility,
     instruments: supabaseUser.instruments ?? [],
+    createdAt:
+      supabaseUser.created_at instanceof Date
+        ? supabaseUser.created_at.toISOString()
+        : new Date(supabaseUser.created_at).toISOString(),
+    updatedAt:
+      supabaseUser.updated_at instanceof Date
+        ? supabaseUser.updated_at.toISOString()
+        : new Date(supabaseUser.updated_at).toISOString(),
   };
 }
 

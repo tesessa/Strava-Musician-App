@@ -3,6 +3,7 @@ import type { PracticeSession } from "../sessions";
 
 /**
  * User profile (no password). postVisibility applies to all of this user's practice sessions.
+ * createdAt/updatedAt are ISO date strings (server-managed).
  */
 export interface User {
   userId: string;
@@ -12,6 +13,8 @@ export interface User {
   bio?: string;
   postVisibility: Visibility;
   instruments: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**

@@ -60,7 +60,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 
 **Database tables:** Primary and foreign key IDs (userId, sessionId, etc.) are UUIDs (string type in application and DB).
 
-- **User** — userId (PK, UUID), email, username, password (encrypted), profilePhoto, bio, postVisibility, instruments[]
+- **User** — userId (PK, UUID), email, username, password (encrypted), profilePhoto, bio, postVisibility, instruments[], createdAt, updatedAt
 - **Friends** — userId (FK), friendId (FK), friendsSince; PK (userId, friendId). Store two rows per friendship: (1,2) and (2,1). Delete both when they unfriend.
 - **FriendRequests** — requestId (PK), senderId (FK), receiverId (FK), status (pending | accepted | rejected | canceled), createdAt, respondedAt
 - **practiceSession** — userID (FK), sessionID (PK), title, postText?, privateText?, instrument?, createdAt, durationMinutes (number), tempo?, pieceTitle?, composer? (additional AI analysis fields may be added later). Visibility for a session is determined by the session owner's User.postVisibility (see User); there is no per-session visibility field.
