@@ -38,7 +38,7 @@ export type UpdateSessionRequest = Partial<CreateSessionRequest>;
  * GET /sessions/feed body (keyset pagination)
  */
 export interface FeedRequest {
-  lastItem?: string;
+  lastItem?: string; // sessionId of the last item in the previous page
   pageSize?: number;
 }
 
