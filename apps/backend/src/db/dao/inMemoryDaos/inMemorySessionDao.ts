@@ -19,8 +19,8 @@ export const SessionDao: SessionDAO = {
 
     // Get all sessions for this user, sorted chronologically by createdAt
     const userSessions = Array.from(sessions.values())
-      .filter(session => session.userId === user.id)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      .filter((session) => session.userId === user.userId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
     // If lastItemId is null, return the first pageSize items
     if (!lastItemId) {

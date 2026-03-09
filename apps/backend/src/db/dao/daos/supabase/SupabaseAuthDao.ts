@@ -9,12 +9,19 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
     id: supabaseUser.id,
     email: supabaseUser.email,
-    createdAt: supabaseUser.created_at,
     username: supabaseUser.username,
-    imageUrl: supabaseUser.image_url,
-    bio: supabaseUser.bio,
-    visibility: supabaseUser.post_visibility,
-    instruments: supabaseUser.instruments,
+    profilePhoto: supabaseUser.image_url || undefined,
+    bio: supabaseUser.bio || undefined,
+    postVisibility: supabaseUser.post_visibility,
+    instruments: supabaseUser.instruments ?? [],
+    createdAt:
+      supabaseUser.created_at instanceof Date
+        ? supabaseUser.created_at.toISOString()
+        : new Date(supabaseUser.created_at).toISOString(),
+    updatedAt:
+      supabaseUser.updated_at instanceof Date
+        ? supabaseUser.updated_at.toISOString()
+        : new Date(supabaseUser.updated_at).toISOString(),
   };
 }
 

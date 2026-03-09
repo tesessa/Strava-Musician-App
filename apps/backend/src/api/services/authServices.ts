@@ -27,10 +27,10 @@ export class AuthService {
     username: string;
     email: string;
     password: string;
+    profilePhoto?: string;
     imageUrl?: string;
     bio?: string;
     instruments?: string[];
-    visibility?: "public" | "private" | "friends";
   }) {
     if (!data.email || !data.username || !data.password) {
       return { error: "email, username and password required", status: 400 };
@@ -40,18 +40,16 @@ export class AuthService {
     if (existingEmail) return { error: "email already in use", status: 400 };
     if (existingUsername) return { error: "username already in use", status: 400 }; 
     const hashedPassword = hashPassword(data.password);
-    const newUser: User = {
-      id: crypto.randomUUID(),
+    const newUser: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
       email: data.email,
       username: data.username,
-      createdAt: new Date(),
-      imageUrl: data.imageUrl ?? undefined,
-      bio: data.bio ?? undefined,
-      instruments: data.instruments ?? undefined,
-      visibility: data.visibility ?? "public",
-    }
+      profilePhoto: data.profilePhoto ?? data.imageUrl,
+      bio: data.bio,
+      postVisibility: "friends",
+      instruments: data.instruments ?? [],
+    };
     const user = await this.userDao.createUser(newUser, hashedPassword);
-    const AuthToken = await this.authDao.createTokenForUser(user.id);
+    const AuthToken = await this.authDao.createTokenForUser(user.userId);
     return { AuthToken, user, status: 201 };
   }
 

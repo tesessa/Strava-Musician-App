@@ -1,6 +1,8 @@
+/** User table: id is UUID (string) per architecture. */
 export interface User {
   id: string;
   created_at: Date;
+  updated_at: Date;
   email: string;
   username: string;
   password: string;
@@ -10,6 +12,7 @@ export interface User {
   instruments: string[];
 }
 
+/** AuthSession table: user_id is UUID (string), FK to User.id. */
 export interface AuthSession {
   auth_session_id: number;
   user_id: string;

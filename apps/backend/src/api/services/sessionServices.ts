@@ -9,17 +9,16 @@ export class SessionService {
     data: Omit<PracticeSession, "sessionId" | "createdAt" | "userId">,
     token: string
   ): Promise<PracticeSession> {
-    // Extract user from token
     const user = await createAuthDAO().getUserByToken(token);
     if (!user) throw new Error("Unauthorized");
 
-    const id = crypto.randomUUID();
-    const createdAt = new Date();
+    const sessionId = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
     const session: PracticeSession = {
       ...data,
       sessionId: id,
       createdAt,
-      userId: user.id, // Set userId from token
+      userId: user.userId,
     };
     return this.sessionDao.createSession(session);
   }

@@ -30,12 +30,11 @@ describe("SupabaseUserDao", () => {
     const user: User = {
       id: testUserId2,
       email: "test@example.com",
-      createdAt: new Date(),
       username: "testuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     };
     const passwordHash = "hashedpassword";
 
@@ -45,21 +44,24 @@ describe("SupabaseUserDao", () => {
       id: testUserId2,
       email: "test@example.com",
       username: "testuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
+    expect(createdUser.userId).toBeDefined();
+    expect(createdUser.createdAt).toBeDefined();
+    expect(createdUser.updatedAt).toBeDefined();
 
     const foundUser = await userDao.findUserByEmail("test@example.com");
     expect(foundUser).toMatchObject({
       id: testUserId2,
       email: "test@example.com",
       username: "testuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
   });
 
