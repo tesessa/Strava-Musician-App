@@ -3,11 +3,24 @@ import * as authHandlers from "../../api/handlers/authHandlers";
 import * as sessionHandlers from "../../api/handlers/sessionHandlers";
 import * as userHandlers from "../../api/handlers/userHandlers";
 
-export async function GET(req: Request) { return dispatch(req, "GET"); }
-export async function POST(req: Request) { return dispatch(req, "POST"); }
-export async function PUT(req: Request) { return dispatch(req, "PUT"); }
-export async function PATCH(req: Request) { return dispatch(req, "PATCH"); }
-export async function DELETE(req: Request) { return dispatch(req, "DELETE"); }
+// Add CORS headers to all responses
+function withCORS(res: Response) {
+  res.headers.set("Access-Control-Allow-Origin", "*");
+  res.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  return res;
+}
+
+// Handle preflight requests
+export async function OPTIONS() {
+  return withCORS(new Response(null, { status: 204 }));
+}
+
+export async function GET(req: Request) { return withCORS(await dispatch(req, "GET")); }
+export async function POST(req: Request) { return withCORS(await dispatch(req, "POST")); }
+export async function PUT(req: Request) { return withCORS(await dispatch(req, "PUT")); }
+export async function PATCH(req: Request) { return withCORS(await dispatch(req, "PATCH")); }
+export async function DELETE(req: Request) { return withCORS(await dispatch(req, "DELETE")); }
 
 async function dispatch(req: Request, method: string) {
   const url = new URL(req.url);

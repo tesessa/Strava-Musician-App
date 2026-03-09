@@ -16,7 +16,7 @@ export class SessionService {
     const createdAt = new Date().toISOString();
     const session: PracticeSession = {
       ...data,
-      sessionId,
+      sessionId: id,
       createdAt,
       userId: user.userId,
     };

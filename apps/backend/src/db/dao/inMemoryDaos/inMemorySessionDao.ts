@@ -8,7 +8,8 @@ export const sessions = new Map<string, PracticeSession>();
 
 export const SessionDao: SessionDAO = {
   async createSession(session: PracticeSession) {
-    sessions.set(session.sessionId, session);
+    const id = session.sessionId;
+    sessions.set(id, session);
     return session;
   },
 
@@ -27,7 +28,7 @@ export const SessionDao: SessionDAO = {
     }
 
     // Find the index of the lastItemId
-    const idx = userSessions.findIndex((s) => s.sessionId === lastItemId);
+    const idx = userSessions.findIndex(s => s.sessionId === lastItemId);
 
     // If lastItemId not found or is the last item, return empty list
     if (idx === -1 || idx === userSessions.length - 1) {
