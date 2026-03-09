@@ -8,4 +8,9 @@ module.exports = {
   transform: {
     ...tsJestTransformCfg,
   },
+  globals: {
+    'ts-jest': {
+      tsconfig: './tsconfig.json', // <-- points to your backend tsconfig
+    },
+  },
 };

@@ -13,7 +13,7 @@ export class AuthService {
     const hashedPassword = hashPassword(password);
     const user = await this.userDao.validateCredentials(email, hashedPassword);
     if (!user) return { error: "invalid credentials", status: 401 };
-    const authToken = await this.authDao.createTokenForUser(user.id);
+    const authToken = await this.authDao.createTokenForUser(user.userId);
     return { authToken, user, status: 200 };
   }
 

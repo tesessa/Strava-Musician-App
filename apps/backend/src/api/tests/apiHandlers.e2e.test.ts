@@ -71,7 +71,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
     expect(res.status).toBe(200);
     expect(res.body.authToken.token).toBeDefined();
     authToken = res.body.authToken.token;
-    userId = res.body.user.id;
+    userId = res.body.user.userId;
   });
 
   it("should fail login with wrong password", async () => {
@@ -125,7 +125,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .get(`/users/${userId}`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.user.id).toBe(userId);
+    expect(res.body.user.userId).toBe(userId);
   });
 
   it("should fail to get user with wrong token", async () => {
@@ -275,7 +275,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
         displayName: "Bob"
       });
     expect(res.status).toBe(201);
-    secondUserId = res.body.user.id;
+    secondUserId = res.body.user.userId;
     secondUserToken = res.body.AuthToken.token;
   });
 
