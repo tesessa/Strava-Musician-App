@@ -12,24 +12,22 @@ export const createSession = async (req: Request) => {
   try {
     const body = await req.json();
 
-    // Validate required fields
-    const { title, durationMinutes, visibility } = body;
+    // Validate required fields. durationMinutes is a number (minutes).
+    const { title, durationMinutes } = body;
     if (
       typeof title !== "string" ||
       typeof durationMinutes !== "number" ||
-      !["public", "private", "friends"].includes(visibility)
+      durationMinutes < 0
     ) {
       return NextResponse.json(
-        { error: "Missing or invalid required fields" },
+        { error: "Missing or invalid required fields (title, durationMinutes as number)" },
         { status: 400 }
       );
     }
 
-    // Only pass allowed fields
     const sessionData = {
       title,
       durationMinutes,
-      visibility,
       postText: body.postText,
       privateText: body.privateText,
       instrument: body.instrument,

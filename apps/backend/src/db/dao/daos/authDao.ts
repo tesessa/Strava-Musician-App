@@ -1,5 +1,5 @@
 import type { User } from "@strava-musician-app/shared";
-import { AuthToken } from "@shared/index";
+import type { AuthToken } from "@strava-musician-app/shared";
 
 export interface AuthDAO {
   createTokenForUser(userId: string): Promise<AuthToken>;

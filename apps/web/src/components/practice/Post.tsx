@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./post.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
-import type { PostVisibility } from "@strava-musician-app/shared";
+import type { Visibility } from "@strava-musician-app/shared";
 import { postService } from "../../model";
 import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
@@ -46,7 +46,7 @@ const Post = () => {
   const [notes, setNotes] = useState("");
   const [privateNotes, setPrivateNotes] = useState("");
   const [instrument, setInstrument] = useState(state.instrument ?? "");
-  const [visibility, setVisibility] = useState<PostVisibility>("public");
+  const [visibility, setVisibility] = useState<Visibility>("public");
   const [loading, setLoading] = useState(false);
 
 
@@ -63,8 +63,7 @@ const Post = () => {
     setLoading(true);
     try {
       const user = await userService.getCurrentUser();
-      const userId = user?.id ?? "user";
-
+      const userId = user?.userId ?? "user";
       await postService.savePost(
         userId,
         title,
@@ -200,7 +199,7 @@ const Post = () => {
         <div className="visibility-row">
           <select
             value={visibility}
-            onChange={(e) => setVisibility(e.target.value as PostVisibility)}
+            onChange={(e) => setVisibility(e.target.value as Visibility)}
           >
             <option value="public">Everyone</option>
             <option value="friends">Friends</option>

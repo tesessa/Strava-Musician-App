@@ -1,49 +1,21 @@
 /**
- * Shared types and utilities for Strava Musician App
- * Below are example types. They are not set in stone and will be updated as we go.
+ * Shared types and utilities for Strava Musician App.
+ * Schema- and API-aligned types and enums.
  */
 
-//Prototype Auth Token
-export interface AuthToken {
-  token: string;
-  timestamp: Date;
-}
-// Example User type for the application
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  displayName: string;
-  createdAt: Date;
-  imageUrl?: string;
-  bio?: string;
-  instruments?: string[];
-}
-
-// Example Practice session logged by a musician
-export interface PracticeSession {
-  sessionId: string;
-  userId: string;
-  title: string;
-  durationMinutes: number;
-  createdAt: Date;
-  visibility: "public" | "private" | "friends";
-  postText?: string;
-  privateText?: string;
-  instrument?: string;
-  tempo?: number;
-  pieceTitle?: string;
-  composer?: string;
-}
-
-// export interface PracticeSession {
-//   id: string;
-//   userId: string;
-//   instrument: string;
-//   durationMinutes: number;
-//   notes?: string;
-//   createdAt: Date;
-// }
+export * from "./enums";
+export * from "./sessions";
+export * from "./users";
+export * from "./auth";
+export * from "./friends";
+export * from "./friend-requests";
+export * from "./media";
+export * from "./likes";
+export * from "./comments";
+export * from "./challenges";
+export * from "./notifications";
+export * from "./events";
+export * from "./optional";
 
 // Example post for feed
 export interface FeedPost {
@@ -73,43 +45,6 @@ export interface AppConfig {
   appName: string;
   version: string;
 }
-
-/**
- * Canonical list of instruments shared between frontend and backend.
- * Import from @strava-musician-app/shared.
- */
-export const INSTRUMENTS = [
-  "Piano",
-  "Violin",
-  "Viola",
-  "Cello",
-  "Double Bass",
-  "Acoustic Guitar",
-  "Electric Guitar",
-  "Bass Guitar",
-  "Ukulele",
-  "Flute",
-  "Clarinet",
-  "Oboe",
-  "Bassoon",
-  "Saxophone",
-  "Trumpet",
-  "Trombone",
-  "French Horn",
-  "Tuba",
-  "Drums",
-  "Percussion",
-  "Harp",
-  "Banjo",
-  "Mandolin",
-  "Accordion",
-  "Singing",
-  "Other",
-] as const;
-
-export type Instrument = (typeof INSTRUMENTS)[number];
-
-export type PostVisibility = "public" | "private" | "friends";
 
 // Default app config
 export const APP_CONFIG: AppConfig = {
