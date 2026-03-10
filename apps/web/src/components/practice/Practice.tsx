@@ -76,9 +76,9 @@ export default function Practice() {
     navigate("/post", {
       state: {
         durationMinutes: Math.max(1, Math.round(displaySeconds / 60)),
-        instrument:      session.instrument,
-        audioClips:      recordings.filter((r) => r.type === "audio" && r.savedForPost).map((r) => r.blob),
-        videoClips:      recordings.filter((r) => r.type === "video" && r.savedForPost).map((r) => r.blob),
+        instrument: session.instrument,
+        audioClips: recordings.filter((r) => r.type === "audio" && r.savedForPost).map((r) => r.blob),
+        videoClips: recordings.filter((r) => r.type === "video" && r.savedForPost).map((r) => r.blob),
       },
     });
   };

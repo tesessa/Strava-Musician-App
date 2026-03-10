@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
-import type { PostVisibility, FeedPost } from "@strava-musician-app/shared";
+import type { PostVisibility, FeedPost, Instrument } from "@strava-musician-app/shared";
 
 export class PostService {
     constructor(private readonly server: KodaServerApi) {}

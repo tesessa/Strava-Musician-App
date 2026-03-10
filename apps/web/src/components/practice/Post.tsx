@@ -64,6 +64,7 @@ const Post = () => {
     try {
       const user = await userService.getCurrentUser();
       const userId = user?.id ?? "user";
+
       await postService.savePost(
         userId,
         title,

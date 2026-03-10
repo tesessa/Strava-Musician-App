@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "./KodaServerApi";
-import type { PostVisibility, User, FeedPost, FeedComment } from "@strava-musician-app/shared";
+import type { PostVisibility, User, FeedPost, FeedComment, Instrument } from "@strava-musician-app/shared";
 
 /** Fake user for demo mode. */
 const FAKE_USER: User = {
@@ -113,6 +113,31 @@ export class FakeDataServer implements KodaServerApi {
   async savePost(userId: string, title: string, visibility: PostVisibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string> {
     const fakeId = `post-${Date.now()}`;
     console.log("[FakeDataServer] Saving post:", fakeId, title);
+    //     id: "feed-3",
+    // userId: "demo-user-3",
+    // name: "Kona V.",
+    // title: "Reading sesh",
+    // details: "Violin • 25m • Tempo: 88",
+    // instrument: "Violin",
+    // createdAt: new Date("2026-02-18T12:15:00Z"),
+    // likeCount: 0,
+    // likedByMe: false,
+    // commentCount: 0,
+    // comments: [],
+    fakePosts.push({
+      id: userId,
+      userId: userId,
+      name: FAKE_USER.username,
+      title: title,
+      details: "Violin • 25m • Tempo: 88",
+      instrument: "Violin",
+      createdAt: new Date("2026-03-20T08:09:00Z"),
+      likeCount: 0,
+      likedByMe: false,
+      commentCount: 0,
+      comments: [], 
+
+    })
     return fakeId;
   }
   
