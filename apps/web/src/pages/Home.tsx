@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
-import type { FeedPost, Instrument } from "@strava-musician-app/shared";
+import type { PracticeSession, Instrument } from "@strava-musician-app/shared";
 import "../index.css";
 
 import FeedPostCard from "../components/home/FeedPostCard";
@@ -21,7 +21,7 @@ const Home = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [posts, setPosts] = useState<PracticeSession[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,21 +40,21 @@ const Home = () => {
     loadFeed();
   }, []);
 
-  const visiblePosts = useMemo(() => {
-    const byInstrument =
-      selectedInstrument === "All"
-        ? posts
-        : posts.filter((p) => p.instrument === selectedInstrument);
+  // const visiblePosts = useMemo(() => {
+  //   const byInstrument =
+  //     selectedInstrument === "All"
+  //       ? posts
+  //       : posts.filter((p) => p.instrument === selectedInstrument);
 
-    const query = searchText.trim().toLowerCase();
-    if (!query) return byInstrument;
+  //   const query = searchText.trim().toLowerCase();
+  //   if (!query) return byInstrument;
 
-    return byInstrument.filter((p) => {
-      const haystack =
-        `${p.name} ${p.title} ${p.details} ${p.instrument}`.toLowerCase();
-      return haystack.includes(query);
-    });
-  }, [posts, selectedInstrument, searchText]);
+  //   return byInstrument.filter((p) => {
+  //     const haystack =
+  //       `${p.name} ${p.title} ${p.details} ${p.instrument}`.toLowerCase();
+  //     return haystack.includes(query);
+  //   });
+  // }, [posts, selectedInstrument, searchText]);
 
   const closeSearch = () => {
     setSearchOpen(false);
@@ -70,13 +70,13 @@ const Home = () => {
     }
   };
 
-  const handleLike = async (post: FeedPost) => {
+  const handleLike = async (post: PracticeSession) => {
     try {
-      if (post.likedByMe) {
-        await postService.unlikePost(post.id);
-      } else {
-        await postService.likePost(post.id);
-      }
+      // if (post.likedByMe) {
+      //   await postService.unlikePost(post.id);
+      // } else {
+      //   await postService.likePost(post.id);
+      // }
       await refreshFeed();
     } catch (error) {
       console.error("Failed to like:", error);
@@ -175,15 +175,15 @@ const Home = () => {
           </select>
         </div>
 
-        <div className="filter-status">
+        {/* <div className="filter-status">
           Showing <strong>{visiblePosts.length}</strong>{" "}
           {visiblePosts.length === 1 ? "post" : "posts"}
-        </div>
+        </div> */}
       </div>
 
       {/* Feed */}
       <main className="home-feed">
-        {loading ? (
+        {/* {loading ? (
           <div className="feed-empty">Loading feed...</div>
         ) : visiblePosts.length === 0 ? (
           <div className="feed-empty">
@@ -192,7 +192,7 @@ const Home = () => {
         ) : (
           visiblePosts.map((post) => (
             <FeedPostCard
-              key={post.id}
+              key={post.sessionId}
               post={post}
               onLike={()=> handleLike(post)}
               onComment={handleComment}
@@ -200,7 +200,7 @@ const Home = () => {
               onProfileClick={() => navigate("/profile")}
             />
           ))
-        )}
+        )} */}
       </main>
 
       {/* Bottom Nav */}

@@ -24,7 +24,7 @@ export interface FeedPost {
   name: string;
   title: string;
   details: string;
-  instrument: Instrument;
+  instrument: string;
   createdAt: Date;
   likeCount?: number;
   likedByMe?: boolean;
