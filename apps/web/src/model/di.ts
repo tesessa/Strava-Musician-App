@@ -11,6 +11,7 @@ import { PostService } from "./service/PostService";
  */
 
 function createServer(): KodaServerApi {
+  // const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
   if (import.meta.env.VITE_DEMO_MODE === "true") {
     return new FakeDataServer();
   }
