@@ -50,7 +50,7 @@ export const getFeed = async (req: Request) => {
   try {
     const url = new URL(req.url);
     const lastItemId = url.searchParams.get("lastItemId") ?? null;
-    const pageSize = Number(url.searchParams.get("pageSize") ?? 10);
+    const pageSize = Number(url.searchParams.get("pageSize") ?? 20);
     const feed = await sessionService.getFeed({ lastItem: lastItemId, pageSize }, token);
     return NextResponse.json({ sessions: feed }, { status: 200 });
   } catch (err) {
