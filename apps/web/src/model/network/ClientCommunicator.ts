@@ -5,47 +5,6 @@ export class ClientCommunicator {
         this.SERVER_URL = SERVER_URL;
     }
 
-    // public async register<REQ, RES>(
-    //     req: REQ | undefined,
-    //     endpoint: string,
-    //     headers?: Headers
-    // ): Promise<RES> {
-    //     if (headers && req) {
-    //         headers.append("Content-type", "application/json");
-    //     } else if (req) {
-    //         headers = new Headers({
-    //             "Content-type": "application/json",
-    //         });
-    //     }
-
-    //     console.log(`The request body is '${JSON.stringify(req)}'`);
-
-    //     const url = this.getUrl(endpoint);
-    //     const params = this.getParams(
-    //         "POST",
-    //         headers,
-    //         req ? JSON.stringify(req): undefined
-    //     );
-
-    //     console.log(`Fetching '${url}' with params '${JSON.stringify(params)}'`);
-    //     try {
-    //         const resp: Response = await fetch(url, params);
-
-    //         if(resp.ok) {
-    //             const response: RES = await resp.json();
-    //             return response;
-    //         } else {
-    //             const error = await resp.json();
-    //             throw new Error(error.errorMessage);
-    //         }
-    //     } catch (error) {
-    //         console.error(error);
-    //         throw new Error(
-    //             `Client communicator ${params.method} failed: \n${(error as Error).message}`
-    //         );
-    //     }
-    // }
-
     public async post<REQ, RES>(
         req: REQ | undefined,
         endpoint: string,
@@ -106,23 +65,20 @@ export class ClientCommunicator {
             console.log(`[ClientCommunicator] Response status: ${resp.status}`);
 
             if (resp.ok) {
-                // Check if response has content
                 const contentType = resp.headers.get("content-type");
                 if (contentType && contentType.includes("application/json")) {
                     const response: RES = await resp.json();
                     return response;
                 } else {
-                    // Return empty object for no-content responses
                     return {} as RES;
                 }
             } else {
-                // Try to parse error message from response
                 let errorMessage = `HTTP ${resp.status}: ${resp.statusText}`;
                 try {
                     const error = await resp.json();
                     errorMessage = error.errorMessage || error.message || errorMessage;
                 } catch {
-                    // If JSON parsing fails, use default error message
+            
                 }
                 throw new Error(errorMessage);
             }
@@ -145,7 +101,6 @@ export class ClientCommunicator {
     ): RequestInit {
         const params: RequestInit = { 
             method: method,
-            // credentials: 'include',
         };
 
         if (headers) {

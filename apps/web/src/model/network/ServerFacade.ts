@@ -1,32 +1,6 @@
 import { ClientCommunicator } from "./ClientCommunicator";
 import type { KodaServerApi } from "./KodaServerApi";
-// import type { User } from "@strava-musician-app/shared";
-
-interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-  displayName?: string;
-  imageUrl?: string;
-  bio?: string;
-  instruments?: string[];
-}
-
-interface AuthResponse {
-  token: string;
-  expiresAt: number;
-  user: User;
-}
-
-interface userResponse {
-  user: User;
-}
-import type { User, Visibility, PracticeSession } from "@strava-musician-app/shared";
+import type { User, Visibility, PracticeSession, RegisterRequest, LoginRequest, AuthResponse } from "@strava-musician-app/shared";
 
 /**
  * Calls the actual Koda API. Uses Client Communicator for HTTP.
@@ -35,10 +9,7 @@ import type { User, Visibility, PracticeSession } from "@strava-musician-app/sha
 export class ServerFacade implements KodaServerApi {
   private SERVER_URL = "http://localhost:3001" // would be nice to switch this to .env variable
   private communicator = new ClientCommunicator(this.SERVER_URL);
-  // private SERVER_URL = "";
-  // private communicator = new ClientCommunicator(this.SERVER_URL);
   private authToken: string | null = null;
-  private tokenExpiresAt: number | null = null;
 
   consructor() {
     this.loadAuthToken();
@@ -52,56 +23,56 @@ export class ServerFacade implements KodaServerApi {
     return headers;
   }
 
-  private setAuthToken(token: string, expiresAt: number): void {
+  private setAuthToken(token: string): void {
     this.authToken = token;
-    this.tokenExpiresAt = expiresAt;
+    // this.tokenExpiresAt = expiresAt;
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
-      localStorage.setItem('tokenExpiresAt', expiresAt.toString());
+      // localStorage.setItem('tokenExpiresAt', expiresAt.toString());
     }
   }
 
   private loadAuthToken(): void {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
-      const expiresAt = localStorage.getItem('tokenExpiresAt');
+      // const expiresAt = localStorage.getItem('tokenExpiresAt');
       
-      if (token && expiresAt) {
-        const expiresAtNum = parseInt(expiresAt, 10);
+      if (token) {
+        // const expiresAtNum = parseInt(expiresAt, 10);
         // Check if token is still valid
-        if (Date.now() < expiresAtNum) {
+        // if (Date.now() < expiresAtNum) {
           this.authToken = token;
-          this.tokenExpiresAt = expiresAtNum;
-        } else {
-          // Token expired, clear it
-          this.clearAuthToken();
-        }
+          // this.tokenExpiresAt = expiresAtNum;
+        // } else {
+        //   // Token expired, clear it
+        //   this.clearAuthToken();
+        // }
       }
     }
   }
 
   private clearAuthToken(): void {
     this.authToken = null;
-    this.tokenExpiresAt = null;
+    // this.tokenExpiresAt = null;
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
-      localStorage.removeItem('tokenExpiresAt');
+      // localStorage.removeItem('tokenExpiresAt');
     }
   }
 
-  private isTokenExpired(): boolean {
-    if (!this.tokenExpiresAt) return true;
-    return Date.now() >= this.tokenExpiresAt;
-  }
+  // private isTokenExpired(): boolean {
+  //   if (!this.tokenExpiresAt) return true;
+  //   return Date.now() >= this.tokenExpiresAt;
+  // }
 
 
 
   async getMe(): Promise<User | null> {
     try {
-      if (this.isTokenExpired()) {
-        this.clearAuthToken();
-        return null;
-      }
+      // if (this.isTokenExpired()) {
+      //   this.clearAuthToken();
+      //   return null;
+      // }
 
       const response = await this.communicator.get<{user: User}>(
         "/auth/me",
@@ -124,15 +95,15 @@ export class ServerFacade implements KodaServerApi {
         "/auth/login"
       );
 
-      this.setAuthToken(response.token, response.expiresAt);
-      return response.user;
+      this.setAuthToken(response.token);
+      return response.user ?? null;
     } catch (error) {
       console.error("[ServerFacade] login failed:", error);
       return null;
     }
   }
 
-  async register(username: string, email: string, password: string): Promise<User> {
+  async register(username: string, email: string, password: string): Promise<User | null> {
     console.log(username, email);
     try {
       const request: RegisterRequest = { username, email, password };
@@ -143,9 +114,8 @@ export class ServerFacade implements KodaServerApi {
       );
 
       // Store auth token if provided
-      this.setAuthToken(response.token, response.expiresAt);
-      
-      return response.user;
+      this.setAuthToken(response.token);
+      return response.user ?? null;
     } catch (error) {
       console.error("[ServerFacade] register failed:", error);
       throw new Error(`Registration failed: ${(error as Error).message}`);

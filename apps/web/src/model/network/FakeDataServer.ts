@@ -59,6 +59,7 @@ const fakePosts: PracticeSession[] = [
       composer: "Fredric Chopin"
   }
 ]
+
 // const fakePosts: FeedPost[] = [
 //   {
 //     id: "feed-1",
@@ -148,7 +149,7 @@ export class FakeDataServer implements KodaServerApi {
     username: string,
     email: string,
     password: string
-  ): Promise<User> {
+  ): Promise<User | null> {
     const now = new Date().toISOString();
     const newUser: User & { password: string } = {
       userId: `user-${Date.now()}`,
@@ -175,17 +176,7 @@ export class FakeDataServer implements KodaServerApi {
   async savePost(userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
     const fakeId = `post-${Date.now()}`;
     console.log("[FakeDataServer] Saving post:", fakeId, title);
-    //     id: "feed-3",
-    // userId: "demo-user-3",
-    // name: "Kona V.",
-    // title: "Reading sesh",
-    // details: "Violin • 25m • Tempo: 88",
-    // instrument: "Violin",
-    // createdAt: new Date("2026-02-18T12:15:00Z"),
-    // likeCount: 0,
-    // likedByMe: false,
-    // commentCount: 0,
-    // comments: [],
+
     fakePosts.push(  {
       userId: userId,
       sessionId: '5',
