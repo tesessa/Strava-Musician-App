@@ -28,6 +28,13 @@ The frontend defines a single **KodaServerApi** interface implemented by:
 
 Which implementation is used is determined by an environment variable (e.g. demo mode ⇒ FakeDataServer). The chosen implementation is **dependency-injected into singleton instances of each service**. Services are, in turn, **dependency-injected into the components or hooks** that use them.
 
+The frontend also defines a **KodaMediaApi** interface for object storage uploads, implemented by:
+
+- **MediaService** — Uploads to Oracle Cloud Object Storage and returns full Oracle object URLs.
+- **FakeMediaService** — Returns fake URLs and in-memory metadata for demo/development.
+
+As with KodaServerApi, the selected media implementation is chosen by environment and injected once as a singleton into frontend code that handles media operations.
+
 ### Backend Pattern
 
 All backend routes should follow this pattern for handling requests:
@@ -248,11 +255,11 @@ Event-based to handle reloads or connection issues. Frontend sends `startTimer` 
 
 ### Record audio
 
-Request microphone permission the first time. User presses Record → audio records until stop/pause → clip is added to the session list with playback. Frontend uploads file to object storage, then sends URLs to the backend to store in the DB.
+Request microphone permission the first time. User presses Record → audio records until stop/pause → clip is added to the session list with playback. Frontend uploads file to object storage, then sends full Oracle object URLs to the backend to store in the DB.
 
 ### Record video
 
-Request camera permission the first time. User presses Record → audio+video until stop/pause → video added to list with playback. Frontend uploads to object storage, sends URLs to backend.
+Request camera permission the first time. User presses Record → audio+video until stop/pause → video added to list with playback. Frontend uploads to object storage, sends full Oracle object URLs to backend.
 
 ### Sheet music
 

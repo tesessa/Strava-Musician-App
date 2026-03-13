@@ -1,6 +1,9 @@
 import type { KodaServerApi } from "./network/KodaServerApi";
 import { ServerFacade } from "./network/ServerFacade";
 import { FakeDataServer } from "./network/FakeDataServer";
+import type { KodaMediaApi } from "./media/KodaMediaApi";
+import { MediaService } from "./media/MediaService";
+import { FakeMediaService } from "./media/FakeMediaService";
 import { UserService } from "./service/UserService";
 import { PostService } from "./service/PostService";
 
@@ -18,8 +21,17 @@ function createServer(): KodaServerApi {
   return new ServerFacade();
 }
 
+function createMediaApi(): KodaMediaApi {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return new FakeMediaService();
+  }
+  return new MediaService();
+}
+
 const server: KodaServerApi = createServer();
+const mediaApi: KodaMediaApi = createMediaApi();
 
 /** Singleton UserService with server implementation injected (demo vs real from env). */
 export const userService = new UserService(server);
 export const postService = new PostService(server);
+export { mediaApi };
