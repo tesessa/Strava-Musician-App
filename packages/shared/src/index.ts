@@ -17,6 +17,29 @@ export * from "./notifications";
 export * from "./events";
 export * from "./optional";
 
+// Example post for feed
+export interface FeedPost {
+  id: string;
+  userId?: string;
+  name: string;
+  title: string;
+  details: string;
+  instrument: string;
+  createdAt: Date;
+  likeCount?: number;
+  likedByMe?: boolean;
+  commentCount?: number;
+  comments?: FeedComment[];
+}
+
+// Example comment for posts
+export interface FeedComment {
+  id: string;
+  authorName: string;
+  text: string;
+  createdAt: Date;
+}
+
 // Application configuration
 export interface AppConfig {
   appName: string;

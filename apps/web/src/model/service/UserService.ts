@@ -24,7 +24,7 @@ export class UserService {
     return user;
   }
 
-  async register(username: string, email: string, password: string): Promise<User> {
+  async register(username: string, email: string, password: string): Promise<User | null> {
     // should return user & authToken (to be implemented later)
     const user = await this.server.register(username, email, password);
     this.currentUser = user;

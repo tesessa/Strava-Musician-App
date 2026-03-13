@@ -1,4 +1,4 @@
-import type { User, Visibility } from "@strava-musician-app/shared";
+import type { User, Visibility, PracticeSession } from "@strava-musician-app/shared";
 
 /**
  * Single API surface for the Koda frontend. Implemented by ServerFacade (real API)
@@ -9,10 +9,16 @@ export interface KodaServerApi {
   /** Return the authenticated user's profile if token is valid (GET /auth/me). */
   getMe(): Promise<User | null>;
   login(email: string, password: string): Promise<User | null>;
-  register(username: string, email: string, password: string): Promise<User>;
+  register(username: string, email: string, password: string): Promise<User | null>;
   // might want to have this function return PracticeSession
   savePost(userId: string, title: string, visibility: Visibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string>;
   discardPost(sessionId: string): Promise<void>;
+  // home-feed methods
+  getFeed(): Promise<PracticeSession[]>;
+  likePost(postId: string): Promise<void>;
+  unlikePost(postId: string): Promise<void>;
+  commentOnPost(postId: string, text: string): Promise<void>;
+  sharePost(postId: string): Promise<void>;
 }
 
 export type PostData = {

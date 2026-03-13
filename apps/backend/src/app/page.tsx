@@ -16,18 +16,18 @@ export default function Home() {
       method: "POST",
       purpose: "Create a new user account",
       requestBody:
-        "{ email: string, username: string, password: string, displayName?: string, imageUrl?: string, bio?: string, instruments?: string[]}",
+        "{ email: string, username: string, password: string, visibility: 'public' | 'private' | 'friends', imageUrl?: string, bio?: string, instruments?: string[]}",
       responseBody: "{ token: string, expiresAt: number, user: User } (201) or { error } (4xx/409)",
       exampleCurl: `curl -i -X POST http://localhost:3001/auth/register \\
   -H "Content-Type: application/json" \\
-  -d '{"email":"alice@example.com","username":"alice","password":"secret","displayName":"Alice"}'`,
+  -d '{"email":"alice@example.com","username":"alice","password":"secret","visibility":"public"}'`,
     },
     {
       path: "/auth/login",
       method: "POST",
       purpose: "Authenticate and receive an auth token + full user profile",
       requestBody: "{ email: string, password: string }",
-      responseBody: "{ token: string, expiresAt: number, user: User } (200) or { error } (401/400)",
+      responseBody: "{ authToken: { token: string, expiresAt: number }, user: User } (200) or { error } (401/400)",
       exampleCurl: `curl -i -X POST http://localhost:3001/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"alice@example.com","password":"secret"}'`,
@@ -140,6 +140,107 @@ export default function Home() {
       exampleCurl: `curl -X DELETE http://localhost:3001/sessions/<sessionId> \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
+    // --- Friends & Friend Requests ---
+    {
+      path: "/friends",
+      method: "GET",
+      purpose: "List your friends (paginated)",
+      requestBody: "none (must send Authorization header, use query params: lastFriendId?, pageSize?)",
+      responseBody: "Friend[] (200) or { error } (401)",
+      exampleCurl: `curl -X GET "http://localhost:3001/friends?pageSize=2&lastFriendId=<last_id>" \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friends/:friendId",
+      method: "POST",
+      purpose: "Send or accept a friend request",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ requestId, status } or { error }",
+      exampleCurl: `curl -X POST http://localhost:3001/friends/<friendId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friends/:friendId",
+      method: "DELETE",
+      purpose: "Remove a friend",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ success: true } (200) or { error } (403/401)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/friends/<friendId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friends/is-friend/:userId",
+      method: "GET",
+      purpose: "Check if you are friends with a user",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ isFriend: boolean } (200) or { error } (401)",
+      exampleCurl: `curl -X GET http://localhost:3001/friends/is-friend/<userId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friend-requests/:userId",
+      method: "POST",
+      purpose: "Send a friend request to a user",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ requestId, status } or { error }",
+      exampleCurl: `curl -X POST http://localhost:3001/friend-requests/<userId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friend-requests/incoming",
+      method: "GET",
+      purpose: "List incoming friend requests (paginated)",
+      requestBody: "none (must send Authorization header, use query params: lastRequestId?, pageSize?)",
+      responseBody: "FriendRequest[] (200) or { error } (401)",
+      exampleCurl: `curl -X GET "http://localhost:3001/friend-requests/incoming?pageSize=2&lastRequestId=<last_id>" \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friend-requests/outgoing",
+      method: "GET",
+      purpose: "List outgoing friend requests (paginated)",
+      requestBody: "none (must send Authorization header, use query params: lastRequestId?, pageSize?)",
+      responseBody: "FriendRequest[] (200) or { error } (401)",
+      exampleCurl: `curl -X GET "http://localhost:3001/friend-requests/outgoing?pageSize=2&lastRequestId=<last_id>" \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friend-requests/:requestId/accept",
+      method: "POST",
+      purpose: "Accept a friend request",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ success: true } (200) or { error } (404/403/401)",
+      exampleCurl: `curl -X POST http://localhost:3001/friend-requests/<requestId>/accept \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friend-requests/:requestId/reject",
+      method: "POST",
+      purpose: "Reject a friend request",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ success: true } (200) or { error } (404/403/401)",
+      exampleCurl: `curl -X POST http://localhost:3001/friend-requests/<requestId>/reject \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+    {
+      path: "/friend-requests/:requestId",
+      method: "DELETE",
+      purpose: "Cancel a sent friend request",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ success: true } (200) or { error } (404/403/401)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/friend-requests/<requestId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
+  ];
+
+  // Group routes by section
+  const groupedRoutes = [
+    {
+      title: "Authentication",
+      routes: routes.filter(r => r.path.startsWith("/auth")),
+    },
+    {
+      title: "User Management",
+      routes: routes.filter(r => r.path.startsWith("/users")),
+    },
+    {
+      title: "Practice Sessions",
+      routes: routes.filter(r => r.path.startsWith("/sessions")),
+    },
+    {
+      title: "Friends & Friend Requests",
+      routes: routes.filter(r => r.path.startsWith("/friends") || r.path.startsWith("/friend-requests")),
+    },
   ];
 
   return (
@@ -155,37 +256,41 @@ export default function Home() {
           reference for manual testing or CI smoke tests.
         </p>
 
-        {routes.map((r) => (
-          <div key={r.path + r.method} style={{ marginTop: 16, padding: 12, borderRadius: 6, background: "#fafafa" }}>
-            <div style={{ fontWeight: 700 }}>
-              {r.method} {r.path}
-            </div>
-            <div style={{ marginTop: 6, color: "#333" }}>{r.purpose}</div>
-
-            <div style={{ marginTop: 8 }}>
-              <strong>Request body:</strong>
-              <div style={{ color: "#555", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.requestBody || "none"}</div>
-            </div>
-
-            <div style={{ marginTop: 8 }}>
-              <strong>Response:</strong>
-              <div style={{ color: "#555", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.responseBody || "varies"}</div>
-            </div>
-
-            {r.exampleCurl ? (
-              <>
-                <div style={{ marginTop: 8 }}>
-                  <strong>CLI (curl) example:</strong>
+        {groupedRoutes.map((group) => (
+          <div key={group.title} style={{ marginTop: 56, marginBottom: 56 }}>
+            <h2 style={{ fontSize: 3.2 + 'rem', fontWeight: 800, marginBottom: 24, marginTop: 0, letterSpacing: '-1px' }}>{group.title}</h2>
+            {group.routes.map((r) => (
+              <div key={r.path + r.method} style={{ marginTop: 16, padding: 12, borderRadius: 6, background: "#fafafa" }}>
+                <div style={{ fontWeight: 700 }}>
+                  {r.method} {r.path}
                 </div>
-                <pre style={{ background: "#f0f0f0", padding: 8, borderRadius: 4, marginTop: 6 }}>{r.exampleCurl}</pre>
-              </>
-            ) : null}
+                <div style={{ marginTop: 6, color: "#333" }}>{r.purpose}</div>
+
+                <div style={{ marginTop: 8 }}>
+                  <strong>Request body:</strong>
+                  <div style={{ color: "#555", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.requestBody || "none"}</div>
+                </div>
+
+                <div style={{ marginTop: 8 }}>
+                  <strong>Response:</strong>
+                  <div style={{ color: "#555", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.responseBody || "varies"}</div>
+                </div>
+
+                {r.exampleCurl ? (
+                  <>
+                    <div style={{ marginTop: 8 }}>
+                      <strong>CLI (curl) example:</strong>
+                    </div>
+                    <pre style={{ background: "#f0f0f0", padding: 8, borderRadius: 4, marginTop: 6 }}>{r.exampleCurl}</pre>
+                  </>
+                ) : null}
+              </div>
+            ))}
           </div>
         ))}
       </section>
 
       <section style={{ marginTop: 24 }}>
-
         <ul style={{ marginTop: 12, color: "#444" }}>
           <li>Preferred examples for frontend devs: use programmatic HTTP calls (fetch/axios) from the client code.</li>
           <li>curl is useful for quick manual testing from the terminal and for CI smoke tests.</li>

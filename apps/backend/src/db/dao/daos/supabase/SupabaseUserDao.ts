@@ -6,7 +6,7 @@ import { User as SupabaseUser } from "./config/SupabaseTableTypes";
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    userId: supabaseUser.id,
+    id: supabaseUser.id,
     email: supabaseUser.email,
     username: supabaseUser.username,
     profilePhoto: supabaseUser.image_url || undefined,
@@ -30,9 +30,7 @@ export class SupabaseUserDao implements UserDAO {
     const now = new Date();
     const [createdUser] = await db<SupabaseUser>("User")
       .insert({
-        id, // User.id and AuthSession.user_id are UUID (string) per architecture
-        created_at: now,
-        updated_at: now,
+        id: user.id,
         email: user.email,
         username: user.username,
         password: passwordHash,
@@ -70,9 +68,7 @@ export class SupabaseUserDao implements UserDAO {
   }
 
   async findUserById(userId: string) {
-    const user = await db<SupabaseUser>("User")
-      .where({ id: userId })
-      .first();
+    const user = await db<SupabaseUser>("User").where({ id: userId }).first();
     if (!user) {
       return null;
     }
@@ -90,9 +86,7 @@ export class SupabaseUserDao implements UserDAO {
   }
 
   async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
-    const updateData: Partial<SupabaseUser> = {
-      updated_at: new Date(),
-    };
+    const updateData: Partial<SupabaseUser> = {};
     if (patch.email) updateData.email = patch.email;
     if (patch.username) updateData.username = patch.username;
     if (patch.profilePhoto !== undefined) updateData.image_url = patch.profilePhoto;
@@ -101,7 +95,7 @@ export class SupabaseUserDao implements UserDAO {
     if (patch.instruments) updateData.instruments = patch.instruments;
 
     const [updatedUser] = await db<SupabaseUser>("User")
-      .where({ id })
+      .where({ id: id })
       .update(updateData)
       .returning("*");
 
@@ -113,9 +107,7 @@ export class SupabaseUserDao implements UserDAO {
 
   async deleteUser(userId: string): Promise<boolean> {
     try {
-      await db<SupabaseUser>("User")
-        .where({ id: userId })
-        .del();
+      await db<SupabaseUser>("User").where({ id: userId }).del();
     } catch (error) {
       console.error("Error deleting user:", error);
       return false;
