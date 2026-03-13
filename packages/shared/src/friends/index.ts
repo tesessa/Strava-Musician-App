@@ -8,6 +8,17 @@ export interface Friend {
 }
 
 /**
+ * GET /friends body (keyset pagination)
+ */
+export interface FriendsListRequest {
+  /**
+   * friendId of the last item in the previous page
+   */
+  lastItem?: string;
+  pageSize?: number;
+}
+
+/**
  * GET /friends response
  */
 export type FriendsListResponse = Friend[];

@@ -92,7 +92,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 | GET    | /auth/me                | Return the authenticated user's profile if token is valid.      | none                                                                             |
 | GET    | /users/:userId          | Fetch a user profile.                                           | none                                                                             |
 | PATCH  | /users/:userId          | Update profile fields.                                          | { username?, bio?, profilePhoto?, instruments?, postVisibility? }                |
-| GET    | /users/:userId/sessions | List visible practice sessions for a user.                      | none                                                                             |
+| GET    | /users/:userId/sessions | List visible practice sessions for a user (keyset pagination).  | { lastItem, pageSize }                                                           |
 | GET    | /users/search?query=... | List users whose name, username, or bio match the search query. | none                                                                             |
 
 
@@ -103,7 +103,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 | ------ | ------------------ | ------------------------------------------- | ---- |
 | POST   | /friends/:friendId | Send or accept a friend request.            | none |
 | DELETE | /friends/:friendId | Remove a friend (delete both rows).         | none |
-| GET    | /friends           | List all friends of the authenticated user. | none |
+| GET    | /friends           | List all friends of the authenticated user (keyset pagination). | { lastItem, pageSize } |
 
 
 ### FRIEND REQUESTS
@@ -112,8 +112,8 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 | Method | Path                               | Description                                                           | Body |
 | ------ | ---------------------------------- | --------------------------------------------------------------------- | ---- |
 | POST   | /friend-requests/:receiverId       | Create a new friend request from authenticated user to :receiverId.   | none |
-| GET    | /friend-requests/incoming          | List pending requests where authenticated user is the receiver.       | none |
-| GET    | /friend-requests/outgoing          | List pending requests the authenticated user has sent.                | none |
+| GET    | /friend-requests/incoming          | List pending requests where authenticated user is the receiver (keyset pagination).       | { lastItem, pageSize } |
+| GET    | /friend-requests/outgoing          | List pending requests the authenticated user has sent (keyset pagination).                | { lastItem, pageSize } |
 | POST   | /friend-requests/:requestId/accept | Accept a friend request (inserts two rows into Friends: A↔B and B↔A). | none |
 | POST   | /friend-requests/:requestId/reject | Reject a friend request (status = rejected).                          | none |
 | DELETE | /friend-requests/:requestId        | Cancel a pending request the user sent (status = canceled).           | none |

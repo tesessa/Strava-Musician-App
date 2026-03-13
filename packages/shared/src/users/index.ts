@@ -39,6 +39,17 @@ export interface UserSearchResult {
 }
 
 /**
+ * GET /users/:userId/sessions body (keyset pagination)
+ */
+export interface UserSessionsRequest {
+  /**
+   * sessionId of the last item in the previous page
+   */
+  lastItem?: string;
+  pageSize?: number;
+}
+
+/**
  * GET /users/:userId/sessions — list of practice sessions for a user
  */
 export type UserSessionsResponse = PracticeSession[];
