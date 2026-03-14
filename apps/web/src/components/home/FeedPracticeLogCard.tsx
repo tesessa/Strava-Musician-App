@@ -1,28 +1,28 @@
 import { useState } from "react";
-import type { FeedPost } from "@strava-musician-app/shared";
+import type { FeedPracticeLog } from "@strava-musician-app/shared";
 import "../../index.css";
 
-type FeedPostCardProps = {
-  post: FeedPost;
-  onLike: (postId: string) => Promise<void> | void;
-  onComment: (postId: string, text: string) => Promise<void> | void;
-  onShare: (postId: string) => Promise<void> | void;
+type FeedPracticeLogCardProps = {
+  practiceLog: FeedPracticeLog;
+  onLike: (practiceLogId: string) => Promise<void> | void;
+  onComment: (practiceLogId: string, text: string) => Promise<void> | void;
+  onShare: (practiceLogId: string) => Promise<void> | void;
   onProfileClick?: (userId?: string) => void;
 };
 
-const FeedPostCard = ({
-  post,
+const FeedPracticeLogCard = ({
+  practiceLog,
   onLike,
   onComment,
   onShare,
   onProfileClick,
-}: FeedPostCardProps) => {
+}: FeedPracticeLogCardProps) => {
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim()) return;
-    await onComment(post.id, commentText);
+    await onComment(practiceLog.practiceLogId, commentText);
     setCommentText("");
     setCommentOpen(true);
   };
@@ -33,16 +33,16 @@ const FeedPostCard = ({
         <button
           className="feed-avatar"
           type="button"
-          onClick={() => onProfileClick?.(post.userId)}
+          onClick={() => onProfileClick?.(practiceLog.userId)}
           aria-label="Open profile"
         >
-          {post.name[0]}
+          {practiceLog.name[0]}
         </button>
 
         <div className="feed-meta">
-          <div className="feed-name">{post.name}</div>
+          <div className="feed-name">{practiceLog.name}</div>
           <div className="feed-subtitle">
-            {new Date(post.createdAt).toLocaleString()}
+            {new Date(practiceLog.createdAt).toLocaleString()}
           </div>
         </div>
 
@@ -52,9 +52,9 @@ const FeedPostCard = ({
       </div>
 
       <div className="feed-card-body">
-        <div className="feed-post-title">{post.title}</div>
-        <div className="feed-post-details">{post.details}</div>
-        <div className="feed-instrument-tag">Instrument: {post.instrument}</div>
+        <div className="feed-post-title">{practiceLog.title}</div>
+        <div className="feed-post-details">{practiceLog.details}</div>
+        <div className="feed-instrument-tag">Instrument: {practiceLog.instrument}</div>
       </div>
 
       <div className="feed-media-placeholder" />
@@ -63,10 +63,10 @@ const FeedPostCard = ({
         <button
           className="feed-action-btn"
           type="button"
-          onClick={() => onLike(post.id)}
+          onClick={() => onLike(practiceLog.practiceLogId)}
         >
-          {post.likedByMe ? "Unlike" : "Like"}
-          {typeof post.likeCount === "number" ? ` (${post.likeCount})` : ""}
+          {practiceLog.likedByMe ? "Unlike" : "Like"}
+          {typeof practiceLog.likeCount === "number" ? ` (${practiceLog.likeCount})` : ""}
         </button>
 
         <button
@@ -75,15 +75,15 @@ const FeedPostCard = ({
           onClick={() => setCommentOpen((prev) => !prev)}
         >
           Comment
-          {typeof post.commentCount === "number"
-            ? ` (${post.commentCount})`
+          {typeof practiceLog.commentCount === "number"
+            ? ` (${practiceLog.commentCount})`
             : ""}
         </button>
 
         <button
           className="feed-action-btn"
           type="button"
-          onClick={() => onShare(post.id)}
+          onClick={() => onShare(practiceLog.practiceLogId)}
         >
           Share
         </button>
@@ -91,9 +91,9 @@ const FeedPostCard = ({
 
       {commentOpen && (
         <div className="comment-section">
-          {post.comments && post.comments.length > 0 && (
+          {practiceLog.comments && practiceLog.comments.length > 0 && (
             <div className="comment-list">
-              {post.comments.map((comment) => (
+              {practiceLog.comments.map((comment) => (
                 <div key={comment.id} className="comment-item">
                   <div className="comment-author">{comment.authorName}</div>
                   <div className="comment-text">{comment.text}</div>
@@ -124,4 +124,4 @@ const FeedPostCard = ({
   );
 };
 
-export default FeedPostCard;
+export default FeedPracticeLogCard;

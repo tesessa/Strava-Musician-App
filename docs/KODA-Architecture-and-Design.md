@@ -40,12 +40,12 @@ As with KodaServerApi, the selected media implementation is chosen by environmen
 All backend routes should follow this pattern for handling requests:
 
 - **Handlers** — One handler per endpoint
-- **Services** — Auth Service, User Service, P. Session Service, Event Service, Challenge Service
-- **DAOs** — Auth DAO, User DAO, P. Session DAO, Event DAO, Challenge DAO
+- **Services** — Auth Service, User Service, Practice Log Service, Event Service, Challenge Service
+- **DAOs** — Auth DAO, User DAO, Practice Log DAO, Event DAO, Challenge DAO
 
 DAOs should be defined by interfaces; concrete implementations should be created using the factory pattern.
 
-**Visibility:** Use a shared enum for visibility (and all other "this | that" types) everywhere it appears: Friend Preview, Post visibility, Challenge Visibility, Profile Photo visibility, Instrument visibility. **Post visibility is defined only on the User** (as `postVisibility`) and is the user's default; it applies to all of their practice sessions (there is no per-session visibility override).
+**Visibility:** Use a shared enum for visibility (and all other "this | that" types) everywhere it appears: Friend Preview, Post visibility, Challenge Visibility, Profile Photo visibility, Instrument visibility. **Post visibility is defined only on the User** (as `postVisibility`) and is the user's default; it applies to all of their practice logs (there is no per-log visibility override).
 
 ---
 
@@ -65,19 +65,19 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 
 ## Data Access and Database Layer
 
-**Database tables:** Primary and foreign key IDs (userId, sessionId, etc.) are UUIDs (string type in application and DB).
+**Database tables:** Primary and foreign key IDs (userId, practiceLogId, etc.) are UUIDs (string type in application and DB).
 
 - **User** — userId (PK, UUID), email, username, password (encrypted), profilePhoto, bio, postVisibility, instruments[], createdAt, updatedAt
 - **Friends** — userId (FK), friendId (FK), friendsSince; PK (userId, friendId). Store two rows per friendship: (1,2) and (2,1). Delete both when they unfriend.
 - **FriendRequests** — requestId (PK), senderId (FK), receiverId (FK), status (pending | accepted | rejected | canceled), createdAt, respondedAt
-- **practiceSession** — userID (FK), sessionID (PK), title, postText?, privateText?, instrument?, createdAt, durationMinutes (number), tempo?, pieceTitle?, composer? (additional AI analysis fields may be added later). Visibility for a session is determined by the session owner's User.postVisibility (see User); there is no per-session visibility field.
+- **practiceLog** — userID (FK), practiceLogID (PK), title, postText?, privateText?, instrument?, createdAt, durationMinutes (number), tempo?, pieceTitle?, composer? (additional AI analysis fields may be added later). Visibility for a log is determined by the log owner's User.postVisibility (see User); there is no per-log visibility field.
 - **Challenges** — challengeId (PK), description, task, targetNumber, instrument?
 - **completedChallenges** — userId (FK), challengeId (FK), completedAt
 - **Events** — eventId (PK), title, description, date, startTime, endTime, isAllDay, location, reminderMinBefore, eventType (practice | lesson | performance), visibility (public | private | friends)
-- **media** — mediaId (PK), sessionId (FK), type (audio | video | sheetMusic), url, createdAt
-- **Likes** — userId (FK), sessionId (FK), createdAt; PK (userId, sessionId)
-- **Comments** — commentId (PK), sessionId (FK), userId (FK), text, createdAt
-- **Notifications** — notificationId (PK), userId (FK), actorId (FK), type (like | comment | friendRequest | challengeCompleted), entityType (session | user | challenge), entityId, createdAt, isRead
+- **media** — mediaId (PK), practiceLogId (FK), type (audio | video | sheetMusic), url, createdAt
+- **Likes** — userId (FK), practiceLogId (FK), createdAt; PK (userId, practiceLogId)
+- **Comments** — commentId (PK), practiceLogId (FK), userId (FK), text, createdAt
+- **Notifications** — notificationId (PK), userId (FK), actorId (FK), type (like | comment | friendRequest | challengeCompleted), entityType (practiceLog | user | challenge), entityId, createdAt, isRead
 - **authSessions** — authSessionId (PK), userId (FK, UUID), tokenHash, createdAt, expiresAt (~1hr), revokedAt
 
 **For Challenges:** The description string should be something like "Complete 5 practice sessions"; then targetNumber = 5 and task = numPracticeSessions. Instrument is optional for instrument-specific challenges. Possible challenge tasks: numPracticeSessions, numAudioRecordings, numVideoRecordings, numFriends, numHrsPracticed (per instrument).
@@ -99,7 +99,7 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 | GET    | /auth/me                | Return the authenticated user's profile if token is valid.      | none                                                                             |
 | GET    | /users/:userId          | Fetch a user profile.                                           | none                                                                             |
 | PATCH  | /users/:userId          | Update profile fields.                                          | { username?, bio?, profilePhoto?, instruments?, postVisibility? }                |
-| GET    | /users/:userId/sessions | List visible practice sessions for a user (keyset pagination).  | { lastItem, pageSize }                                                           |
+| GET    | /users/:userId/practice-logs | List visible practice logs for a user (keyset pagination).  | { lastItem, pageSize }                                                           |
 | GET    | /users/search?query=... | List users whose name, username, or bio match the search query. | none                                                                             |
 
 
@@ -126,46 +126,46 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 | DELETE | /friend-requests/:requestId        | Cancel a pending request the user sent (status = canceled).           | none |
 
 
-### PRACTICE SESSIONS
+### PRACTICE LOGS
 
 
-| Method | Path                 | Description                                   | Body                                                                                                  |
-| ------ | -------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| POST   | /sessions            | Create a practice session.                    | { title, postText?, privateText?, instrument?, durationMinutes (number), tempo?, pieceTitle?, composer? } (visibility is the authenticated user's postVisibility from their profile) |
-| GET    | /sessions/feed       | Get one page of sessions visible to the user. | { lastItem, pageSize }                                                                                |
-| GET    | /sessions/:sessionId | Fetch a single session.                       | none                                                                                                  |
-| PATCH  | /sessions/:sessionId | Update a session.                             | any editable session fields                                                                           |
-| DELETE | /sessions/:sessionId | Delete a session.                             | none                                                                                                  |
+| Method | Path                           | Description                                   | Body                                                                                                  |
+| ------ | ------------------------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| POST   | /practice-logs                 | Create a practice log.                        | { title, postText?, privateText?, instrument?, durationMinutes (number), tempo?, pieceTitle?, composer? } (visibility is the authenticated user's postVisibility from their profile) |
+| GET    | /practice-logs/feed           | Get one page of practice logs visible to the user. | { lastItem, pageSize }                                                                                |
+| GET    | /practice-logs/:practiceLogId | Fetch a single practice log.                 | none                                                                                                  |
+| PATCH  | /practice-logs/:practiceLogId | Update a practice log.                       | any editable practice log fields                                                                      |
+| DELETE | /practice-logs/:practiceLogId | Delete a practice log.                        | none                                                                                                  |
 
 
 ### MEDIA
 
 
-| Method | Path                       | Description                | Body          |
-| ------ | -------------------------- | -------------------------- | ------------- |
-| POST   | /sessions/:sessionId/media | Attach media to a session. | { type, url } |
-| GET    | /sessions/:sessionId/media | List media for a session.  | none          |
-| DELETE | /media/:mediaId            | Delete a media item.       | none          |
+| Method | Path                                   | Description                    | Body          |
+| ------ | -------------------------------------- | ------------------------------ | ------------- |
+| POST   | /practice-logs/:practiceLogId/media    | Attach media to a practice log. | { type, url } |
+| GET    | /practice-logs/:practiceLogId/media    | List media for a practice log.  | none          |
+| DELETE | /media/:mediaId                        | Delete a media item.            | none          |
 
 
 ### LIKES
 
 
-| Method | Path                       | Description                       | Body |
-| ------ | -------------------------- | --------------------------------- | ---- |
-| POST   | /sessions/:sessionId/likes | Like a session.                   | none |
-| DELETE | /sessions/:sessionId/likes | Unlike a session.                 | none |
-| GET    | /sessions/:sessionId/likes | List users who liked the session. | none |
+| Method | Path                                   | Description                         | Body |
+| ------ | -------------------------------------- | ----------------------------------- | ---- |
+| POST   | /practice-logs/:practiceLogId/likes    | Like a practice log.                | none |
+| DELETE | /practice-logs/:practiceLogId/likes    | Unlike a practice log.              | none |
+| GET    | /practice-logs/:practiceLogId/likes    | List users who liked the practice log. | none |
 
 
 ### COMMENTS
 
 
-| Method | Path                          | Description       | Body     |
-| ------ | ----------------------------- | ----------------- | -------- |
-| POST   | /sessions/:sessionId/comments | Add a comment.    | { text } |
-| GET    | /sessions/:sessionId/comments | List comments.    | none     |
-| DELETE | /comments/:commentId          | Delete a comment. | none     |
+| Method | Path                                        | Description       | Body     |
+| ------ | ------------------------------------------- | ----------------- | -------- |
+| POST   | /practice-logs/:practiceLogId/comments      | Add a comment.    | { text } |
+| GET    | /practice-logs/:practiceLogId/comments      | List comments.    | none     |
+| DELETE | /comments/:commentId                        | Delete a comment. | none     |
 
 
 ### CHALLENGES
@@ -207,8 +207,8 @@ Unauthenticated users see a simple landing page that describes the app, with "Si
 
 | Method | Path                | Description                                                                             | Body |
 | ------ | ------------------- | --------------------------------------------------------------------------------------- | ---- |
-| GET    | /search?q=...       | Unified search across users, sessions, events (e.g. for home screen).                   | none |
-| GET    | /stats/user/:userId | Aggregated practice stats (e.g. number of sessions, total hours practiced) for profile. | none |
+| GET    | /search?q=...       | Unified search across users, practice logs, events (e.g. for home screen).                   | none |
+| GET    | /stats/user/:userId | Aggregated practice stats (e.g. number of practice logs, total hours practiced) for profile. | none |
 
 
 ---
@@ -221,7 +221,7 @@ User types a query and presses Enter or clicks search → frontend calls `GET /u
 
 ### Feed (infinite scroll)
 
-Frontend displays a feed skeleton (e.g. Suspense), calls `GET /sessions/feed` with body `{ lastItem, pageSize }`. Backend uses JOIN, ORDER, LIMIT with keyset pagination on `createdAt`. Returns one page at a time. InfiniteScroll component (e.g. invisible 1px trigger) calls reload for the next page.
+Frontend displays a feed skeleton (e.g. Suspense), calls `GET /practice-logs/feed` with body `{ lastItem, pageSize }`. Backend uses JOIN, ORDER, LIMIT with keyset pagination on `createdAt`. Returns one page at a time. InfiniteScroll component (e.g. invisible 1px trigger) calls reload for the next page.
 
 ### Login
 
@@ -246,7 +246,7 @@ Frontend-only; available from anywhere. Use "Pitchy" as the pitch-detection libr
 ### Start a new practice session
 
 1. User selects an instrument from a dropdown (from profile instruments).
-2. A practiceSession is created in the database, a timer is started, and the user is directed to a simplified UI with only the session actions below.
+2. A practice log is created in the database, a timer is started, and the user is directed to a simplified UI with only the session actions below.
 3. User can record audio, record video, add sheet music, and use Metronome/Tuner.
 
 ### Timer (session)
@@ -269,9 +269,9 @@ User can upload a PDF (or select from a list). File explorer opens; user selects
 
 Timer is stopped on the server. User sees a form to set: which audio/video clips to include/exclude, practice tempo, pieces practiced (title, composer), optional text. Post visibility is always the user's profile postVisibility (no per-session override). Post is optimistically shown at the top of the user’s feed; full post data is sent to the backend. When the backend receives the new practice session, it updates challenge progress. If a challenge was completed in that session, the user should see a banner (unless a websocket is added, completed challenges may need to be part of the “create post” response so the frontend can show the banner).
 
-### Comment / Like a post
+### Comment / Like a practice log
 
-Frontend calls the session comments and likes API endpoints.
+Frontend calls the practice log comments and likes API endpoints.
 
 ---
 
@@ -302,7 +302,7 @@ Calendar is for scheduling and viewing events (lessons, regular practice time, r
 
 ## Functionality
 
-Summary of what Koda supports (details in API, Key Flows, and UI sections): practice session tracking with timer, audio/video/sheet music and posts; friends, likes, comments, and profile viewing; challenges with progress and completion notifications; event scheduling (practice, lessons, performances) on the calendar; metronome and tuner; visibility controls (public, private, friends); user search; and notifications;.
+Summary of what Koda supports (details in API, Key Flows, and UI sections): practice log tracking with timer, audio/video/sheet music; friends, likes, comments, and profile viewing; challenges with progress and completion notifications; event scheduling (practice, lessons, performances) on the calendar; metronome and tuner; visibility controls (public, private, friends); user search; and notifications.
 
 ---
 

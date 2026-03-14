@@ -36,6 +36,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: background 0.2s;
 }
@@ -58,6 +59,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: background 0.2s;
 }
@@ -86,6 +88,7 @@
   left: 50%;
   transform: translate(-50%, -60%) rotate(-12deg);
   pointer-events: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -95,6 +98,7 @@
 
 .hero-instrument-select {
   background: rgba(255,255,255,0.12);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border: 1.5px solid rgba(255,255,255,0.2);
   color: white;
@@ -223,6 +227,11 @@
   color: #6c4ef6;
 }
 
+/* Visually hidden upload input (replaces inline style) */
+.visually-hidden-upload-input {
+  display: none;
+}
+
 /* ============================= */
 /* MEDIA DRAWER (slide-up modal)  */
 /* ============================= */
@@ -231,6 +240,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.55);
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
   z-index: 80;
   display: flex;
@@ -655,6 +665,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;

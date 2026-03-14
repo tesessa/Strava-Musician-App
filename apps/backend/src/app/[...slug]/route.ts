@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as authHandlers from "../../api/handlers/authHandlers";
-import * as sessionHandlers from "../../api/handlers/sessionHandlers";
+import * as practiceLogHandlers from "../../api/handlers/practiceLogHandlers";
 import * as userHandlers from "../../api/handlers/userHandlers";
 import * as friendsHandlers from "../../api/handlers/friendsHandlers";
 import * as friendRequestHandlers from "../../api/handlers/friendRequestHandlers";
@@ -51,13 +51,13 @@ async function dispatch(req: Request, method: string) {
     else if (parts.length === 2 && method === "DELETE") res = await userHandlers.deleteUser(req, parts[1]);
   }
 
-  // /sessions, /sessions/feed, /sessions/:sessionId
-  if (parts[0] === "sessions") {
-    if (parts.length === 1 && method === "POST") res = await sessionHandlers.createSession(req);
-    else if (parts[1] === "feed" && method === "GET") res = await sessionHandlers.getFeed(req);
-    else if (parts.length === 2 && method === "GET") res = await sessionHandlers.getSession(req, parts[1]);
-    else if (parts.length === 2 && method === "PATCH") res = await sessionHandlers.updateSession(req, parts[1]);
-    else if (parts.length === 2 && method === "DELETE") res = await sessionHandlers.deleteSession(req, parts[1]);
+  // /practice-logs, /practice-logs/feed, /practice-logs/:practiceLogId
+  if (parts[0] === "practice-logs") {
+    if (parts.length === 1 && method === "POST") res = await practiceLogHandlers.createPracticeLog(req);
+    else if (parts[1] === "feed" && method === "GET") res = await practiceLogHandlers.getFeed(req);
+    else if (parts.length === 2 && method === "GET") res = await practiceLogHandlers.getPracticeLog(req, parts[1]);
+    else if (parts.length === 2 && method === "PATCH") res = await practiceLogHandlers.updatePracticeLog(req, parts[1]);
+    else if (parts.length === 2 && method === "DELETE") res = await practiceLogHandlers.deletePracticeLog(req, parts[1]);
   }
 
   if (parts[0] === "friends") {

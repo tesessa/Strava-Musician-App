@@ -1,5 +1,5 @@
 import { APP_CONFIG } from "@strava-musician-app/shared";
-import type { PracticeSession } from "@strava-musician-app/shared";
+import type { PracticeLog } from "@strava-musician-app/shared";
 
 export default function Home() {
   const routes = [
@@ -88,56 +88,56 @@ export default function Home() {
       exampleCurl: `curl -X GET "http://localhost:3001/users/search?query=alice" \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
-    // --- Practice Session Routes ---
+    // --- Practice Log Routes ---
     {
-      path: "/sessions",
+      path: "/practice-logs",
       method: "POST",
-      purpose: "Create a new practice session",
+      purpose: "Create a new practice log",
       requestBody:
         "{ title: string, durationMinutes: number, visibility: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
-      responseBody: "{ session: PracticeSession } (201) or { error } (400/401)",
-      exampleCurl: `curl -X POST http://localhost:3001/sessions \\
+      responseBody: "{ practiceLog: PracticeLog } (201) or { error } (400/401)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer <TOKEN>" \\
   -d '{"title":"Practice Piano","durationMinutes":60,"visibility":"public"}'`,
     },
     {
-      path: "/sessions/feed",
+      path: "/practice-logs/feed",
       method: "GET",
-      purpose: "Get a paginated feed of your practice sessions",
+      purpose: "Get a paginated feed of your practice logs",
       requestBody: "none (must send Authorization header, use query params: lastItemId?, pageSize?)",
-      responseBody: "{ sessions: PracticeSession[] } (200) or { error } (400/401)",
-      exampleCurl: `curl -X GET "http://localhost:3001/sessions/feed?lastItemId=<last_id>&pageSize=5" \\
+      responseBody: "{ practiceLogs: PracticeLog[] } (200) or { error } (400/401)",
+      exampleCurl: `curl -X GET "http://localhost:3001/practice-logs/feed?lastItemId=<last_id>&pageSize=5" \\
 -H "Authorization: Bearer <TOKEN>"`,
     },
     {
-      path: "/sessions/:sessionId",
+      path: "/practice-logs/:practiceLogId",
       method: "GET",
-      purpose: "Get a specific practice session by ID",
+      purpose: "Get a specific practice log by ID",
       requestBody: "none (must send Authorization header)",
-      responseBody: "{ session: PracticeSession } (200) or { error } (404/401)",
-      exampleCurl: `curl -X GET http://localhost:3001/sessions/<sessionId> \\
+      responseBody: "{ practiceLog: PracticeLog } (200) or { error } (404/401)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
     {
-      path: "/sessions/:sessionId",
+      path: "/practice-logs/:practiceLogId",
       method: "PATCH",
-      purpose: "Update a practice session by ID",
+      purpose: "Update a practice log by ID",
       requestBody:
         "{ title?: string, durationMinutes?: number, visibility?: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
-      responseBody: "{ session: PracticeSession } (200) or { error } (404/401)",
-      exampleCurl: `curl -X PATCH http://localhost:3001/sessions/<sessionId> \\
+      responseBody: "{ practiceLog: PracticeLog } (200) or { error } (404/401)",
+      exampleCurl: `curl -X PATCH http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer <TOKEN>" \\
   -d '{"postText":"Updated notes"}'`,
     },
     {
-      path: "/sessions/:sessionId",
+      path: "/practice-logs/:practiceLogId",
       method: "DELETE",
-      purpose: "Delete a practice session by ID",
+      purpose: "Delete a practice log by ID",
       requestBody: "none (must send Authorization header)",
       responseBody: "204 No Content on success, or { error } (404/401)",
-      exampleCurl: `curl -X DELETE http://localhost:3001/sessions/<sessionId> \\
+      exampleCurl: `curl -X DELETE http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
     // --- Friends & Friend Requests ---
@@ -234,8 +234,8 @@ export default function Home() {
       routes: routes.filter(r => r.path.startsWith("/users")),
     },
     {
-      title: "Practice Sessions",
-      routes: routes.filter(r => r.path.startsWith("/sessions")),
+      title: "Practice Logs",
+      routes: routes.filter(r => r.path.startsWith("/practice-logs")),
     },
     {
       title: "Friends & Friend Requests",

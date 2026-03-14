@@ -1,4 +1,4 @@
-import type { User, Visibility, PracticeSession } from "@strava-musician-app/shared";
+import type { User, Visibility, PracticeLog } from "@strava-musician-app/shared";
 
 /**
  * Single API surface for the Koda frontend. Implemented by ServerFacade (real API)
@@ -10,22 +10,21 @@ export interface KodaServerApi {
   getMe(): Promise<User | null>;
   login(email: string, password: string): Promise<User | null>;
   register(username: string, email: string, password: string): Promise<User | null>;
-  // might want to have this function return PracticeSession
-  savePost(userId: string, title: string, visibility: Visibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string>;
-  discardPost(sessionId: string): Promise<void>;
+  savePracticeLog(userId: string, title: string, visibility: Visibility, duration: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string): Promise<string>;
+  discardPracticeLog(practiceLogId: string): Promise<void>;
   // home-feed methods
-  getFeed(): Promise<PracticeSession[]>;
-  likePost(postId: string): Promise<void>;
-  unlikePost(postId: string): Promise<void>;
-  commentOnPost(postId: string, text: string): Promise<void>;
-  sharePost(postId: string): Promise<void>;
+  getFeed(): Promise<PracticeLog[]>;
+  likePracticeLog(practiceLogId: string): Promise<void>;
+  unlikePracticeLog(practiceLogId: string): Promise<void>;
+  commentOnPracticeLog(practiceLogId: string, text: string): Promise<void>;
+  sharePracticeLog(practiceLogId: string): Promise<void>;
 }
 
-export type PostData = {
+export type PracticeLogData = {
   title: string;
   notes: string;
   privateNote: string;
   visability: "public" | "private" | "friends";
   instrument: string;
   durationMinutes: number;
-}
+};

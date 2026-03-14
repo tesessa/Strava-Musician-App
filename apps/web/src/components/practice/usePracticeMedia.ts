@@ -74,7 +74,7 @@ export function usePracticeMedia() {
     if (!mediaRestored) return;
     const metas: PersistedRecordingMeta[] = recordings.map((r) => ({
       id: r.id, type: r.type, durationSec: r.durationSec,
-      aiRequested: r.aiRequested, savedForPost: r.savedForPost,
+      aiRequested: r.aiRequested, savedForPracticeLog: r.savedForPracticeLog,
     }));
     sessionStorage.setItem(REC_META_KEY, JSON.stringify(metas));
   }, [recordings, mediaRestored]);
@@ -117,7 +117,7 @@ export function usePracticeMedia() {
         await idbPut(id, blob);
         setRecordings((prev) => [
           ...prev,
-          { id, type: "audio", blob, url, durationSec: dur, aiRequested: false, savedForPost: false },
+          { id, type: "audio", blob, url, durationSec: dur, aiRequested: false, savedForPracticeLog: false },
         ]);
         stream.getTracks().forEach((t) => t.stop());
         setAudioRecordTime(0);
@@ -152,7 +152,7 @@ export function usePracticeMedia() {
         await idbPut(id, blob);
         setRecordings((prev) => [
           ...prev,
-          { id, type: "video", blob, url, durationSec: dur, aiRequested: false, savedForPost: false },
+          { id, type: "video", blob, url, durationSec: dur, aiRequested: false, savedForPracticeLog: false },
         ]);
         stream.getTracks().forEach((t) => t.stop());
         if (videoPreviewRef.current) videoPreviewRef.current.srcObject = null;
@@ -176,8 +176,8 @@ export function usePracticeMedia() {
   const toggleAIUpload = (id: string) =>
     setUploads((prev) => prev.map((u) => u.id === id ? { ...u, aiRequested: !u.aiRequested } : u));
 
-  const toggleSaveForPost = (id: string) =>
-    setRecordings((prev) => prev.map((r) => r.id === id ? { ...r, savedForPost: !r.savedForPost } : r));
+  const toggleSaveForPracticeLog = (id: string) =>
+    setRecordings((prev) => prev.map((r) => r.id === id ? { ...r, savedForPracticeLog: !r.savedForPracticeLog } : r));
 
   const deleteRecording = async (id: string) => {
     setRecordings((prev) => {
@@ -227,7 +227,7 @@ export function usePracticeMedia() {
     startAudio,  stopAudio,
     startVideo,  stopVideo,
     handleUpload,
-    toggleAI,    toggleAIUpload,  toggleSaveForPost,
+    toggleAI,    toggleAIUpload,  toggleSaveForPracticeLog,
     deleteRecording, deleteUpload,
   };
 }

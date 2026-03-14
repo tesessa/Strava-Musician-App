@@ -1,2 +1,2 @@
 export { UserService } from "./UserService";
-export { PostService } from './PostService'
+export { PracticeLogService } from './PracticeLogService'

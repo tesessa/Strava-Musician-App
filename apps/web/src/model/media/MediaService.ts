@@ -4,8 +4,8 @@ type OracleMediaConfig = {
   namespace: string;
   region: string;
   profileImagesBucket: string;
-  sessionAudioBucket: string;
-  sessionVideoBucket: string;
+  practiceLogAudioBucket: string;
+  practiceLogVideoBucket: string;
 };
 
 /**
@@ -19,10 +19,10 @@ export class MediaService implements KodaMediaApi {
     region: import.meta.env.VITE_ORACLE_REGION ?? "us-phoenix-1",
     profileImagesBucket:
       import.meta.env.VITE_BUCKET_PROFILE_IMAGES ?? "koda-profile-images",
-    sessionAudioBucket:
-      import.meta.env.VITE_BUCKET_SESSION_AUDIO ?? "koda-practice-session-audio",
-    sessionVideoBucket:
-      import.meta.env.VITE_BUCKET_SESSION_VIDEO ?? "koda-practice-session-video",
+    practiceLogAudioBucket:
+      import.meta.env.VITE_BUCKET_PRACTICE_LOG_AUDIO ?? "koda-practice-session-audio",
+    practiceLogVideoBucket:
+      import.meta.env.VITE_BUCKET_PRACTICE_LOG_VIDEO ?? "koda-practice-session-video",
   };
 
   async uploadProfileImage(userId: string, file: File): Promise<string> {
@@ -34,31 +34,31 @@ export class MediaService implements KodaMediaApi {
     return this.buildObjectUrl(this.config.profileImagesBucket, keyOrFilename);
   }
 
-  async uploadSessionAudio(sessionId: string, file: File): Promise<string> {
-    return this.uploadSessionMedia(
-      sessionId,
+  async uploadPracticeLogAudio(practiceLogId: string, file: File): Promise<string> {
+    return this.uploadPracticeLogMedia(
+      practiceLogId,
       file,
-      this.config.sessionAudioBucket,
+      this.config.practiceLogAudioBucket,
       "audio",
     );
   }
 
-  async uploadSessionVideo(sessionId: string, file: File): Promise<string> {
-    return this.uploadSessionMedia(
-      sessionId,
+  async uploadPracticeLogVideo(practiceLogId: string, file: File): Promise<string> {
+    return this.uploadPracticeLogMedia(
+      practiceLogId,
       file,
-      this.config.sessionVideoBucket,
+      this.config.practiceLogVideoBucket,
       "video",
     );
   }
 
-  private async uploadSessionMedia(
-    sessionId: string,
+  private async uploadPracticeLogMedia(
+    practiceLogId: string,
     file: File,
     bucketName: string,
     mediaKind: "audio" | "video",
   ): Promise<string> {
-    const objectKey = this.buildSessionMediaKey(sessionId, file.name, mediaKind);
+    const objectKey = this.buildPracticeLogMediaKey(practiceLogId, file.name, mediaKind);
     return this.uploadFile(bucketName, objectKey, file);
   }
 
@@ -85,12 +85,12 @@ export class MediaService implements KodaMediaApi {
     return `profile-images/${this.safePathSegment(userId)}/${this.timestampedFileName(filename)}`;
   }
 
-  private buildSessionMediaKey(
-    sessionId: string,
+  private buildPracticeLogMediaKey(
+    practiceLogId: string,
     filename: string,
     mediaKind: "audio" | "video",
   ): string {
-    return `sessions/${this.safePathSegment(sessionId)}/${mediaKind}/${this.timestampedFileName(filename)}`;
+    return `practice-logs/${this.safePathSegment(practiceLogId)}/${mediaKind}/${this.timestampedFileName(filename)}`;
   }
 
   private timestampedFileName(filename: string): string {

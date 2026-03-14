@@ -5,6 +5,6 @@
 export interface KodaMediaApi {
   uploadProfileImage(userId: string, file: File): Promise<string>;
   getProfileImageUrl(userId: string, keyOrFilename: string): string;
-  uploadSessionAudio(sessionId: string, file: File): Promise<string>;
-  uploadSessionVideo(sessionId: string, file: File): Promise<string>;
+  uploadPracticeLogAudio(practiceLogId: string, file: File): Promise<string>;
+  uploadPracticeLogVideo(practiceLogId: string, file: File): Promise<string>;
 }

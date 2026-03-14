@@ -1,6 +1,6 @@
 import { ClientCommunicator } from "./ClientCommunicator";
 import type { KodaServerApi } from "./KodaServerApi";
-import type { User, Visibility, PracticeSession, RegisterRequest, LoginRequest, AuthResponse } from "@strava-musician-app/shared";
+import type { User, Visibility, PracticeLog, RegisterRequest, LoginRequest, AuthResponse } from "@strava-musician-app/shared";
 
 /**
  * Calls the actual Koda API. Uses Client Communicator for HTTP.
@@ -122,30 +122,30 @@ export class ServerFacade implements KodaServerApi {
     }
   }
 
-  async savePost(_userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
+  async savePracticeLog(_userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
     return title;
   }
 
-  async discardPost(_sessionId: string): Promise<void> {}
+  async discardPracticeLog(_practiceLogId: string): Promise<void> {}
 
-  async getFeed(): Promise<PracticeSession[]> {
+  async getFeed(): Promise<PracticeLog[]> {
     return [];
   }
 
-  async likePost(postId: string): Promise<void> {
-    console.log("TODO real likePost", postId);
+  async likePracticeLog(practiceLogId: string): Promise<void> {
+    console.log("TODO real likePracticeLog", practiceLogId);
   }
 
-  async unlikePost(postId: string): Promise<void> {
-    console.log("TODO real unlikePost", postId);
+  async unlikePracticeLog(practiceLogId: string): Promise<void> {
+    console.log("TODO real unlikePracticeLog", practiceLogId);
   }
 
-  async commentOnPost(postId: string, text: string): Promise<void> {
-    console.log("TODO real commentOnPost", postId, text);
+  async commentOnPracticeLog(practiceLogId: string, text: string): Promise<void> {
+    console.log("TODO real commentOnPracticeLog", practiceLogId, text);
   }
 
-  async sharePost(postId: string): Promise<void> {
-    console.log("TODO real sharePost", postId);
+  async sharePracticeLog(practiceLogId: string): Promise<void> {
+    console.log("TODO real sharePracticeLog", practiceLogId);
   }
 
 }

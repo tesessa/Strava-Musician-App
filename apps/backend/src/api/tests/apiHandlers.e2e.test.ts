@@ -4,10 +4,10 @@ const API = "http://localhost:3001";
 
 let authToken: string;
 let userId: string;
-let sessionId: string;
+let practiceLogId: string;
 let secondUserToken: string;
 let secondUserId: string;
-let deletedSessionId: string;
+let deletedPracticeLogId: string;
 
 describe("API Handlers Integration (Comprehensive)", () => {
   // --- AUTH ---
@@ -172,18 +172,18 @@ describe("API Handlers Integration (Comprehensive)", () => {
     expect(res.status).toBe(401);
   });
 
-  // --- SESSIONS ---
-  it("should fail to create a session with missing fields", async () => {
+  // --- PRACTICE LOGS ---
+  it("should fail to create a practice log with missing fields", async () => {
     const res = await request(API)
-      .post("/sessions")
+      .post("/practice-logs")
       .set("Authorization", `Bearer ${authToken}`)
       .send({ title: "Incomplete" });
     expect(res.status).toBe(400);
   });
 
-  it("should create a session", async () => {
+  it("should create a practice log", async () => {
     const res = await request(API)
-      .post("/sessions")
+      .post("/practice-logs")
       .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Practice Piano",
@@ -191,13 +191,13 @@ describe("API Handlers Integration (Comprehensive)", () => {
         visibility: "public"
       });
     expect(res.status).toBe(201);
-    expect(res.body.session).toBeDefined();
-    sessionId = res.body.session.sessionId;
+    expect(res.body.practiceLog).toBeDefined();
+    practiceLogId = res.body.practiceLog.practiceLogId;
   });
 
-  it("should create another session", async () => {
+  it("should create another practice log", async () => {
     const res = await request(API)
-      .post("/sessions")
+      .post("/practice-logs")
       .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Practice Violin",
@@ -205,61 +205,61 @@ describe("API Handlers Integration (Comprehensive)", () => {
         visibility: "private"
       });
     expect(res.status).toBe(201);
-    expect(res.body.session).toBeDefined();
-    deletedSessionId = res.body.session.sessionId;
+    expect(res.body.practiceLog).toBeDefined();
+    deletedPracticeLogId = res.body.practiceLog.practiceLogId;
   });
 
-  it("should get the session feed", async () => {
+  it("should get the practice log feed", async () => {
     const res = await request(API)
-      .get("/sessions/feed?pageSize=5")
+      .get("/practice-logs/feed?pageSize=5")
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.sessions)).toBe(true);
-    expect(res.body.sessions.length).toBeGreaterThan(0);
+    expect(Array.isArray(res.body.practiceLogs)).toBe(true);
+    expect(res.body.practiceLogs.length).toBeGreaterThan(0);
   });
 
-  it("should get a session by id", async () => {
+  it("should get a practice log by id", async () => {
     const res = await request(API)
-      .get(`/sessions/${sessionId}`)
+      .get(`/practice-logs/${practiceLogId}`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.session.sessionId).toBe(sessionId);
+    expect(res.body.practiceLog.practiceLogId).toBe(practiceLogId);
   });
 
-  it("should fail to get session with invalid id", async () => {
+  it("should fail to get practice log with invalid id", async () => {
     const res = await request(API)
-      .get(`/sessions/invalidid`)
+      .get(`/practice-logs/invalidid`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(404);
   });
 
-  it("should update a session", async () => {
+  it("should update a practice log", async () => {
     const res = await request(API)
-      .patch(`/sessions/${sessionId}`)
+      .patch(`/practice-logs/${practiceLogId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .send({ postText: "Updated notes" });
     expect(res.status).toBe(200);
-    expect(res.body.session.postText).toBe("Updated notes");
+    expect(res.body.practiceLog.postText).toBe("Updated notes");
   });
 
-  it("should fail to update session with invalid token", async () => {
+  it("should fail to update practice log with invalid token", async () => {
     const res = await request(API)
-      .patch(`/sessions/${sessionId}`)
+      .patch(`/practice-logs/${practiceLogId}`)
       .set("Authorization", "Bearer invalidtoken")
       .send({ postText: "Should Not Work" });
     expect(res.status).toBe(403); // or 401
   });
 
-  it("should delete a session", async () => {
+  it("should delete a practice log", async () => {
     const res = await request(API)
-      .delete(`/sessions/${deletedSessionId}`)
+      .delete(`/practice-logs/${deletedPracticeLogId}`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(204);
   });
 
-  it("should fail to delete session with invalid id", async () => {
+  it("should fail to delete practice log with invalid id", async () => {
     const res = await request(API)
-      .delete(`/sessions/invalidid`)
+      .delete(`/practice-logs/invalidid`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(404);
   });
@@ -279,17 +279,17 @@ describe("API Handlers Integration (Comprehensive)", () => {
     secondUserToken = res.body.AuthToken.token;
   });
 
-  it("should not allow second user to update first user's session", async () => {
+  it("should not allow second user to update first user's practice log", async () => {
     const res = await request(API)
-      .patch(`/sessions/${sessionId}`)
+      .patch(`/practice-logs/${practiceLogId}`)
       .set("Authorization", `Bearer ${secondUserToken}`)
       .send({ postText: "Malicious update" });
     expect(res.status).toBe(403);
   });
 
-  it("should not allow second user to delete first user's session", async () => {
+  it("should not allow second user to delete first user's practice log", async () => {
     const res = await request(API)
-      .delete(`/sessions/${sessionId}`)
+      .delete(`/practice-logs/${practiceLogId}`)
       .set("Authorization", `Bearer ${secondUserToken}`);
     expect(res.status).toBe(403);
   });
@@ -353,7 +353,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
   });
 
   it("should 404 on unknown method", async () => {
-    const res = await request(API).put("/sessions");
+    const res = await request(API).put("/practice-logs");
     expect(res.status).toBe(404);
   });
 });

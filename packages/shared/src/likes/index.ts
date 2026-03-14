@@ -1,13 +1,13 @@
 /**
- * Like on a practice session
+ * Like on a practice log
  */
 export interface Like {
   userId: string;
-  sessionId: string;
+  practiceLogId: string;
   createdAt: string;
 }
 
 /**
- * GET /sessions/:sessionId/likes response
+ * GET /practice-logs/:practiceLogId/likes response
  */
 export type LikesListResponse = Like[];

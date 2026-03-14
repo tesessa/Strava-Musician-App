@@ -4,7 +4,7 @@
  */
 
 export * from "./enums";
-export * from "./sessions";
+export * from "./practiceLogs";
 export * from "./users";
 export * from "./auth";
 export * from "./friends";
@@ -17,9 +17,9 @@ export * from "./notifications";
 export * from "./events";
 export * from "./optional";
 
-// Example post for feed
-export interface FeedPost {
-  id: string;
+// Feed display model for a practice log
+export interface FeedPracticeLog {
+  practiceLogId: string;
   userId?: string;
   name: string;
   title: string;
@@ -32,7 +32,7 @@ export interface FeedPost {
   comments?: FeedComment[];
 }
 
-// Example comment for posts
+// Example comment for practice logs
 export interface FeedComment {
   id: string;
   authorName: string;

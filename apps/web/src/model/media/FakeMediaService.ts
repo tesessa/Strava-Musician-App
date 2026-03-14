@@ -5,8 +5,8 @@ import type { KodaMediaApi } from "./KodaMediaApi";
  */
 export class FakeMediaService implements KodaMediaApi {
   private profileImagesByUserId = new Map<string, string>();
-  private sessionAudioBySessionId = new Map<string, string[]>();
-  private sessionVideoBySessionId = new Map<string, string[]>();
+  private practiceLogAudioByPracticeLogId = new Map<string, string[]>();
+  private practiceLogVideoByPracticeLogId = new Map<string, string[]>();
 
   async uploadProfileImage(userId: string, file: File): Promise<string> {
     const url = this.buildFakeUrl("koda-profile-images", userId, file.name);
@@ -24,42 +24,42 @@ export class FakeMediaService implements KodaMediaApi {
     return this.buildFakeUrl("koda-profile-images", userId, keyOrFilename);
   }
 
-  async uploadSessionAudio(sessionId: string, file: File): Promise<string> {
-    return this.uploadSessionMedia(
-      sessionId,
+  async uploadPracticeLogAudio(practiceLogId: string, file: File): Promise<string> {
+    return this.uploadPracticeLogMedia(
+      practiceLogId,
       file,
       "koda-practice-session-audio",
-      this.sessionAudioBySessionId,
-      "uploadSessionAudio",
+      this.practiceLogAudioByPracticeLogId,
+      "uploadPracticeLogAudio",
     );
   }
 
-  async uploadSessionVideo(sessionId: string, file: File): Promise<string> {
-    return this.uploadSessionMedia(
-      sessionId,
+  async uploadPracticeLogVideo(practiceLogId: string, file: File): Promise<string> {
+    return this.uploadPracticeLogMedia(
+      practiceLogId,
       file,
       "koda-practice-session-video",
-      this.sessionVideoBySessionId,
-      "uploadSessionVideo",
+      this.practiceLogVideoByPracticeLogId,
+      "uploadPracticeLogVideo",
     );
   }
 
-  private async uploadSessionMedia(
-    sessionId: string,
+  private async uploadPracticeLogMedia(
+    practiceLogId: string,
     file: File,
     bucketName: string,
     targetMap: Map<string, string[]>,
-    operation: "uploadSessionAudio" | "uploadSessionVideo",
+    operation: "uploadPracticeLogAudio" | "uploadPracticeLogVideo",
   ): Promise<string> {
     const url = this.buildFakeUrl(
       bucketName,
-      sessionId,
+      practiceLogId,
       file.name,
     );
-    const current = targetMap.get(sessionId) ?? [];
+    const current = targetMap.get(practiceLogId) ?? [];
     current.push(url);
-    targetMap.set(sessionId, current);
-    console.log(`[FakeMediaService] ${operation}:`, { sessionId, url });
+    targetMap.set(practiceLogId, current);
+    console.log(`[FakeMediaService] ${operation}:`, { practiceLogId, url });
     return url;
   }
 

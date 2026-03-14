@@ -1,8 +1,8 @@
 import type { Visibility } from "../enums";
-import type { PracticeSession } from "../sessions";
+import type { PracticeLog } from "../practiceLogs";
 
 /**
- * User profile (no password). postVisibility applies to all of this user's practice sessions.
+ * User profile (no password). postVisibility applies to all of this user's practice logs.
  * createdAt/updatedAt are ISO date strings (server-managed).
  */
 export interface User {
@@ -39,17 +39,17 @@ export interface UserSearchResult {
 }
 
 /**
- * GET /users/:userId/sessions body (keyset pagination)
+ * GET /users/:userId/practice-logs body (keyset pagination)
  */
-export interface UserSessionsRequest {
+export interface UserPracticeLogsRequest {
   /**
-   * sessionId of the last item in the previous page
+   * practiceLogId of the last item in the previous page
    */
   lastItem?: string;
   pageSize?: number;
 }
 
 /**
- * GET /users/:userId/sessions — list of practice sessions for a user
+ * GET /users/:userId/practice-logs — list of practice logs for a user
  */
-export type UserSessionsResponse = PracticeSession[];
+export type UserPracticeLogsResponse = PracticeLog[];

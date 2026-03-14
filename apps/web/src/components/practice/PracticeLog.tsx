@@ -1,13 +1,11 @@
 import { useState } from "react";
-import "./post.css";
+import "./practiceLog.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
 import type { Visibility } from "@strava-musician-app/shared";
-import { postService } from "../../model";
+import { practiceLogService } from "../../model";
 import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
-
-
 
 type LocationState = {
   audioClips?: Blob[];
@@ -24,8 +22,7 @@ type MediaEntry = {
   kind: "audio" | "video";
 };
 
-
-const Post = () => {
+const PracticeLog = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state ?? {}) as LocationState;
@@ -34,10 +31,20 @@ const Post = () => {
   const [mediaEntries] = useState<MediaEntry[]>(() => {
     const entries: MediaEntry[] = [];
     (state.audioClips ?? []).forEach((blob, i) => {
-      entries.push({ id: `audio-${i}`, blob, url: URL.createObjectURL(blob), kind: "audio" });
+      entries.push({
+        id: `audio-${i}`,
+        blob,
+        url: URL.createObjectURL(blob),
+        kind: "audio",
+      });
     });
     (state.videoClips ?? []).forEach((blob, i) => {
-      entries.push({ id: `video-${i}`, blob, url: URL.createObjectURL(blob), kind: "video" });
+      entries.push({
+        id: `video-${i}`,
+        blob,
+        url: URL.createObjectURL(blob),
+        kind: "video",
+      });
     });
     return entries;
   });
@@ -49,8 +56,6 @@ const Post = () => {
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [loading, setLoading] = useState(false);
 
-
-
   const formatDuration = (mins: number) => {
     if (mins < 60) return `${mins} min`;
     const h = Math.floor(mins / 60);
@@ -58,51 +63,49 @@ const Post = () => {
     return m > 0 ? `${h}h ${m}m` : `${h}h`;
   };
 
-
   const handleSave = async () => {
     setLoading(true);
     try {
       const user = await userService.getCurrentUser();
       const userId = user?.userId ?? "user";
-      await postService.savePost(
+      await practiceLogService.savePracticeLog(
         userId,
         title,
         visibility,
         durationMinutes,
         notes,
         privateNotes,
-        instrument
-      ); 
+        instrument,
+      );
       await clearAllPracticeStorage();
       navigate("/home");
     } catch (err) {
-      console.error("Failed to save post:", err);
+      console.error("Failed to save practice log:", err);
       alert("Something went wrong saving your practice. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-
   const handleDiscard = async () => {
     setLoading(true);
     try {
-      await postService.discardPost("unsaved");
+      await practiceLogService.discardPracticeLog("unsaved");
       navigate("/home");
     } catch {
-        // navigate to home in finally block
+      // navigate to home in finally block
     } finally {
       await clearAllPracticeStorage();
       setLoading(false);
-      navigate("/home")
+      navigate("/home");
     }
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="post-container">
+    <div className="practice-log-container">
       {/* Header */}
-      <div className="post-header">
+      <div className="practice-log-header">
         <button
           className="header-btn resume"
           onClick={() => navigate("/practice")}
@@ -110,17 +113,21 @@ const Post = () => {
         >
           ← Resume
         </button>
-        <span className="post-header-title">Save Practice</span>
-        <button className="header-btn save" onClick={handleSave} disabled={loading}>
+        <span className="practice-log-header-title">Save Practice</span>
+        <button
+          className="header-btn save"
+          onClick={handleSave}
+          disabled={loading}
+        >
           {loading ? "Saving…" : "Save"}
         </button>
       </div>
 
-      <div className="post-content">
+      <div className="practice-log-content">
         {/* Activity summary card */}
         <div className="activity-card">
           <div className="activity-type">
-            {instrument ? `🎵 ${instrument}` : "🎵 Practice"} Session
+            {instrument ? `🎵 ${instrument}` : "🎵 Practice"} Log
           </div>
           <div className="activity-meta">{formatDuration(durationMinutes)}</div>
         </div>
@@ -194,7 +201,7 @@ const Post = () => {
           onChange={(e) => setPrivateNotes(e.target.value)}
         />
 
-        {/* Visibility */}
+        {/* Visibility
         <h4 className="section-title">Who can view</h4>
         <div className="visibility-row">
           <select
@@ -205,11 +212,11 @@ const Post = () => {
             <option value="friends">Friends</option>
             <option value="private">Only me</option>
           </select>
-        </div>
+        </div> */}
       </div>
 
       {/* Footer actions */}
-      <div className="post-footer">
+      <div className="practice-log-footer">
         <button
           className="header-btn discard"
           onClick={handleDiscard}
@@ -229,4 +236,4 @@ const Post = () => {
   );
 };
 
-export default Post;
+export default PracticeLog;

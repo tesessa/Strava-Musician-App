@@ -1,22 +1,22 @@
 /**
- * Comment on a practice session
+ * Comment on a practice log
  */
 export interface Comment {
   commentId: string;
-  sessionId: string;
+  practiceLogId: string;
   userId: string;
   text: string;
   createdAt: string;
 }
 
 /**
- * POST /sessions/:sessionId/comments body
+ * POST /practice-logs/:practiceLogId/comments body
  */
 export interface CreateCommentRequest {
   text: string;
 }
 
 /**
- * GET /sessions/:sessionId/comments response
+ * GET /practice-logs/:practiceLogId/comments response
  */
 export type CommentsListResponse = Comment[];

@@ -1,18 +1,18 @@
 import type { MediaType } from "../enums";
 
 /**
- * Media attached to a practice session
+ * Media attached to a practice log
  */
 export interface Media {
   mediaId: string;
-  sessionId: string;
+  practiceLogId: string;
   type: MediaType;
   url: string;
   createdAt: string;
 }
 
 /**
- * POST /sessions/:sessionId/media body
+ * POST /practice-logs/:practiceLogId/media body
  */
 export interface CreateMediaRequest {
   type: MediaType;
@@ -20,6 +20,6 @@ export interface CreateMediaRequest {
 }
 
 /**
- * GET /sessions/:sessionId/media response
+ * GET /practice-logs/:practiceLogId/media response
  */
 export type MediaListResponse = Media[];

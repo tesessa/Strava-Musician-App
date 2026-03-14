@@ -23,7 +23,7 @@ export const NOTIFICATION_TYPE_VALUES = [
 export type NotificationType = (typeof NOTIFICATION_TYPE_VALUES)[number];
 
 export const NOTIFICATION_ENTITY_TYPE_VALUES = [
-  "session",
+  "practiceLog",
   "user",
   "challenge",
 ] as const;

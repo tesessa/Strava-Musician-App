@@ -1,19 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
-import type { PracticeSession, Instrument } from "@strava-musician-app/shared";
+import type { PracticeLog, FeedPracticeLog, Instrument } from "@strava-musician-app/shared";
 import "../index.css";
 
-import FeedPostCard from "../components/home/FeedPostCard";
+function toFeedPracticeLog(log: PracticeLog): FeedPracticeLog {
+  return {
+    ...log,
+    name: log.userId,
+    details: log.postText ?? "",
+    instrument: log.instrument ?? "",
+    createdAt: new Date(log.createdAt),
+  };
+}
+
+import FeedPracticeLogCard from "../components/home/FeedPracticeLogCard";
 import BottomNav from "../components/navigation/BottomNav";
-import { PostService } from "../model/service";
+import { PracticeLogService } from "../model/service";
 import { FakeDataServer } from "../model/network";
 
 type InstrumentFilter = "All" | Instrument;
 
 const Home = () => {
   const navigate = useNavigate();
-  const postService = useMemo(() => new PostService(new FakeDataServer()), []);
+  const practiceLogService = useMemo(() => new PracticeLogService(new FakeDataServer()), []);
 
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentFilter>("All");
@@ -21,15 +31,15 @@ const Home = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const [posts, setPosts] = useState<PracticeSession[]>([]);
+  const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadFeed = async () => {
       try {
         setLoading(true);
-        const feed = await postService.getFeed();
-        setPosts(feed);
+        const feed = await practiceLogService.getFeed();
+        setPracticeLogs(feed);
       } catch (error) {
         console.error("Failed to load feed:", error);
       } finally {
@@ -63,41 +73,42 @@ const Home = () => {
 
   const refreshFeed = async () => {
     try {
-      const feed = await postService.getFeed();
-      setPosts(feed);
+      const feed = await practiceLogService.getFeed();
+      setPracticeLogs(feed);
     } catch (error) {
       console.error("Failed to refresh feed:", error);
     }
   };
 
-  const handleLike = async (post: PracticeSession) => {
+  const handleLike = async (practiceLog: PracticeLog) => {
     try {
-      // if (post.likedByMe) {
-      //   await postService.unlikePost(post.id);
+      // if (practiceLog.likedByMe) {
+      //   await practiceLogService.unlikePracticeLog(practiceLog.practiceLogId);
       // } else {
-      //   await postService.likePost(post.id);
+      //   await practiceLogService.likePracticeLog(practiceLog.practiceLogId);
       // }
+      void practiceLog; // used when like API is wired
       await refreshFeed();
     } catch (error) {
       console.error("Failed to like:", error);
     }
   };
 
-  const handleComment = async (postId: string, text: string) => {
+  const handleComment = async (practiceLogId: string, text: string) => {
     try {
-      await postService.commentOnPost(postId, text);
+      await practiceLogService.commentOnPracticeLog(practiceLogId, text);
       await refreshFeed();
     } catch (error) {
-      console.error("Failed to comment on post:", error);
+      console.error("Failed to comment on practice log:", error);
     }
   };
 
-  const handleShare = async (postId: string) => {
+  const handleShare = async (practiceLogId: string) => {
     try {
-      await postService.sharePost(postId);
+      await practiceLogService.sharePracticeLog(practiceLogId);
       alert("TBD");
     } catch (error) {
-      console.error("Failed to share post:", error);
+      console.error("Failed to share practice log:", error);
     }
   };
 
@@ -133,7 +144,7 @@ const Home = () => {
     <div className="header-search-wrap">
       <input
         className="header-search-input"
-        placeholder="Search posts..."
+        placeholder="Search practice logs..."
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         autoFocus
@@ -141,10 +152,7 @@ const Home = () => {
       <button
         className="header-search-close"
         type="button"
-        onClick={() => {
-          setSearchOpen(false);
-          setSearchText("");
-        }}
+        onClick={closeSearch}
       >
         ✕
       </button>
@@ -183,24 +191,27 @@ const Home = () => {
 
       {/* Feed */}
       <main className="home-feed">
-        {/* {loading ? (
+        {loading ? (
           <div className="feed-empty">Loading feed...</div>
-        ) : visiblePosts.length === 0 ? (
+        ) : practiceLogs.length === 0 ? (
           <div className="feed-empty">
-            No posts found for <strong>{selectedInstrument}</strong>.
+            No practice logs found for <strong>{selectedInstrument}</strong>.
           </div>
         ) : (
-          visiblePosts.map((post) => (
-            <FeedPostCard
-              key={post.sessionId}
-              post={post}
-              onLike={()=> handleLike(post)}
+          practiceLogs.map((practiceLog) => (
+            <FeedPracticeLogCard
+              key={practiceLog.practiceLogId}
+              practiceLog={toFeedPracticeLog(practiceLog)}
+              onLike={(practiceLogId) => {
+                const p = practiceLogs.find((x) => x.practiceLogId === practiceLogId);
+                if (p) handleLike(p);
+              }}
               onComment={handleComment}
               onShare={handleShare}
               onProfileClick={() => navigate("/profile")}
             />
           ))
-        )} */}
+        )}
       </main>
 
       {/* Bottom Nav */}

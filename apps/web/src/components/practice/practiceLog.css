@@ -1,4 +1,4 @@
-.post-container {
+.practice-log-container {
   min-height: 100vh;
   background: #0e0e10;
   color: white;
@@ -8,7 +8,7 @@
 }
 
 /* Header */
-.post-header {
+.practice-log-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,7 +17,7 @@
   border-bottom: 1px solid #1e1e22;
 }
 
-.post-header-title {
+.practice-log-header-title {
   font-weight: 700;
   font-size: 15px;
   color: white;
@@ -42,7 +42,7 @@
 }
 
 /* Content */
-.post-content {
+.practice-log-content {
   max-width: 680px;
   margin: 0 auto;
   width: 92%;
@@ -207,7 +207,7 @@
 }
 
 /* Footer */
-.post-footer {
+.practice-log-footer {
   max-width: 680px;
   margin: 0 auto;
   width: 92%;

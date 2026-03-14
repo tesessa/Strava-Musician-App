@@ -7,7 +7,7 @@ Shared types, constants, and utilities used by both the frontend (`apps/web`) an
 Import from `@strava-musician-app/shared` in either app:
 
 ```typescript
-import { User, PracticeSession, APP_CONFIG } from "@strava-musician-app/shared";
+import { User, PracticeLog, APP_CONFIG } from "@strava-musician-app/shared";
 ```
 
 ## Building

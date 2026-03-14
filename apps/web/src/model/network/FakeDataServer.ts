@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "./KodaServerApi";
-import type { User, Visibility, PracticeSession } from "@strava-musician-app/shared";
+import type { User, Visibility, PracticeLog } from "@strava-musician-app/shared";
 
 /** Fake user for demo mode. */
 const FAKE_USER: User = {
@@ -17,12 +17,12 @@ const fakeUsers: Array<User> = [
   { ...FAKE_USER },
 ];
 
-/** Fake array of posts **/
-const fakePosts: PracticeSession[] = [
+/** Fake array of practice logs **/
+const fakePracticeLogs: PracticeLog[] = [
   {
       userId: "1",
-      sessionId: '1',
-      title: 'New post',
+      practiceLogId: '1',
+      title: 'New practice log',
       postText: "started off strong today with...",
       privateText: "Some notes on having fun",
       instrument: "Violin",
@@ -34,8 +34,8 @@ const fakePosts: PracticeSession[] = [
   },
     {
       userId: "2",
-      sessionId: '2',
-      title: 'New post',
+      practiceLogId: '2',
+      title: 'New practice log',
       postText: "started off strong today with...",
       privateText: "Some notes on having fun",
       instrument: "Violin",
@@ -47,8 +47,8 @@ const fakePosts: PracticeSession[] = [
   },
     {
       userId: "1",
-      sessionId: '3',
-      title: 'New post',
+      practiceLogId: '3',
+      title: 'New practice log',
       postText: "started off strong today with...",
       privateText: "Some notes on having fun",
       instrument: "Violin",
@@ -130,7 +130,7 @@ export class FakeDataServer implements KodaServerApi {
     return { ...FAKE_USER };
   }
 
-  async login(email: string, password: string): Promise<User | null> {
+  async login(email: string, _password: string): Promise<User | null> {
     const found = fakeUsers.find((u) => u.email === email);
     return found
       ? {
@@ -173,13 +173,13 @@ export class FakeDataServer implements KodaServerApi {
     };
   }
 
-  async savePost(userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
-    const fakeId = `post-${Date.now()}`;
-    console.log("[FakeDataServer] Saving post:", fakeId, title);
+  async savePracticeLog(userId: string, title: string, _visibility: Visibility, _duration: number, _postText?: string, _privateText?: string, _instrument?: string, _tempo?: number, _pieceTitle?: string, _composer?: string): Promise<string> {
+    const fakeId = `practice-log-${Date.now()}`;
+    console.log("[FakeDataServer] Saving practice log:", fakeId, title);
 
-    fakePosts.push(  {
+    fakePracticeLogs.push({
       userId: userId,
-      sessionId: '5',
+      practiceLogId: '5',
       title: title,
       postText: _postText,
       privateText: _privateText,
@@ -189,55 +189,32 @@ export class FakeDataServer implements KodaServerApi {
       tempo: _tempo,
       pieceTitle: _pieceTitle,
       composer: _composer
-  })
+    });
     return fakeId;
   }
 
-  async discardPost(sessionId: string): Promise<void> {
-    console.log("[FakeDataServer] Discarding post:", sessionId);
+  async discardPracticeLog(practiceLogId: string): Promise<void> {
+    console.log("[FakeDataServer] Discarding practice log:", practiceLogId);
   }
 
-  async getFeed(): Promise<PracticeSession[]> {
-    return [...fakePosts];
+  async getFeed(): Promise<PracticeLog[]> {
+    return [...fakePracticeLogs];
   }
 
-  async likePost(postId: string): Promise<void> {
-    // const post = fakePosts.find((p) => p.id === postId);
-    // if (post && !post.likedByMe) {
-    //   post.likedByMe = true;
-    //   post.likeCount = (post.likeCount ?? 0) + 1;
-    // }
+  async likePracticeLog(_practiceLogId: string): Promise<void> {
+    // TODO: implement when feed has like state
   }
 
-  async unlikePost(postId: string): Promise<void> {
-  //   const post = fakePosts.find((p) => p.id === postId);
-  // if (post && post.likedByMe) {
-  //   post.likedByMe = false;
-  //   post.likeCount = Math.max((post.likeCount ?? 0) - 1, 0);
-  //   }
+  async unlikePracticeLog(_practiceLogId: string): Promise<void> {
+    // TODO: implement when feed has like state
   }
 
-  async commentOnPost(postId: string, text: string): Promise<void> {
-    // const post = fakePosts.find((p) => p.id === postId);
-    // if (!post) return;
-
-    // const newComment: FeedComment = {
-    //   id: `comment-${Date.now()}`,
-    //   authorName: "Demo Musician",
-    //   text,
-    //   createdAt: new Date(),
-    // };
-
-    // if (!post.comments) {
-    //   post.comments = [];
-    // }
-
-    // post.comments.push(newComment);
-    // post.commentCount = post.comments.length;
+  async commentOnPracticeLog(_practiceLogId: string, _text: string): Promise<void> {
+    // TODO: implement when feed has comments
   }
 
-  async sharePost(postId: string): Promise<void> {
-    console.log("[FakeDataServer] Share post:", postId);
+  async sharePracticeLog(practiceLogId: string): Promise<void> {
+    console.log("[FakeDataServer] Share practice log:", practiceLogId);
   }
 
 }

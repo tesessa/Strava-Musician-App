@@ -5,7 +5,7 @@ import type { KodaMediaApi } from "./media/KodaMediaApi";
 import { MediaService } from "./media/MediaService";
 import { FakeMediaService } from "./media/FakeMediaService";
 import { UserService } from "./service/UserService";
-import { PostService } from "./service/PostService";
+import { PracticeLogService } from "./service/PracticeLogService";
 
 /**
  * This file sets up singleton services to be used by components and hooks.
@@ -33,5 +33,5 @@ const mediaApi: KodaMediaApi = createMediaApi();
 
 /** Singleton UserService with server implementation injected (demo vs real from env). */
 export const userService = new UserService(server);
-export const postService = new PostService(server);
+export const practiceLogService = new PracticeLogService(server);
 export { mediaApi };
