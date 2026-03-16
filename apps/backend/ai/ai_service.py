@@ -54,7 +54,7 @@ async def analyze_audio(file: UploadFile = File(...)):
 
     bpm, beats, beats_confidence = beat_analysis(tmp_path)
 
-    client = OpenAI(api_key="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")
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     prompt = f"""
     You are a guide for practicing guitarists. You give brief helpful feedback based on the data you are given.
     It should consist of the BPM from the data, and if their rhythm was good or bad. 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 #     Give no more than two or three sentences.
 #     Here is the data: BPM: {bpm}, Beats: {beats}
 #     """
-#     client = OpenAI(api_key="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")
+#     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 #     response = send_prompt(client, prompt)
 #     #return model output
 #     print(f"Prompt: {prompt}")

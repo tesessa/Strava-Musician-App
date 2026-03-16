@@ -2,7 +2,7 @@ import os
 from openai import OpenAI
 
 # Initialize the OpenAI client
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def send_prompt(prompt: str, model: str = "gpt-4o-mini") -> str:
     """
