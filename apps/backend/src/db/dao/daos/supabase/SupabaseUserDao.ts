@@ -6,7 +6,7 @@ import { User as SupabaseUser } from "./config/SupabaseTableTypes";
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    id: supabaseUser.id,
+    userId: supabaseUser.id,
     email: supabaseUser.email,
     username: supabaseUser.username,
     profilePhoto: supabaseUser.image_url || undefined,
@@ -25,12 +25,17 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
 }
 
 export class SupabaseUserDao implements UserDAO {
-  async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwordHash: string) {
+  async createUser(
+    user: Omit<User, "userId" | "createdAt" | "updatedAt">,
+    passwordHash: string,
+  ) {
     const id = randomUUID();
     const now = new Date();
     const [createdUser] = await db<SupabaseUser>("User")
       .insert({
-        id: user.id,
+        id: id,
+        created_at: now,
+        updated_at: now,
         email: user.email,
         username: user.username,
         password: passwordHash,
@@ -89,9 +94,11 @@ export class SupabaseUserDao implements UserDAO {
     const updateData: Partial<SupabaseUser> = {};
     if (patch.email) updateData.email = patch.email;
     if (patch.username) updateData.username = patch.username;
-    if (patch.profilePhoto !== undefined) updateData.image_url = patch.profilePhoto;
+    if (patch.profilePhoto !== undefined)
+      updateData.image_url = patch.profilePhoto;
     if (patch.bio !== undefined) updateData.bio = patch.bio;
-    if (patch.postVisibility !== undefined) updateData.post_visibility = patch.postVisibility;
+    if (patch.postVisibility !== undefined)
+      updateData.post_visibility = patch.postVisibility;
     if (patch.instruments) updateData.instruments = patch.instruments;
 
     const [updatedUser] = await db<SupabaseUser>("User")
