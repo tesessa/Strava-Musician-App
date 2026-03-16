@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import * as authHandlers from "../../api/handlers/authHandlers";
 import * as sessionHandlers from "../../api/handlers/sessionHandlers";
 import * as userHandlers from "../../api/handlers/userHandlers";
+import * as friendsHandlers from "../../api/handlers/friendsHandlers";
+import * as friendRequestHandlers from "../../api/handlers/friendRequestHandlers";
 
 // Add CORS headers to all responses
 function withCORS(res: Response) {
@@ -56,6 +58,34 @@ async function dispatch(req: Request, method: string) {
     else if (parts.length === 2 && method === "GET") res = await sessionHandlers.getSession(req, parts[1]);
     else if (parts.length === 2 && method === "PATCH") res = await sessionHandlers.updateSession(req, parts[1]);
     else if (parts.length === 2 && method === "DELETE") res = await sessionHandlers.deleteSession(req, parts[1]);
+  }
+
+  if (parts[0] === "friends") {
+    if (parts.length === 1 && method === "GET") {
+      res = await friendsHandlers.listFriends(req);
+    } else if (parts.length === 2 && method === "POST") {
+      res = await friendsHandlers.sendOrAcceptFriendRequest(req, parts[1]);
+    } else if (parts.length === 2 && method === "DELETE") {
+      res = await friendsHandlers.removeFriend(req, parts[1]);
+    } else if (parts.length === 3 && parts[1] === "is-friend" && method === "GET") {
+      res = await friendsHandlers.isFriend(req, parts[2]);
+    }
+  }
+
+  if (parts[0] === "friend-requests") {
+    if (parts.length === 2 && method === "POST") {
+      res = await friendRequestHandlers.createFriendRequest(req, parts[1]);
+    } else if (parts[1] === "incoming" && method === "GET") {
+      res = await friendRequestHandlers.listIncoming(req);
+    } else if (parts[1] === "outgoing" && method === "GET") {
+      res = await friendRequestHandlers.listOutgoing(req);
+    } else if (parts.length === 3 && parts[2] === "accept" && method === "POST") {
+      res = await friendRequestHandlers.acceptRequest(req, parts[1]);
+    } else if (parts.length === 3 && parts[2] === "reject" && method === "POST") {
+      res = await friendRequestHandlers.rejectRequest(req, parts[1]);
+    } else if (parts.length === 2 && method === "DELETE") {
+      res = await friendRequestHandlers.cancelRequest(req, parts[1]);
+    }
   }
 
   // fallback: 404
