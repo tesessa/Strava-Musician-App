@@ -35,6 +35,12 @@ The frontend also defines a **KodaMediaApi** interface for object storage upload
 
 As with KodaServerApi, the selected media implementation is chosen by environment and injected once as a singleton into frontend code that handles media operations.
 
+#### Frontend interaction pattern (optimistic UI + loading states)
+
+- **Creates (any object created from the frontend)**: Optimistically render the new item in the UI immediately (e.g. new practice log, comment, like, media attachment, event) assuming creation succeeds. If the backend call fails, **rollback** the optimistic change (remove the item, revert counts, show an error).
+- **Updates (any object updated from the frontend)**: Optimistically apply the updated data in the UI (text, metadata, counts, etc.) while the request is in flight. If the update fails, **rollback** to the previous state and surface an error to the user.
+- **Reads / fetching data**: Use a Suspense/skeleton-style pattern for loading. While data for a view (feed, profile sections, practice-log detail, notifications, etc.) is loading, show skeleton components or loading placeholders instead of empty states so users can see that data is in the process of loading.
+
 ### Backend Pattern
 
 All backend routes should follow this pattern for handling requests:
