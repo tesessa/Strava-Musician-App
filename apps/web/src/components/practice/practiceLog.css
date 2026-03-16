@@ -1,0 +1,224 @@
+.practice-log-container {
+  min-height: 100vh;
+  background: #0e0e10;
+  color: white;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.practice-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #6c4ef6;
+  padding: 14px 16px;
+  border-bottom: 1px solid #1e1e22;
+}
+
+.practice-log-header-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+}
+
+.header-btn {
+  background: none;
+  border: none;
+  color: #6c4ef6;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.header-btn.discard {
+  color: #888;
+}
+
+.header-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Content */
+.practice-log-content {
+  max-width: 680px;
+  margin: 0 auto;
+  width: 92%;
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+/* Activity card */
+.activity-card {
+  margin: 16px 0;
+  padding: 16px;
+  background: #18181b;
+  border-radius: 12px;
+}
+
+.activity-type {
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+.activity-meta {
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* Title */
+.title-input {
+  padding: 14px 16px;
+  font-size: 18px;
+  border: none;
+  outline: 2px solid #222;
+  background: transparent;
+  color: white;
+  width: 100%;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.title-input::placeholder {
+  color: #555;
+}
+
+/* Notes */
+.notes-input {
+  padding: 14px 16px;
+  font-size: 15px;
+  min-height: 100px;
+  resize: none;
+  border: none;
+  outline: 2px solid #222;
+  background: transparent;
+  color: white;
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  box-sizing: border-box;
+}
+
+.notes-input::placeholder {
+  color: #555;
+}
+
+/* Section titles */
+.section-title {
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+}
+
+/* Visibility / instrument select row */
+.visibility-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.visibility-row select {
+  background: #18181b;
+  color: white;
+  border: none;
+  outline: 2px solid #222;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+/* Media previews */
+.media-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+
+.media-preview-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #18181b;
+  border: 1px solid #2a2a2e;
+}
+
+.media-preview-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+
+.media-preview-audio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  min-width: 160px;
+  min-height: 80px;
+  font-size: 12px;
+  text-align: center;
+  gap: 8px;
+}
+
+.media-preview-audio span {
+  font-size: 28px;
+}
+
+.media-preview-pdf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  width: 120px;
+  min-height: 80px;
+  font-size: 12px;
+  text-align: center;
+  gap: 6px;
+  word-break: break-word;
+  color: #aaa;
+}
+
+.media-preview-pdf span:first-child {
+  font-size: 28px;
+}
+
+/* Sheet music note */
+.sheet-music-note {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* Footer */
+.practice-log-footer {
+  max-width: 680px;
+  margin: 0 auto;
+  width: 92%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 32px;
+  border-top: 1px solid #1e1e22;
+}
+
+.header-btn.footer-save {
+  font-size: 15px;
+  padding: 0;
+}

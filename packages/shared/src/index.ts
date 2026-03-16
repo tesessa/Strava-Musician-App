@@ -1,32 +1,42 @@
 /**
- * Shared types and utilities for Strava Musician App
- * Below are example types. They are not set in stone and will be updated as we go.
+ * Shared types and utilities for Strava Musician App.
+ * Schema- and API-aligned types and enums.
  */
 
-//Prototype Auth Token
-export interface AuthToken {
-  token: string;
-  timestamp: Date;
-}
-// Example User type for the application
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  displayName: string;
+export * from "./enums";
+export * from "./practiceLogs";
+export * from "./users";
+export * from "./auth";
+export * from "./friends";
+export * from "./friend-requests";
+export * from "./media";
+export * from "./likes";
+export * from "./comments";
+export * from "./challenges";
+export * from "./notifications";
+export * from "./events";
+export * from "./optional";
+
+// Feed display model for a practice log
+export interface FeedPracticeLog {
+  practiceLogId: string;
+  userId?: string;
+  name: string;
+  title: string;
+  details: string;
+  instrument: string;
   createdAt: Date;
-  imageUrl?: string;
-  bio?: string;
-  instruments?: string[];
+  likeCount?: number;
+  likedByMe?: boolean;
+  commentCount?: number;
+  comments?: FeedComment[];
 }
 
-// Example Practice session logged by a musician
-export interface PracticeSession {
+// Example comment for practice logs
+export interface FeedComment {
   id: string;
-  userId: string;
-  instrument: string;
-  durationMinutes: number;
-  notes?: string;
+  authorName: string;
+  text: string;
   createdAt: Date;
 }
 

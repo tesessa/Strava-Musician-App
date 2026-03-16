@@ -1,16 +1,20 @@
-import type { AuthDAO } from "../dao/daoInterfaces/authDao";
-import type { UserDAO } from "../dao/daoInterfaces/userDao";
-import { hashPassword } from "../utils/utils";
+import type { User } from "@strava-musician-app/shared";
+import type { AuthDAO } from "../../db/dao/daos/authDao";
+import type { UserDAO } from "../../db/dao/daos/userDao";
+import { hashPassword } from "../utils/hashPassword";
 
 export class AuthService {
-  constructor(private userDao: UserDAO, private authDao: AuthDAO) {}
+  constructor(
+    private userDao: UserDAO,
+    private authDao: AuthDAO,
+  ) {}
 
   async login(email: string, password: string) {
     const hashedPassword = hashPassword(password);
     const user = await this.userDao.validateCredentials(email, hashedPassword);
     if (!user) return { error: "invalid credentials", status: 401 };
-    const AuthToken = await this.authDao.createTokenForUser(user.id);
-    return { AuthToken, user, status: 200 };
+    const authToken = await this.authDao.createTokenForUser(user.userId);
+    return { authToken, user, status: 200 };
   }
 
   async logout(token: string) {
@@ -23,7 +27,7 @@ export class AuthService {
     username: string;
     email: string;
     password: string;
-    displayName?: string;
+    profilePhoto?: string;
     imageUrl?: string;
     bio?: string;
     instruments?: string[];
@@ -31,11 +35,21 @@ export class AuthService {
     if (!data.email || !data.username || !data.password) {
       return { error: "email, username and password required", status: 400 };
     }
-    const existing = await this.userDao.findUserByEmail(data.email);
-    if (existing) return { error: "email_already_exists", status: 409 };
+    const existingEmail = await this.userDao.findUserByEmail(data.email);
+    const existingUsername = await this.userDao.findUserByUsername(data.username);
+    if (existingEmail) return { error: "email already in use", status: 400 };
+    if (existingUsername) return { error: "username already in use", status: 400 }; 
     const hashedPassword = hashPassword(data.password);
-    const user = await this.userDao.createUser({ ...data, passwordHash: hashedPassword });
-    const AuthToken = await this.authDao.createTokenForUser(user.id);
+    const newUser: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
+      email: data.email,
+      username: data.username,
+      profilePhoto: data.profilePhoto ?? data.imageUrl,
+      bio: data.bio,
+      postVisibility: "friends",
+      instruments: data.instruments ?? [],
+    };
+    const user = await this.userDao.createUser(newUser, hashedPassword);
+    const AuthToken = await this.authDao.createTokenForUser(user.userId);
     return { AuthToken, user, status: 201 };
   }
 

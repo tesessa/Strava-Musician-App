@@ -16,6 +16,9 @@ Follow the architecture in `docs/KODA-Architecture-and-Design.md`. Summary of de
   - **FakeDataServer** — returns fake data for demo/development.
 - **Dependency injection**: Server implementation is chosen by environment (e.g. demo mode ⇒ FakeDataServer) and injected into **singleton** instances of each service. Services are injected into components/hooks that use them.
 - **Shared enums**: Use a single shared enum for visibility and for every "this | that" union type (e.g. post visibility, profile visibility, challenge visibility). Keep consistency across the app.
+- **Optimistic UI for creates**: When any object is created from the frontend (practice log, comment, like, media, event, etc.), render it optimistically in the UI immediately. If the backend create fails, rollback the optimistic change and show an error.
+- **Optimistic UI for updates**: When any object is updated from the frontend, apply the new data optimistically in the UI while the request is in flight; if the update fails, rollback to the previous state and surface an error.
+- **Loading states for reads**: When fetching data, use a Suspense/skeleton pattern (skeleton rows/cards, placeholder UI) instead of blank screens so users can see that data is being loaded.
 
 ## Backend
 
