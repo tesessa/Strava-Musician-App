@@ -7,7 +7,7 @@ import { User as SupabaseUser, AuthSession } from "./config/SupabaseTableTypes";
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    id: supabaseUser.id,
+    userId: supabaseUser.id,
     email: supabaseUser.email,
     username: supabaseUser.username,
     profilePhoto: supabaseUser.image_url || undefined,
