@@ -1,5 +1,9 @@
 # Dependencies
 node_modules/
+apps/backend/ai/venv/
+apps/backend/ai/venv311/
+apps/backend/ai/venv39/
+apps/backend/ai/__pycache__/
 
 # Build outputs
 dist/
