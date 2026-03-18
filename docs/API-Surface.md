@@ -6,7 +6,7 @@ Use this document to find endpoint contracts quickly. It mirrors backend route g
 
 | Method | Path | Description | Body |
 | ------ | ---- | ----------- | ---- |
-| POST | `/auth/register` | Create a new user. New users get postVisibility `"friends"` by default. | `{ email, username, password, profilePhoto?, bio?, instruments? }` |
+| POST | `/auth/register` | Create a new user. New users get postVisibility `"friends"` by default. | `{ email, username, password }` |
 | POST | `/auth/login` | Authenticate and return a token. | `{ email, password }` |
 | POST | `/auth/logout` | Revoke current session token (delete or mark revoked). | none |
 | GET | `/auth/me` | Return the authenticated user profile if token is valid. | none |
@@ -19,7 +19,6 @@ Use this document to find endpoint contracts quickly. It mirrors backend route g
 
 | Method | Path | Description | Body |
 | ------ | ---- | ----------- | ---- |
-| POST | `/friends/:friendId` | Send or accept a friend request. | none |
 | DELETE | `/friends/:friendId` | Remove a friend (delete both rows). | none |
 | GET | `/friends` | List all friends of the authenticated user (keyset pagination). | `{ lastItem, pageSize }` |
 
