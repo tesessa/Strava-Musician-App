@@ -14,7 +14,7 @@ export function createInMemoryFriendsDAO(): FriendsDAO {
       // Sort by friendsSince for stable pagination
       const userFriends = friendships
         .filter(f => f.userId === userId)
-        .sort((a, b) => a.friendsSince.localeCompare(b.friendsSince));
+        .sort((a, b) => b.friendsSince.localeCompare(a.friendsSince));
       let startIdx = 0;
       if (lastFriendId) {
         const idx = userFriends.findIndex(f => f.friendId === lastFriendId);

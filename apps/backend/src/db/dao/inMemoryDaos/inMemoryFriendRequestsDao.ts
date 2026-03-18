@@ -30,7 +30,9 @@ export function createInMemoryFriendRequestsDAO(): FriendRequestsDAO {
     },
     async listIncoming(userId, options = {}): Promise<FriendRequest[]> {
       const { lastRequestId = null, pageSize = 20 } = options;
-      const incoming = friendRequests.filter(r => r.receiverId === userId && r.status === 'pending');
+      const incoming = friendRequests
+        .filter(r => r.receiverId === userId && r.status === 'pending')
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       let startIdx = 0;
       if (lastRequestId) {
         const idx = incoming.findIndex(r => r.requestId === lastRequestId);
@@ -41,7 +43,9 @@ export function createInMemoryFriendRequestsDAO(): FriendRequestsDAO {
     },
     async listOutgoing(userId, options = {}): Promise<FriendRequest[]> {
       const { lastRequestId = null, pageSize = 20 } = options;
-      const outgoing = friendRequests.filter(r => r.senderId === userId && r.status === 'pending');
+      const outgoing = friendRequests
+        .filter(r => r.senderId === userId && r.status === 'pending')
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       let startIdx = 0;
       if (lastRequestId) {
         const idx = outgoing.findIndex(r => r.requestId === lastRequestId);

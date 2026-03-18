@@ -19,3 +19,17 @@ export interface AuthSession {
   token: string;
   expires_at: Date;
 }
+
+export interface PracticeSession {
+  userId: string;
+  sessionId: string;
+  title: string;
+  postText?: string;
+  privateText?: string;
+  instrument?: string;
+  createdAt: Date;
+  durationMinutes: number;
+  tempo?: number;
+  pieceTitle?: string;
+  composer?: string;
+}

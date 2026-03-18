@@ -4,6 +4,8 @@ import * as practiceLogHandlers from "../../api/handlers/practiceLogHandlers";
 import * as userHandlers from "../../api/handlers/userHandlers";
 import * as friendsHandlers from "../../api/handlers/friendsHandlers";
 import * as friendRequestHandlers from "../../api/handlers/friendRequestHandlers";
+import * as mediaHandlers from "../../api/handlers/mediaHandlers";
+import * as likesHandlers from "../../api/handlers/likesHandlers";
 
 // Add CORS headers to all responses
 function withCORS(res: Response) {
@@ -47,6 +49,11 @@ async function dispatch(req: Request, method: string) {
   if (parts[0] === "users") {
     if (parts[1] === "search" && method === "GET") res = await userHandlers.searchUsers(req);
     else if (parts.length === 2 && method === "GET") res = await userHandlers.getUser(req, parts[1]);
+    // /users/:userId/practice-logs
+    else if (parts.length === 3 && parts[2] === "practice-logs" && method === "GET") {
+      const practiceLogHandlers = await import("../../api/handlers/practiceLogHandlers");
+      res = await practiceLogHandlers.getUserPracticeLogs(req, parts[1]);
+    }
     else if (parts.length === 2 && method === "PATCH") res = await userHandlers.updateUser(req, parts[1]);
     else if (parts.length === 2 && method === "DELETE") res = await userHandlers.deleteUser(req, parts[1]);
   }
@@ -86,6 +93,32 @@ async function dispatch(req: Request, method: string) {
     } else if (parts.length === 2 && method === "DELETE") {
       res = await friendRequestHandlers.cancelRequest(req, parts[1]);
     }
+  }
+
+
+  // /practice-logs/:practiceLogId/media (POST, GET)
+  if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "media") {
+    if (method === "POST") {
+      res = await mediaHandlers.createMedia(req, parts[1]);
+    } else if (method === "GET") {
+      res = await mediaHandlers.listMedia(req, parts[1]);
+    }
+  }
+
+  // /practice-logs/:practiceLogId/likes (POST, DELETE, GET)
+  if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "likes") {
+    if (method === "POST") {
+      res = await likesHandlers.likePracticeLog(req, { params: { practiceLogId: parts[1] } });
+    } else if (method === "DELETE") {
+      res = await likesHandlers.unlikePracticeLog(req, { params: { practiceLogId: parts[1] } });
+    } else if (method === "GET") {
+      res = await likesHandlers.getPracticeLogLikes(req, { params: { practiceLogId: parts[1] } });
+    }
+  }
+
+  // /media/:mediaId (DELETE)
+  if (parts[0] === "media" && parts.length === 2 && method === "DELETE") {
+    res = await mediaHandlers.deleteMedia(req, parts[1]);
   }
 
   // fallback: 404

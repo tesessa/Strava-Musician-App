@@ -1,9 +1,59 @@
+import { UserService } from "../services/userServices";
+import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
+import { createFriendsService } from "../services/friendsService";
+import { createFriendsDAO } from "../../db/dao/factories/friendsDaoFactory";
 import { NextResponse } from "next/server";
 import { PracticeLogService } from "../services/practiceLogServices";
 import { createPracticeLogDAO } from "../../db/dao/factories/practiceLogDaoFactory";
 import { authenticateToken, authenticateTokenToUserId } from "../utils/authenticateToken";
 
 const practiceLogService = new PracticeLogService(createPracticeLogDAO());
+const userService = new UserService(createUserDAO());
+const friendsService = createFriendsService(createFriendsDAO());
+
+
+// GET /users/:userId/practice-logs
+export const getUserPracticeLogs = async (req: Request, userId: string) => {
+  const { user: requester, token, error } = await authenticateToken(req);
+  if (error) return error;
+
+  // Get the target user
+  const targetUser = await userService.getUser(userId);
+  if (!targetUser) {
+    return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+  }
+
+  // Visibility logic: assume targetUser.visibility is 'public' or 'private'
+  const isSelf = requester.userId === userId;
+  let isFriend = false;
+  if (!isSelf) {
+    isFriend = await friendsService.isFriend(requester.userId, userId);
+  }
+  const isPublic = (targetUser.postVisibility === 'public');
+  const isPrivate = (targetUser.postVisibility === 'private');
+
+  // Authorization logic
+  if (!isSelf) {
+    if (!isFriend && !isPublic) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+    if (isFriend && isPrivate) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+  }
+
+  // Pagination params
+  const url = new URL(req.url);
+  const lastItemId = url.searchParams.get("lastItemId") ?? null;
+  const pageSize = Number(url.searchParams.get("pageSize") ?? 20);
+
+  try {
+    const logs = await practiceLogService.getUserPracticeLogs({ userId, lastItem: lastItemId, pageSize });
+    return NextResponse.json({ practiceLogs: logs }, { status: 200 });
+  } catch (err) {
+    return NextResponse.json({ error: "invalid_request" }, { status: 400 });
+  }
+};
 
 export const createPracticeLog = async (req: Request) => {
   const { user, token, error } = await authenticateToken(req);

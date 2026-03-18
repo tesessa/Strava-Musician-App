@@ -30,14 +30,15 @@ describe("SupabaseAuthDao", () => {
     expect(authToken).toHaveProperty("timestamp");
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toMatchObject({
-      id: testUserId,
+      userId: testUserId,
       email: "test@example.com",
-      createdAt: expect.any(Date),
       username: "testuser",
-      imageUrl: "",
-      bio: "",
-      visibility: "private",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
     });
   });
 
@@ -48,14 +49,15 @@ describe("SupabaseAuthDao", () => {
     await authDao.refreshSession(authToken.token);
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toMatchObject({
-      id: testUserId,
+      userId: testUserId,
       email: "test@example.com",
-      createdAt: expect.any(Date),
       username: "testuser",
-      imageUrl: "",
-      bio: "",
-      visibility: "private",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
     });
     const newTimeStamp = await authDao.getTokenExpiration(authToken.token);
     expect(newTimeStamp).not.toBeNull();

@@ -1,5 +1,4 @@
 import { APP_CONFIG } from "@strava-musician-app/shared";
-import type { PracticeLog } from "@strava-musician-app/shared";
 
 export default function Home() {
   const routes = [
@@ -88,6 +87,14 @@ export default function Home() {
       exampleCurl: `curl -X GET "http://localhost:3001/users/search?query=alice" \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
+    {
+      path: "/users/:userId/practice-logs",
+      method: "GET",
+      purpose: "List visible practice logs for a user (paginated, keyset). Returns logs if you are the user, a friend (and not private), or if the user's logs are public.",
+      requestBody: "none (must send Authorization header, use query params: lastItemId?, pageSize?)",
+      responseBody: "{ practiceLogs: PracticeLog[] } (200) or { error } (403/401/404)",
+      exampleCurl: `curl -X GET "http://localhost:3001/users/<userId>/practice-logs?pageSize=5" \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
     // --- Practice Log Routes ---
     {
       path: "/practice-logs",
@@ -104,11 +111,10 @@ export default function Home() {
     {
       path: "/practice-logs/feed",
       method: "GET",
-      purpose: "Get a paginated feed of your practice logs",
+      purpose: "Get a paginated feed of practice logs created by the authenticated user and their friends. Returns logs in reverse chronological order.",
       requestBody: "none (must send Authorization header, use query params: lastItemId?, pageSize?)",
       responseBody: "{ practiceLogs: PracticeLog[] } (200) or { error } (400/401)",
-      exampleCurl: `curl -X GET "http://localhost:3001/practice-logs/feed?lastItemId=<last_id>&pageSize=5" \\
--H "Authorization: Bearer <TOKEN>"`,
+      exampleCurl: `curl -X GET "http://localhost:3001/practice-logs/feed?lastItemId=<last_id>&pageSize=5" \\\n-H "Authorization: Bearer <TOKEN>"`,
     },
     {
       path: "/practice-logs/:practiceLogId",

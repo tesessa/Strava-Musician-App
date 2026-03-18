@@ -7,6 +7,22 @@ const authDao = createAuthDAO();
 export const practiceLogs = new Map<string, PracticeLog>();
 
 export const PracticeLogDao: PracticeLogDAO = {
+  async getUserPracticeLogs(userId: string, lastItemId: string | null, pageSize: number) {
+    // Get all practice logs for the user, sorted chronologically by createdAt
+    const userPracticeLogs = Array.from(practiceLogs.values())
+      .filter((log) => log.userId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    if (!lastItemId) {
+      return userPracticeLogs.slice(0, pageSize);
+    }
+    const idx = userPracticeLogs.findIndex((l) => l.practiceLogId === lastItemId);
+    if (idx === -1 || idx === userPracticeLogs.length - 1) {
+      return [];
+    }
+    return userPracticeLogs.slice(idx + 1, idx + 1 + pageSize);
+  },
+
   async createPracticeLog(practiceLog: PracticeLog) {
     const id = practiceLog.practiceLogId;
     practiceLogs.set(id, practiceLog);
@@ -17,26 +33,25 @@ export const PracticeLogDao: PracticeLogDAO = {
     const user = await authDao.getUserByToken(token);
     if (!user) return [];
 
-    // Get all practice logs for this user, sorted chronologically by createdAt
-    const userPracticeLogs = Array.from(practiceLogs.values())
-      .filter((log) => log.userId === user.userId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    // Get friend userIds (assuming inMemorySocialState is imported and available)
+    const { inMemorySocialState } = await import("./inMemorySocialState");
+    const friendIds = inMemorySocialState.friendships
+      .filter(f => f.userId === user.userId)
+      .map(f => f.friendId);
 
-    // If lastItemId is null, return the first pageSize items
+    // Collect logs from user and friends
+    const feedLogs = Array.from(practiceLogs.values())
+      .filter((log) => log.userId === user.userId || friendIds.includes(log.userId))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     if (!lastItemId) {
-      return userPracticeLogs.slice(0, pageSize);
+      return feedLogs.slice(0, pageSize);
     }
-
-    // Find the index of the lastItemId
-    const idx = userPracticeLogs.findIndex((l) => l.practiceLogId === lastItemId);
-
-    // If lastItemId not found or is the last item, return empty list
-    if (idx === -1 || idx === userPracticeLogs.length - 1) {
+    const idx = feedLogs.findIndex((l) => l.practiceLogId === lastItemId);
+    if (idx === -1 || idx === feedLogs.length - 1) {
       return [];
     }
-
-    // Return the next pageSize items after lastItemId
-    return userPracticeLogs.slice(idx + 1, idx + 1 + pageSize);
+    return feedLogs.slice(idx + 1, idx + 1 + pageSize);
   },
 
   async getPracticeLog(practiceLogId) {
