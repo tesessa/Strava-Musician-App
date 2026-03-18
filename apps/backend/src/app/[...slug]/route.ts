@@ -47,6 +47,11 @@ async function dispatch(req: Request, method: string) {
   if (parts[0] === "users") {
     if (parts[1] === "search" && method === "GET") res = await userHandlers.searchUsers(req);
     else if (parts.length === 2 && method === "GET") res = await userHandlers.getUser(req, parts[1]);
+    // /users/:userId/practice-logs
+    else if (parts.length === 3 && parts[2] === "practice-logs" && method === "GET") {
+      const practiceLogHandlers = await import("../../api/handlers/practiceLogHandlers");
+      res = await practiceLogHandlers.getUserPracticeLogs(req, parts[1]);
+    }
     else if (parts.length === 2 && method === "PATCH") res = await userHandlers.updateUser(req, parts[1]);
     else if (parts.length === 2 && method === "DELETE") res = await userHandlers.deleteUser(req, parts[1]);
   }

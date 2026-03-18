@@ -5,6 +5,12 @@ import { createAuthDAO } from "../../db/dao/factories/authDaoFactory";
 export class PracticeLogService {
   constructor(private practiceLogDao: PracticeLogDAO) {}
 
+  async getUserPracticeLogs(
+    { userId, lastItem, pageSize }: { userId: string; lastItem: string | null; pageSize: number }
+  ): Promise<PracticeLog[]> {
+    return this.practiceLogDao.getUserPracticeLogs(userId, lastItem, pageSize);
+  }
+
   async createPracticeLog(
     data: Omit<PracticeLog, "practiceLogId" | "createdAt" | "userId">,
     token: string
