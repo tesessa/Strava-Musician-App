@@ -5,6 +5,7 @@ import * as userHandlers from "../../api/handlers/userHandlers";
 import * as friendsHandlers from "../../api/handlers/friendsHandlers";
 import * as friendRequestHandlers from "../../api/handlers/friendRequestHandlers";
 import * as mediaHandlers from "../../api/handlers/mediaHandlers";
+import * as likesHandlers from "../../api/handlers/likesHandlers";
 
 // Add CORS headers to all responses
 function withCORS(res: Response) {
@@ -94,12 +95,24 @@ async function dispatch(req: Request, method: string) {
     }
   }
 
+
   // /practice-logs/:practiceLogId/media (POST, GET)
   if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "media") {
     if (method === "POST") {
       res = await mediaHandlers.createMedia(req, parts[1]);
     } else if (method === "GET") {
       res = await mediaHandlers.listMedia(req, parts[1]);
+    }
+  }
+
+  // /practice-logs/:practiceLogId/likes (POST, DELETE, GET)
+  if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "likes") {
+    if (method === "POST") {
+      res = await likesHandlers.likePracticeLog(req, { params: { practiceLogId: parts[1] } });
+    } else if (method === "DELETE") {
+      res = await likesHandlers.unlikePracticeLog(req, { params: { practiceLogId: parts[1] } });
+    } else if (method === "GET") {
+      res = await likesHandlers.getPracticeLogLikes(req, { params: { practiceLogId: parts[1] } });
     }
   }
 
