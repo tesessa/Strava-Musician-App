@@ -4,6 +4,7 @@ import * as practiceLogHandlers from "../../api/handlers/practiceLogHandlers";
 import * as userHandlers from "../../api/handlers/userHandlers";
 import * as friendsHandlers from "../../api/handlers/friendsHandlers";
 import * as friendRequestHandlers from "../../api/handlers/friendRequestHandlers";
+import * as mediaHandlers from "../../api/handlers/mediaHandlers";
 
 // Add CORS headers to all responses
 function withCORS(res: Response) {
@@ -91,6 +92,20 @@ async function dispatch(req: Request, method: string) {
     } else if (parts.length === 2 && method === "DELETE") {
       res = await friendRequestHandlers.cancelRequest(req, parts[1]);
     }
+  }
+
+  // /practice-logs/:practiceLogId/media (POST, GET)
+  if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "media") {
+    if (method === "POST") {
+      res = await mediaHandlers.createMedia(req, parts[1]);
+    } else if (method === "GET") {
+      res = await mediaHandlers.listMedia(req, parts[1]);
+    }
+  }
+
+  // /media/:mediaId (DELETE)
+  if (parts[0] === "media" && parts.length === 2 && method === "DELETE") {
+    res = await mediaHandlers.deleteMedia(req, parts[1]);
   }
 
   // fallback: 404

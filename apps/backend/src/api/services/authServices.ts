@@ -31,6 +31,7 @@ export class AuthService {
     imageUrl?: string;
     bio?: string;
     instruments?: string[];
+    postVisibility?: "friends" | "public" | "private";
   }) {
     if (!data.email || !data.username || !data.password) {
       return { error: "email, username and password required", status: 400 };
@@ -45,7 +46,7 @@ export class AuthService {
       username: data.username,
       profilePhoto: data.profilePhoto ?? data.imageUrl,
       bio: data.bio,
-      postVisibility: "friends",
+      postVisibility: data.postVisibility ?? "friends",
       instruments: data.instruments ?? [],
     };
     const user = await this.userDao.createUser(newUser, hashedPassword);
