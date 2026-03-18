@@ -7,6 +7,14 @@ alwaysApply: true
 
 Follow the architecture in `docs/KODA-Architecture-and-Design.md`. Summary of design rules:
 
+Detailed guidance is split into focused docs linked from the index:
+
+- `docs/KODA-Frontend-Architecture.md`
+- `docs/KODA-Backend-Architecture.md`
+- `docs/KODA-Data-Model-and-Storage.md`
+- `docs/KODA-API-Surface.md`
+- `docs/KODA-Key-Flows-and-UX.md`
+
 ## Frontend
 
 - **Components**: Handle display logic only. No business logic or data manipulation in components.

@@ -28,6 +28,14 @@ export class ClientCommunicator {
         return this.doRequest<REQ,RES>("PUT", endpoint, req, headers);
     }
 
+    public async patch<REQ, RES>(
+        req: REQ | undefined,
+        endpoint: string,
+        headers?: Headers
+    ): Promise<RES> {
+        return this.doRequest<REQ, RES>("PATCH", endpoint, req, headers);
+    }
+
     public async delete<RES>(
         endpoint: string,
         headers?: Headers
