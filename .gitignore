@@ -35,3 +35,8 @@ coverage/
 # backend specific
 apps/backend/src/app/api/memory-view/route.ts
 apps/backend/src/app/memory-view/page.tsx
+
+apps/backend/ai/venv/
+apps/backend/ai/venv311/
+apps/backend/ai/venv39/
+apps/backend/ai/__pycache__/
