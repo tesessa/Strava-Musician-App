@@ -36,6 +36,7 @@ coverage/
 apps/backend/src/app/api/memory-view/route.ts
 apps/backend/src/app/memory-view/page.tsx
 
+# ai specific
 apps/backend/ai/venv/
 apps/backend/ai/venv311/
 apps/backend/ai/venv39/
