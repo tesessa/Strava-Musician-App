@@ -48,6 +48,7 @@ app = FastAPI()
 
 @app.post("/analyze")
 async def analyze_audio(file: UploadFile = File(...)):
+    # the file is in oracle cloud.
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         shutil.copyfileobj(file.file, tmp)
         tmp_path = tmp.name
