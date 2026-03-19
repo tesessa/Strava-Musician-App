@@ -1,0 +1,16 @@
+numpy
+scipy
+cython
+mido
+
+pytest
+pyaudio
+pyfftw
+
+madmom
+
+openai
+
+fastapi
+python-multipart
+uvicorn
