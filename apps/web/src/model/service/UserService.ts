@@ -6,7 +6,7 @@ import type { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateReque
  * Components and hooks receive this service (or other services) rather than the server directly.
  */
 export class UserService {
-  private currentUser: User | undefined = undefined;
+  private currentUser: User | null = null;
   constructor(private readonly server: KodaServerApi) {}
 
   /** Get the currently authenticated user (delegates to server). */
@@ -17,27 +17,22 @@ export class UserService {
     return user;
   }
 
-  async login(request: LoginRequest): Promise<AuthResponse> {
-    // should return user & authToken (to be implemented later)
-    const { token, user} = await this.server.login(request);
+  async login(email: string, password: string): Promise<User | null> {
+    const auth = await this.server.login({ email, password });
+    const user = auth.user ?? null;
     this.currentUser = user;
-    return {token, user};
+    return user;
   }
 
-  async register(request: RegisterRequest): Promise<AuthResponse> {
-    // should return user & authToken (to be implemented later)
-    const { token, user} = await this.server.register(request)
-    // const user = await this.server.register(username, email, password);
+  async register(username: string, email: string, password: string): Promise<User | null> {
+    const auth = await this.server.register({ username, email, password });
+    const user = auth.user ?? null;
     this.currentUser = user;
-    return { token, user };
+    return user;
   }
 
   async logout(): Promise<void> {
     await this.server.logout();
-    this.currentUser = undefined;
-  }
-
-  async updateUser(userId: string, request: UserUpdateRequest): Promise<User> {
-    return this.server.updateUser(userId, request);
+    this.currentUser = null;
   }
 }

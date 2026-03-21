@@ -227,11 +227,4 @@ export interface KodaServerApi {
 
   /** DELETE /events/:eventId */
   deleteEvent(eventId: string): Promise<void>;
-
-  // ===================
-  // Legacy / Not in docs/API-Surface.md
-  // ===================
-
-  /** Not in API-Surface.md (remove when endpoint exists). */
-  sharePracticeLog(practiceLogId: string): Promise<void>;
 }

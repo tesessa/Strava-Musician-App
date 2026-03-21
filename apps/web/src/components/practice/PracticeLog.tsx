@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./practiceLog.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { INSTRUMENTS } from "@strava-musician-app/shared";
+import { INSTRUMENTS, Visibility } from "@strava-musician-app/shared";
 import { practiceLogService } from "../../model";
 // import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
@@ -52,6 +52,7 @@ const PracticeLog = () => {
   const [postText, setPostText] = useState("");
   const [privateText, setPrivateText] = useState("");
   const [instrument, setInstrument] = useState(state.instrument ?? "");
+  const [visibility] = useState<Visibility>("friends");
   const [loading, setLoading] = useState(false);
 
   const formatDuration = (mins: number) => {

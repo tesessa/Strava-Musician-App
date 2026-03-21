@@ -135,12 +135,38 @@ const Home = () => {
     }
   };
 
-  const handleShare = async (practiceLogId: string) => {
+  const handleShare = async (feedLog: FeedPracticeLog) => {
+    const title = feedLog.title?.trim() || "Practice log";
+    const textParts = [feedLog.name, feedLog.details].filter(
+      (s) => typeof s === "string" && s.trim().length > 0,
+    ) as string[];
+    const text =
+      textParts.length > 0 ? textParts.join("\n\n") : undefined;
+    const url =
+      typeof window !== "undefined" ? window.location.href : undefined;
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+      } catch (error) {
+        const name = error instanceof DOMException ? error.name : "";
+        if (name === "AbortError") return;
+        console.error("Share failed:", error);
+      }
+      return;
+    }
+
+    const fallback = [title, text, url].filter(Boolean).join("\n\n");
     try {
-      await practiceLogService.sharePracticeLog(practiceLogId);
-      alert("TBD");
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fallback);
+        alert("Copied to clipboard — you can paste into any app to share.");
+      } else {
+        alert(fallback);
+      }
     } catch (error) {
-      console.error("Failed to share practice log:", error);
+      console.error("Share fallback failed:", error);
+      alert("Sharing isn’t supported in this browser.");
     }
   };
 
