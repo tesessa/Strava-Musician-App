@@ -1,12 +1,12 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
-import type { User } from "@strava-musician-app/shared";
+import type { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from "@strava-musician-app/shared";
 
 /**
  * User/auth-related business logic. Receives KodaServerApi via dependency injection.
  * Components and hooks receive this service (or other services) rather than the server directly.
  */
 export class UserService {
-  private currentUser: User | null = null;
+  private currentUser: User | undefined = undefined;
   constructor(private readonly server: KodaServerApi) {}
 
   /** Get the currently authenticated user (delegates to server). */
@@ -17,21 +17,27 @@ export class UserService {
     return user;
   }
 
-  async login(email: string, password: string): Promise<User | null> {
+  async login(request: LoginRequest): Promise<AuthResponse> {
     // should return user & authToken (to be implemented later)
-    const user = await this.server.login(email, password);
+    const { token, user} = await this.server.login(request);
     this.currentUser = user;
-    return user;
+    return {token, user};
   }
 
-  async register(username: string, email: string, password: string): Promise<User | null> {
+  async register(request: RegisterRequest): Promise<AuthResponse> {
     // should return user & authToken (to be implemented later)
-    const user = await this.server.register(username, email, password);
+    const { token, user} = await this.server.register(request)
+    // const user = await this.server.register(username, email, password);
     this.currentUser = user;
-    return user;
+    return { token, user };
   }
 
-  logout(): void {
-    this.currentUser = null;
+  async logout(): Promise<void> {
+    await this.server.logout();
+    this.currentUser = undefined;
+  }
+
+  async updateUser(userId: string, request: UserUpdateRequest): Promise<User> {
+    return this.server.updateUser(userId, request);
   }
 }

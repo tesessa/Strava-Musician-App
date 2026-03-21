@@ -19,7 +19,10 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-        const user = await userService.login(formData.email ?? "", formData.password ?? "");
+        if (!formData.email || !formData.password) {
+          return;
+        }
+        const user = await userService.login({ email: formData.email, password: formData.password });
         if (user) {
             navigate("/home");
         } else {

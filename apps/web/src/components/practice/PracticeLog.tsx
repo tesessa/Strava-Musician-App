@@ -2,9 +2,8 @@ import { useState } from "react";
 import "./practiceLog.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
-import type { Visibility } from "@strava-musician-app/shared";
 import { practiceLogService } from "../../model";
-import { userService } from "../../model";
+// import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
 
 type LocationState = {
@@ -50,10 +49,9 @@ const PracticeLog = () => {
   });
 
   const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState("");
-  const [privateNotes, setPrivateNotes] = useState("");
+  const [postText, setPostText] = useState("");
+  const [privateText, setPrivateText] = useState("");
   const [instrument, setInstrument] = useState(state.instrument ?? "");
-  const [visibility, setVisibility] = useState<Visibility>("public");
   const [loading, setLoading] = useState(false);
 
   const formatDuration = (mins: number) => {
@@ -66,16 +64,18 @@ const PracticeLog = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const user = await userService.getCurrentUser();
-      const userId = user?.userId ?? "user";
-      await practiceLogService.savePracticeLog(
-        userId,
-        title,
-        visibility,
-        durationMinutes,
-        notes,
-        privateNotes,
-        instrument,
+      // const user = await userService.getCurrentUser();
+      // const userId = user?.userId ?? "user";
+      await practiceLogService.createPracticeLog(
+        { title,
+          postText,
+          privateText,
+          instrument,
+          durationMinutes,
+          // tempo,
+          // pieceTitle,
+          // composer
+        }
       );
       await clearAllPracticeStorage();
       navigate("/home");
@@ -90,7 +90,7 @@ const PracticeLog = () => {
   const handleDiscard = async () => {
     setLoading(true);
     try {
-      await practiceLogService.discardPracticeLog("unsaved");
+      // await practiceLogService.deletePracticeLog("unsaved");
       navigate("/home");
     } catch {
       // navigate to home in finally block
@@ -145,8 +145,8 @@ const PracticeLog = () => {
         <textarea
           className="notes-input"
           placeholder="How'd it go? What did you work on?"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          value={postText}
+          onChange={(e) => setPostText(e.target.value)}
         />
 
         {/* Instrument */}
@@ -197,8 +197,8 @@ const PracticeLog = () => {
         <textarea
           className="notes-input"
           placeholder="Write down private notes here. Only you can see these."
-          value={privateNotes}
-          onChange={(e) => setPrivateNotes(e.target.value)}
+          value={privateText}
+          onChange={(e) => setPrivateText(e.target.value)}
         />
 
         {/* Visibility

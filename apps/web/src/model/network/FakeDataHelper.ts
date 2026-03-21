@@ -961,6 +961,8 @@ export class FakeDataHelper {
         createdAt: "2026-03-14T14:00:00.000Z",
         durationMinutes: 45,
         tempo: 76,
+        pieceTitle: "Etude in E Major",
+        composer: "Fredric Chopin"
       },
       {
         practiceLogId: "practiceLog-103",

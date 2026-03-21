@@ -1,29 +1,42 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
-import type { PracticeLog, FeedPracticeLog, Instrument } from "@strava-musician-app/shared";
-import "../index.css";
+import type { PracticeLog, Instrument, UserSearchResult } from "@strava-musician-app/shared";
+import "../../index.css";
+import FeedPracticeLogCard from "./FeedPracticeLogCard";
+import BottomNav from "../navigation/BottomNav";
+import { practiceLogService } from "../../model";
 
-function toFeedPracticeLog(log: PracticeLog): FeedPracticeLog {
-  return {
-    ...log,
-    name: log.userId,
-    details: log.postText ?? "",
-    instrument: log.instrument ?? "",
-    createdAt: new Date(log.createdAt),
-  };
-}
+// export interface PracticeLog {
+//   userId: string;
+//   practiceLogId: string;
+//   title: string;
+//   postText?: string;
+//   privateText?: string;
+//   instrument?: string;
+//   createdAt: string;
+//   durationMinutes: number;
+//   tempo?: number;
+//   pieceTitle?: string;
+//   composer?: string;
+// }
 
-import FeedPracticeLogCard from "../components/home/FeedPracticeLogCard";
-import BottomNav from "../components/navigation/BottomNav";
-import { PracticeLogService } from "../model/service";
-import { FakeDataServer } from "../model/network";
+// function toFeedPracticeLog(log: PracticeLog): PracticeLog {
+//   return {
+//     ...log,
+//     // userId: log.userId,
+//     // postText: log.postText,
+//     // instrument: log.instrument,
+//     // createdAt: "fake date",
+//   };
+// }
+
 
 type InstrumentFilter = "All" | Instrument;
 
 const Home = () => {
   const navigate = useNavigate();
-  const practiceLogService = useMemo(() => new PracticeLogService(new FakeDataServer()), []);
+  // const practiceLogService = useMemo(() => new PracticeLogService(new FakeDataServer()), []);
 
   const [selectedInstrument, setSelectedInstrument] =
     useState<InstrumentFilter>("All");
@@ -33,22 +46,41 @@ const Home = () => {
 
   const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
-    const loadFeed = async () => {
-      try {
-        setLoading(true);
-        const feed = await practiceLogService.getFeed();
-        setPracticeLogs(feed);
-      } catch (error) {
-        console.error("Failed to load feed:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadFeed();
   }, []);
+
+  // useEffect(() => {
+  const loadFeed = async () => {
+    try {
+      setLoading(true);
+      const feed = await practiceLogService.getPracticeLogsFeed({});
+      setPracticeLogs(feed);
+    } catch (error) {
+      console.error("Failed to load feed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    // loadFeed();
+  // }, []);
+
+  const visiblePosts = useMemo(() => {
+    let filtered = practiceLogs;
+    if (selectedInstrument !== "All") {
+      filtered = filtered.filter((log) => log.instrument === selectedInstrument);
+    }
+
+    return filtered;
+  }, [practiceLogs, selectedInstrument]);
+
+  useEffect(() => {
+    
+  })
 
   // const visiblePosts = useMemo(() => {
   //   const byInstrument =
@@ -73,7 +105,7 @@ const Home = () => {
 
   const refreshFeed = async () => {
     try {
-      const feed = await practiceLogService.getFeed();
+      const feed = await practiceLogService.getPracticeLogsFeed({});
       setPracticeLogs(feed);
     } catch (error) {
       console.error("Failed to refresh feed:", error);
@@ -96,7 +128,7 @@ const Home = () => {
 
   const handleComment = async (practiceLogId: string, text: string) => {
     try {
-      await practiceLogService.commentOnPracticeLog(practiceLogId, text);
+      await practiceLogService.commentOnPracticeLog(practiceLogId, {text});
       await refreshFeed();
     } catch (error) {
       console.error("Failed to comment on practice log:", error);
@@ -190,7 +222,7 @@ const Home = () => {
       </div>
 
       {/* Feed */}
-      <main className="home-feed">
+      {/* <main className="home-feed">
         {loading ? (
           <div className="feed-empty">Loading feed...</div>
         ) : practiceLogs.length === 0 ? (
@@ -212,7 +244,7 @@ const Home = () => {
             />
           ))
         )}
-      </main>
+      </main> */}
 
       {/* Bottom Nav */}
       <BottomNav active="home" />

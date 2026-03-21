@@ -1,6 +1,6 @@
 // import { APP_CONFIG } from "@strava-musician-app/shared";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
+import Home from "./components/home/Home";
 import PracticeLog from "./components/practice/PracticeLog";
 import Login from "./components/authentication/Login";
 import Register from "./components/authentication/Register";
