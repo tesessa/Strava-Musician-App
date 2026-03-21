@@ -6,7 +6,7 @@ type FeedPracticeLogCardProps = {
   practiceLog: FeedPracticeLog;
   onLike: (practiceLogId: string) => Promise<void> | void;
   onComment: (practiceLogId: string, text: string) => Promise<void> | void;
-  onShare: (practiceLogId: string) => Promise<void> | void;
+  onShare: (practiceLog: FeedPracticeLog) => Promise<void> | void;
   onProfileClick?: (userId?: string) => void;
 };
 
@@ -83,7 +83,7 @@ const FeedPracticeLogCard = ({
         <button
           className="feed-action-btn"
           type="button"
-          onClick={() => onShare(practiceLog.practiceLogId)}
+          onClick={() => onShare(practiceLog)}
         >
           Share
         </button>

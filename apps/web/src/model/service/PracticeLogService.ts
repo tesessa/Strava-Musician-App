@@ -28,8 +28,4 @@ export class PracticeLogService {
     async commentOnPracticeLog(practiceLogId: string, text: string): Promise<void> {
         return this.server.commentOnPracticeLog(practiceLogId, text);
     }
-
-    async sharePracticeLog(practiceLogId: string): Promise<void> {
-        return this.server.sharePracticeLog(practiceLogId);
-    }
 }
