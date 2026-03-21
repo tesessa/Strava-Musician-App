@@ -18,20 +18,21 @@ export class UserService {
   }
 
   async login(email: string, password: string): Promise<User | null> {
-    // should return user & authToken (to be implemented later)
-    const user = await this.server.login(email, password);
+    const auth = await this.server.login({ email, password });
+    const user = auth.user ?? null;
     this.currentUser = user;
     return user;
   }
 
   async register(username: string, email: string, password: string): Promise<User | null> {
-    // should return user & authToken (to be implemented later)
-    const user = await this.server.register(username, email, password);
+    const auth = await this.server.register({ username, email, password });
+    const user = auth.user ?? null;
     this.currentUser = user;
     return user;
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    await this.server.logout();
     this.currentUser = null;
   }
 }

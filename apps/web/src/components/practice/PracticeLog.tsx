@@ -53,7 +53,7 @@ const PracticeLog = () => {
   const [notes, setNotes] = useState("");
   const [privateNotes, setPrivateNotes] = useState("");
   const [instrument, setInstrument] = useState(state.instrument ?? "");
-  const [visibility, setVisibility] = useState<Visibility>("public");
+  const [visibility] = useState<Visibility>("friends");
   const [loading, setLoading] = useState(false);
 
   const formatDuration = (mins: number) => {
