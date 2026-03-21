@@ -13,4 +13,11 @@ module.exports = {
       tsconfig: './tsconfig.json', // <-- points to your backend tsconfig
     },
   },
+  roots: ['<rootDir'],
+  testMatch: ['**/tests/**/*.test.ts', '**/__tests__/**/*.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '**/*.spec.ts', 'spec.ts'],
+  modulePathIgnorePatterns: ['spec.ts']
+  // testPathIgnorePatterns: [
+  //   '/node_modules/', '/e2e/'
+  // ]
 };
