@@ -2,8 +2,8 @@ import { useState } from "react";
 import "./practiceLog.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { INSTRUMENTS, Visibility } from "@strava-musician-app/shared";
-import { practiceLogService } from "../../model";
-// import { userService } from "../../model";
+import { practiceLogService, mediaUploadService } from "../../model";
+import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
 
 type LocationState = {
@@ -52,6 +52,9 @@ const PracticeLog = () => {
   const [postText, setPostText] = useState("");
   const [privateText, setPrivateText] = useState("");
   const [instrument, setInstrument] = useState(state.instrument ?? "");
+  const [pieceTitle, setPieceTitle] = useState("");
+  const [composer, setComposer] = useState("");
+  const [tempo, setTempo] = useState<string>("");
   const [visibility] = useState<Visibility>("friends");
   const [loading, setLoading] = useState(false);
 
@@ -65,19 +68,27 @@ const PracticeLog = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // const user = await userService.getCurrentUser();
-      // const userId = user?.userId ?? "user";
-      await practiceLogService.createPracticeLog(
-        { title,
+      const user = await userService.getCurrentUser();
+      const userId = user?.userId ?? "user";
+      const tempoNum = tempo ? parseInt(tempo, 10): undefined;
+
+      const practiceLogId = await practiceLogService.savePracticeLog(
+          userId,
+          title,
+          visibility,
+          durationMinutes,
           postText,
           privateText,
           instrument,
-          durationMinutes,
-          // tempo,
-          // pieceTitle,
-          // composer
-        }
+          tempoNum || undefined,
+          pieceTitle || undefined,
+          composer || undefined
       );
+
+      if(mediaEntries.length > 0) {
+        await mediaUploadService.uploadMediaForPracticeLog(practiceLogId, mediaEntries);
+      }
+
       await clearAllPracticeStorage();
       navigate("/home");
     } catch (err) {
@@ -89,14 +100,15 @@ const PracticeLog = () => {
   };
 
   const handleDiscard = async () => {
+    navigate("/home");
     setLoading(true);
+
     try {
-      // await practiceLogService.deletePracticeLog("unsaved");
+      await clearAllPracticeStorage();
       navigate("/home");
     } catch {
       // navigate to home in finally block
     } finally {
-      await clearAllPracticeStorage();
       setLoading(false);
       navigate("/home");
     }
@@ -168,6 +180,34 @@ const PracticeLog = () => {
           </select>
         </div>
 
+        <h4 className="section-title">Piece Title (Optional)</h4>
+        <input
+          className="title-input"
+          type="text"
+          placeholder="e.g., Etude Op 10 no 3"
+          value={pieceTitle}
+          onChange={(e) => setPieceTitle(e.target.value)}
+        />
+      
+        <h4 className="section-title">Composer (Optional)</h4>
+        <input
+          className="title-input"
+          type="text"
+          placeholder="e.g., Fredric Chopin"
+          value={composer}
+          onChange={(e) => setComposer(e.target.value)}
+        />
+
+        <h4 className="section-title">Tempo (Optional)</h4>
+        <input
+          className="title-input"
+          type="number"
+          placeholder="BPM (e.g., 76)"
+          value={tempo}
+          onChange={(e) => setTempo(e.target.value)}
+        />
+
+
         {/* Media from practice (audio/video clips) */}
         {mediaEntries.length > 0 && (
           <>
@@ -177,7 +217,6 @@ const PracticeLog = () => {
                 <div key={entry.id} className="media-preview-item">
                   {entry.kind === "audio" ? (
                     <div className="media-preview-audio">
-                      {/* <span>🎙</span> */}
                       <audio src={entry.url} controls />
                     </div>
                   ) : (

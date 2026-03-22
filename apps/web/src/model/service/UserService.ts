@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
-import type { AuthResponse, LoginRequest, RegisterRequest, User, UserUpdateRequest } from "@strava-musician-app/shared";
+import type { User } from "@strava-musician-app/shared";
 
 /**
  * User/auth-related business logic. Receives KodaServerApi via dependency injection.
@@ -15,6 +15,10 @@ export class UserService {
     const user = await this.server.getMe();
     this.currentUser = user;
     return user;
+  }
+
+  async getUser(userId: string): Promise<User> {
+    return this.server.getUser(userId);
   }
 
   async login(email: string, password: string): Promise<User | null> {

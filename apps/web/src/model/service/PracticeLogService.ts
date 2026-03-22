@@ -18,6 +18,8 @@ import type {
   FeedRequest,
   PracticeLog,
   Visibility,
+  UserSearchResult,
+  MediaListResponse
 } from "@strava-musician-app/shared";
 
 export class PracticeLogService {
@@ -110,6 +112,10 @@ export class PracticeLogService {
     return this.server.likePracticeLog(practiceLogId);
   }
 
+  async unlikePracticeLog(practiceLogId: string): Promise<void> {
+    return this.server.unlikePracticeLog(practiceLogId);
+  }
+
     // async commentOnPracticeLog(practiceLogId: string, request: CreateCommentRequest): Promise<Comment> {
     //     return this.server.createPracticeLogComment(practiceLogId, request);
     // }
@@ -126,13 +132,13 @@ export class PracticeLogService {
     //     return this.server.getPracticeLogLikes(practiceLogId);
     // }
 
-    // async searchUsers(query: string): Promise<UserSearchResult[]> {
-    //     return this.server.searchUsers(query);
-    // }
+    async searchUsers(query: string): Promise<UserSearchResult[]> {
+        return this.server.searchUsers(query);
+    }
     
-    // async sendFriendRequest(receiverId: string): Promise<void> {
-    //     return this.server.createFriendRequest(receiverId);
-    // }
+    async sendFriendRequest(receiverId: string): Promise<void> {
+        return this.server.createFriendRequest(receiverId);
+    }
  
     // async getFriends(lastItem?: string, pageSize?: number) {
     //     return this.server.getFriends({ lastItem, pageSize });
@@ -141,9 +147,6 @@ export class PracticeLogService {
     // async removeFriend(friendId: string): Promise<void> {
     //     return this.server.deleteFriend(friendId);
     // }
-  async unlikePracticeLog(practiceLogId: string): Promise<void> {
-    return this.server.unlikePracticeLog(practiceLogId);
-  }
 
   async commentOnPracticeLog(
     practiceLogId: string,
@@ -151,5 +154,9 @@ export class PracticeLogService {
   ): Promise<void> {
     const request: CreateCommentRequest = { text };
     await this.server.createPracticeLogComment(practiceLogId, request);
+  }
+
+  async getPracticeLogMedia(practiceLogId: string): Promise<MediaListResponse> {
+    return this.server.getPracticeLogMedia(practiceLogId);
   }
 }

@@ -2,27 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import type { PracticeLog, Instrument, UserSearchResult } from "@strava-musician-app/shared";
+import { INSTRUMENTS } from "@strava-musician-app/shared";
 import "./index.css";
 import FeedPracticeLogCard from "./FeedPracticeLogCard";
 import BottomNav from "../navigation/BottomNav";
-import { PracticeLogService } from "../../model/service";
-import { FakeDataServer } from "../../model/network/FakeDataServer";
+import { practiceLogService } from "../../model";
+// import { FakeDataServer } from "../../model/network/FakeDataServer";
 // import { ServerFacade } from "../../model/network/ServerFacade";
 
 type InstrumentFilter = "All" | Instrument;
-type SearchMode = "posts" | "users";
+// type SearchMode = "posts" | "users";
 
 const Home = () => {
   const navigate = useNavigate();
   
   // Use FakeDataServer for now, switch to ServerFacade when ready
-  const practiceLogService = useMemo(() => new PracticeLogService(new FakeDataServer()), []);
+  // const practiceLogService = useMemo(() => new PracticeLogService(new FakeDataServer()), []);
   // const practiceLogService = useMemo(() => new PracticeLogService(new ServerFacade()), []);
 
   const [selectedInstrument, setSelectedInstrument] = useState<InstrumentFilter>("All");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [searchMode, setSearchMode] = useState<SearchMode>("users");
+  // const [searchMode, setSearchMode] = useState<SearchMode>("users");
 
   const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ const Home = () => {
   const loadFeed = async () => {
     try {
       setLoading(true);
-      const feed = await practiceLogService.getPracticeLogsFeed({});
+      const feed = await practiceLogService.getFeed();
       setPracticeLogs(feed);
     } catch (error) {
       console.error("Failed to load feed:", error);
@@ -57,21 +58,13 @@ const Home = () => {
       filtered = filtered.filter((log) => log.instrument === selectedInstrument);
     }
 
-    // Filter by search text (when in posts mode)
-    if (searchMode === "posts" && searchText.trim()) {
-      const query = searchText.trim().toLowerCase();
-      filtered = filtered.filter((log) => {
-        const haystack = `${log.title} ${log.postText || ""} ${log.instrument || ""} ${log.pieceTitle || ""} ${log.composer || ""}`.toLowerCase();
-        return haystack.includes(query);
-      });
-    }
 
     return filtered;
-  }, [practiceLogs, selectedInstrument, searchText, searchMode]);
+  }, [practiceLogs, selectedInstrument]);
 
   // Handle user search
   useEffect(() => {
-    if (searchMode === "users" && searchText.trim()) {
+    if (searchText.trim()) {
       const timer = setTimeout(() => {
         searchUsers(searchText);
       }, 300); // Debounce
@@ -80,7 +73,7 @@ const Home = () => {
     } else {
       setSearchResults([]);
     }
-  }, [searchText, searchMode]);
+  }, [searchText]);
 
   const searchUsers = async (query: string) => {
     if (!query.trim()) {
@@ -126,19 +119,45 @@ const Home = () => {
 
   const handleComment = async (practiceLogId: string, text: string) => {
     try {
-      await practiceLogService.commentOnPracticeLog(practiceLogId, { text });
+      await practiceLogService.commentOnPracticeLog(practiceLogId, text);
       await loadFeed();
     } catch (error) {
       console.error("Failed to comment on practice log:", error);
     }
   };
 
-  const handleShare = async (practiceLogId: string) => {
+  const handleShare = async (feedLog: PracticeLog) => {
+    const title = feedLog.title?.trim() || "Practice log";
+    const textParts = [feedLog.title, feedLog.postText].filter(
+      (s) => typeof s === "string" && s.trim().length > 0,
+    ) as string[];
+    const text =
+      textParts.length > 0 ? textParts.join("\n\n") : undefined;
+    const url =
+      typeof window !== "undefined" ? window.location.href : undefined;
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+      } catch (error) {
+        const name = error instanceof DOMException ? error.name : "";
+        if (name === "AbortError") return;
+        console.error("Share failed:", error);
+      }
+      return;
+    }
+
+    const fallback = [title, text, url].filter(Boolean).join("\n\n");
     try {
-      await practiceLogService.sharePracticeLog(practiceLogId);
-      alert("Shared! (Share functionality coming soon)");
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fallback);
+        alert("Copied to clipboard — you can paste into any app to share.");
+      } else {
+        alert(fallback);
+      }
     } catch (error) {
-      console.error("Failed to share practice log:", error);
+      console.error("Share fallback failed:", error);
+      alert("Sharing isn’t supported in this browser.");
     }
   };
 
@@ -187,29 +206,9 @@ const Home = () => {
           </>
         ) : (
           <div className="header-search-wrap">
-            <div className="search-mode-tabs">
-              <button
-                className={searchMode === "users" ? "active" : ""}
-                onClick={() => setSearchMode("users")}
-                type="button"
-              >
-                Users
-              </button>
-              <button
-                className={searchMode === "posts" ? "active" : ""}
-                onClick={() => setSearchMode("posts")}
-                type="button"
-              >
-                Posts
-              </button>
-            </div>
             <input
               className="header-search-input"
-              placeholder={
-                searchMode === "users"
-                  ? "Search for users..."
-                  : "Search practice logs..."
-              }
+              placeholder="Search for users..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               autoFocus
@@ -226,7 +225,7 @@ const Home = () => {
       </header>
 
       {/* Search Results */}
-      {searchOpen && searchMode === "users" && searchText.trim() && (
+      {searchOpen && searchText.trim() && (
         <div className="search-results">
           {searchLoading ? (
             <div className="search-loading">Searching...</div>
@@ -266,7 +265,7 @@ const Home = () => {
       )}
 
       {/* Filter Bar */}
-      {(!searchOpen || searchMode === "posts") && (
+      {!searchOpen  && (
         <div className="feed-filterbar">
           <div className="filter-group">
             <label className="filter-label" htmlFor="instrumentFilter">
@@ -281,17 +280,12 @@ const Home = () => {
                 setSelectedInstrument(e.target.value as InstrumentFilter)
               }
             >
-              <option value="All">All</option>
-              <option value="Piano">Piano</option>
-              <option value="Violin">Violin</option>
-              <option value="Clarinet">Clarinet</option>
-              <option value="Guitar">Guitar</option>
-              <option value="Saxophone">Saxophone</option>
-              <option value="Cello">Cello</option>
-              <option value="Flute">Flute</option>
-              <option value="Drums">Drums</option>
-              <option value="Voice">Voice</option>
-              <option value="Other">Other</option>
+              <option value = "All">All</option>
+              {INSTRUMENTS.map((inst) => (
+                <option key={inst} value={inst}>
+                  {inst}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -303,15 +297,13 @@ const Home = () => {
       )}
 
       {/* Feed */}
-      {(!searchOpen || searchMode === "posts") && (
+      {!searchOpen && (
         <main className="home-feed">
           {loading ? (
             <div className="feed-empty">Loading feed...</div>
           ) : visiblePosts.length === 0 ? (
             <div className="feed-empty">
-              {searchText && searchMode === "posts" ? (
-                <>No practice logs found matching "{searchText}"</>
-              ) : selectedInstrument !== "All" ? (
+              {selectedInstrument !== "All" ? (
                 <>
                   No practice logs found for <strong>{selectedInstrument}</strong>.
                 </>

@@ -1,6 +1,7 @@
-import { useState } from "react";
-import type { PracticeLog } from "@strava-musician-app/shared";
+import { useEffect, useState } from "react";
+import type { PracticeLog, Media } from "@strava-musician-app/shared";
 import "./index.css";
+import { userService, practiceLogService } from "../../model";
 
 type FeedPracticeLogCardProps = {
   practiceLog: PracticeLog;
@@ -8,7 +9,7 @@ type FeedPracticeLogCardProps = {
   onUnlike: (practiceLogId: string) => Promise<void> | void;
   onComment: (practiceLogId: string, text: string) => Promise<void> | void;
   onShare: (practiceLog: PracticeLog) => Promise<void> | void;
-  onProfileClick?: (userId?: string) => void;
+  onProfileClick?: (userId: string) => void;
 };
 
 const FeedPracticeLogCard = ({
@@ -23,6 +24,38 @@ const FeedPracticeLogCard = ({
   const [commentText, setCommentText] = useState("");
   const [isLiked, setIsLiked] = useState(false); // This should come from server data eventually
   const [likeCount, setLikeCount] = useState(0); // This should come from server data eventually
+  const [username, setUsername] = useState<string>("User");
+  const [userInitial, setUserInitial] = useState<string>("U");
+  const [media, setMedia] = useState<Media[]>([]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+        try {
+            const user = await userService.getUser(practiceLog.userId);
+            if (user) {
+                setUsername(user.username || "User");
+                setUserInitial(user.username?.[0]?.toUpperCase() || "U");
+            }
+        } catch (error) {
+            console.error("Failed to fetch user:", error);
+        }
+    };
+    fetchUser();
+  }, [practiceLog.userId]);
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+        try {
+            const mediaList = await practiceLogService.getPracticeLogMedia(
+                practiceLog.practiceLogId
+            );
+            setMedia(mediaList);
+        } catch (error) {
+            console.error("Failed to fetch media", error);
+        }
+    };
+    fetchMedia();
+  }, [practiceLog.practiceLogId]);
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim()) return;
@@ -80,14 +113,17 @@ const FeedPracticeLogCard = ({
           onClick={() => onProfileClick?.(practiceLog.userId)}
           aria-label="View profile"
         >
-          {/* Avatar placeholder - would use username from User entity */}
-          👤
+          <div className="feed-avatar-circle">
+            {userInitial}
+          </div>
+          {/* Avatar placeholder - would use username from User entity
+          👤 */}
         </button>
 
         <div className="feed-meta">
           <div className="feed-name">
             {/* Username would come from User entity - for now use userId */}
-            User {practiceLog.userId.split("-").pop()}
+            {username}
           </div>
           <div className="feed-subtitle">
             {formatDate(practiceLog.createdAt)}
@@ -109,7 +145,7 @@ const FeedPracticeLogCard = ({
         {/* Practice Stats - Strava-like */}
         <div className="practice-stats">
           <div className="stat-item">
-            <div className="stat-icon">⏱️</div>
+            {/* <div className="stat-icon">⏱️</div> */}
             <div className="stat-content">
               <div className="stat-label">Duration</div>
               <div className="stat-value">{formatDuration(practiceLog.durationMinutes)}</div>
@@ -118,7 +154,7 @@ const FeedPracticeLogCard = ({
 
           {practiceLog.instrument && (
             <div className="stat-item">
-              <div className="stat-icon">🎵</div>
+              {/* <div className="stat-icon">🎵</div> */}
               <div className="stat-content">
                 <div className="stat-label">Instrument</div>
                 <div className="stat-value">{practiceLog.instrument}</div>
@@ -128,7 +164,7 @@ const FeedPracticeLogCard = ({
 
           {practiceLog.tempo && (
             <div className="stat-item">
-              <div className="stat-icon">🎼</div>
+              {/* <div className="stat-icon">🎼</div> */}
               <div className="stat-content">
                 <div className="stat-label">Tempo</div>
                 <div className="stat-value">{practiceLog.tempo} BPM</div>
@@ -155,7 +191,20 @@ const FeedPracticeLogCard = ({
       </div>
 
       {/* Media Placeholder - for future media attachments */}
-      <div className="feed-media-placeholder" />
+      {/* <div className="feed-media-placeholder" /> */}
+      {media.length > 0 && (
+        <div className="feed-media">
+          {media.map((m) => (
+            <div key={m.mediaId} className="feed-media-item">
+              {m.type === "audio" ? (
+                <audio src={m.url} controls className="feed-audio-player" />
+              ) : (
+                <video src={m.url} controls className="feed-video-player" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="feed-card-footer">
         <button
@@ -171,7 +220,7 @@ const FeedPracticeLogCard = ({
           type="button"
           onClick={() => setCommentOpen((prev) => !prev)}
         >
-          💬 Comment
+          Comment
         </button>
 
         <button
@@ -179,7 +228,8 @@ const FeedPracticeLogCard = ({
           type="button"
           onClick={() => onShare(practiceLog)}
         >
-          🔗 Share
+         {/* <FaShare /> */}
+           Share
         </button>
       </div>
 

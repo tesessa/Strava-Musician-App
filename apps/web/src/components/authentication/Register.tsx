@@ -28,7 +28,7 @@ const Register = () => {
     if (!formData.email || !formData.username || !formData.password) {
       return;
     }
-    await userService.register({email: formData.email, username: formData.username, password: formData.password});
+    await userService.register(formData.username, formData.email,formData.password);
     navigate("/home");
   };
 

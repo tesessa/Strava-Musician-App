@@ -8,6 +8,7 @@ import { UserService } from "./service/UserService";
 import { PracticeLogService } from "./service/PracticeLogService";
 import { LikesService } from "./service";
 import { CommentsService } from "./service";
+import { MediaUploadService } from "./service";
 
 /**
  * This file sets up singleton services to be used by components and hooks.
@@ -38,4 +39,6 @@ export const userService = new UserService(server);
 export const practiceLogService = new PracticeLogService(server);
 export const likesService = new LikesService(server);
 export const commentsService = new CommentsService(server);
+export const mediaUploadService = new MediaUploadService(mediaApi, server);
+
 export { mediaApi };

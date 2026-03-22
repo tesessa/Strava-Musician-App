@@ -22,7 +22,7 @@ const Login = () => {
         if (!formData.email || !formData.password) {
           return;
         }
-        const user = await userService.login({ email: formData.email, password: formData.password });
+        const user = await userService.login(formData.email, formData.password);
         if (user) {
             navigate("/home");
         } else {
