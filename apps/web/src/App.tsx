@@ -7,6 +7,7 @@ import Register from "./components/authentication/Register";
 import ForgotPassword from "./components/authentication/ForgotPassword";
 import CalendarPage from "./pages/calendar";
 import Practice from "./components/practice/Practice";
+import Profile from "./components/profile/TempProfile";
 
 function App() {
   return (
@@ -15,10 +16,12 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
-        <Route
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        {/* <Route
           path="/profile"
           element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>}
-        />
+        /> */}
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice-log" element={<PracticeLog />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />

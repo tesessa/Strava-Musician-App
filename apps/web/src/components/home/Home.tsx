@@ -6,35 +6,49 @@ import { INSTRUMENTS } from "@strava-musician-app/shared";
 import "./index.css";
 import FeedPracticeLogCard from "./FeedPracticeLogCard";
 import BottomNav from "../navigation/BottomNav";
-import { practiceLogService } from "../../model";
-// import { FakeDataServer } from "../../model/network/FakeDataServer";
-// import { ServerFacade } from "../../model/network/ServerFacade";
-
+import { practiceLogService, userService } from "../../model";
 type InstrumentFilter = "All" | Instrument;
-// type SearchMode = "posts" | "users";
 
 const Home = () => {
   const navigate = useNavigate();
   
-  // Use FakeDataServer for now, switch to ServerFacade when ready
-  // const practiceLogService = useMemo(() => new PracticeLogService(new FakeDataServer()), []);
-  // const practiceLogService = useMemo(() => new PracticeLogService(new ServerFacade()), []);
 
   const [selectedInstrument, setSelectedInstrument] = useState<InstrumentFilter>("All");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
-  // const [searchMode, setSearchMode] = useState<SearchMode>("users");
-
+ 
   const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
   const [loading, setLoading] = useState(true);
+  //change to user
+  const [currentUser, setCurrentUser] = useState<{ userId: String, username: string} | null>(null);
+  const [userInitial, setUserInitial] = useState<string>("👤");
   
   // User search state
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  // change this as well
+  const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
 
-  // Load initial feed
+    // Load current user and initial feed
   useEffect(() => {
-    loadFeed();
+    const init = async () => {
+      try {
+        const user = await userService.getCurrentUser();
+        if (user) {
+          setCurrentUser({ userId: user.userId, username: user.username });
+          setUserInitial(user.username[0]?.toUpperCase() || "U");
+          
+          // Load friends list
+          const friends = await practiceLogService.getFriends(undefined, 100);
+          const friendIds = new Set(friends.map((f) => f.friendId));
+          setFollowedUsers(friendIds);
+        }
+        await loadFeed();
+      } catch (error) {
+        console.error("Failed to initialize:", error);
+      }
+    };
+    init();
   }, []);
 
   const loadFeed = async () => {
@@ -53,11 +67,16 @@ const Home = () => {
   const visiblePosts = useMemo(() => {
     let filtered = practiceLogs;
 
+    if (currentUser) {
+      filtered = filtered.filter(
+        (log) =>
+          log.userId === currentUser.userId || followedUsers.has(log.userId)
+      );
+    }
     // Filter by instrument
     if (selectedInstrument !== "All") {
       filtered = filtered.filter((log) => log.instrument === selectedInstrument);
     }
-
 
     return filtered;
   }, [practiceLogs, selectedInstrument]);
@@ -161,6 +180,16 @@ const Home = () => {
     }
   };
 
+  const handleDelete = async (practiceLogId: string) => {
+    try {
+      await practiceLogService.deletePracticeLog(practiceLogId);
+      setPracticeLogs((prev) => prev.filter((log) => log.practiceLogId !== practiceLogId));
+    } catch (error) {
+      console.error("Failed to delete practice log:", error);
+      alert("Failed to delete practice log");
+    }
+  };
+
   const handleUserClick = (userId: string) => {
     navigate(`/profile/${userId}`);
     closeSearch();
@@ -169,9 +198,12 @@ const Home = () => {
   const handleFollowUser = async (userId: string) => {
     try {
       await practiceLogService.sendFriendRequest(userId);
-      alert("Friend request sent!");
+      setFollowedUsers((prev) => new Set([...prev, userId]));
+      closeSearch();
+      await loadFeed();
     } catch (error) {
       console.error("Failed to send friend request:", error);
+      alert("Failed to follow user");
     }
   };
 
@@ -194,11 +226,14 @@ const Home = () => {
               </button>
 
               <button
-                className="home-icon-btn"
+                className="home-icon-btn profile-avatar-btn"
                 aria-label="Profile"
                 onClick={() => navigate("/profile")}
                 type="button"
               >
+                <div className="topbar-avatar-circle">
+                    {userInitial}
+                </div>
                 {/* profile icon / initials later */}
                 👤
               </button>
@@ -224,8 +259,7 @@ const Home = () => {
         )}
       </header>
 
-      {/* Search Results */}
-      {searchOpen && searchText.trim() && (
+    {searchOpen && searchText.trim() && (
         <div className="search-results">
           {searchLoading ? (
             <div className="search-loading">Searching...</div>
@@ -233,32 +267,40 @@ const Home = () => {
             <div className="search-empty">No users found</div>
           ) : (
             <div className="user-results-list">
-              {searchResults.map((user) => (
-                <div key={user.userId} className="user-result-item">
-                  <button
-                    className="user-result-profile"
-                    onClick={() => handleUserClick(user.userId)}
-                    type="button"
-                  >
-                    <div className="user-result-avatar">
-                      {user.username[0].toUpperCase()}
-                    </div>
-                    <div className="user-result-info">
-                      <div className="user-result-name">{user.username}</div>
-                      {user.bio && (
-                        <div className="user-result-bio">{user.bio}</div>
-                      )}
-                    </div>
-                  </button>
-                  <button
-                    className="user-result-follow"
-                    onClick={() => handleFollowUser(user.userId)}
-                    type="button"
-                  >
-                    Follow
-                  </button>
-                </div>
-              ))}
+              {searchResults.map((user) => {
+                const isFollowing = followedUsers.has(user.userId);
+                const isSelf = user.userId === currentUser?.userId;
+                
+                return (
+                  <div key={user.userId} className="user-result-item">
+                    <button
+                      className="user-result-profile"
+                      onClick={() => handleUserClick(user.userId)}
+                      type="button"
+                    >
+                      <div className="user-result-avatar">
+                        {user.username[0].toUpperCase()}
+                      </div>
+                      <div className="user-result-info">
+                        <div className="user-result-name">{user.username}</div>
+                        {user.bio && (
+                          <div className="user-result-bio">{user.bio}</div>
+                        )}
+                      </div>
+                    </button>
+                    {!isSelf && (
+                      <button
+                        className={`user-result-follow ${isFollowing ? "following" : ""}`}
+                        onClick={() => handleFollowUser(user.userId)}
+                        type="button"
+                        disabled={isFollowing}
+                      >
+                        {isFollowing ? "Following" : "Follow"}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -303,7 +345,12 @@ const Home = () => {
             <div className="feed-empty">Loading feed...</div>
           ) : visiblePosts.length === 0 ? (
             <div className="feed-empty">
-              {selectedInstrument !== "All" ? (
+              {followedUsers.size === 0 ? (
+                <>
+                  <p>Welcome to Koda! 🎵</p>
+                  <p>Search for users above and follow them to see their practice logs in your feed</p>
+                </>
+              ) : selectedInstrument !== "All" ? (
                 <>
                   No practice logs found for <strong>{selectedInstrument}</strong>.
                 </>

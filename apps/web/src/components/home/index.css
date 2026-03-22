@@ -61,6 +61,24 @@
   background: rgba(108, 78, 246, 0.25);
 }
 
+.profile-avatar-btn {
+  background: transparent !important;
+  padding: 0;
+}
+
+.topbar-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c4ef6, #8b7cf8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 /* ============================= */
 /* SEARCH                         */
 /* ============================= */
@@ -199,6 +217,16 @@
 
 .user-result-follow:hover {
   background: #5a3dd5;
+}
+
+.user-result-follow.following {
+  background: #2a2a35;
+  color: #888;
+  cursor: default;
+}
+
+.user-result-follow.following:hover {
+  background: #2a2a35;
 }
 
 /* ============================= */
@@ -346,6 +374,50 @@
   color: #aaa;
 }
 
+.feed-more-container {
+  position: relative;
+}
+
+.feed-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #16161a;
+  border: 1px solid #1e1e22;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  min-width: 150px;
+  margin-top: 4px;
+}
+
+.feed-menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: #ddd;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.feed-menu-item:hover {
+  background: #1e1e24;
+}
+
+.feed-menu-item.delete {
+  color: #e74c3c;
+}
+
+.feed-menu-item.delete:hover {
+  background: rgba(231, 76, 60, 0.1);
+}
+
 .feed-card-body {
   padding: 16px;
 }
@@ -374,8 +446,7 @@
   gap: 0.75rem;
   margin-top: 1rem;
   padding: 1rem;
-  background: rgba(108, 78, 246, 0.1);
-  /* background: #1e1e22; */
+  background: #1e1e22;
   border-radius: 8px;
 }
 
@@ -441,31 +512,30 @@
 /* ============================= */
 /* FEED MEDIA                     */
 /* ============================= */
- 
+
 .feed-media {
   padding: 0 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
- 
+
 .feed-media-item {
   width: 100%;
 }
- 
+
 .feed-audio-player {
   width: 100%;
   height: 40px;
   border-radius: 8px;
 }
- 
+
 .feed-video-player {
   width: 100%;
   max-height: 400px;
   border-radius: 8px;
   background: #000;
 }
- 
 
 /* ============================= */
 /* FEED ACTIONS                   */
@@ -508,6 +578,24 @@
   padding: 12px 16px;
   border-top: 1px solid #1e1e22;
   background: #0e0e10;
+}
+
+.comments-list {
+  margin-bottom: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+.comment-item strong {
+  color: #8b7cf8;
+  margin-right: 6px;
 }
 
 .comment-box {

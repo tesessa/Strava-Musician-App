@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
-import type { User } from "@strava-musician-app/shared";
+import type { User, Visibility } from "@strava-musician-app/shared";
 
 /**
  * User/auth-related business logic. Receives KodaServerApi via dependency injection.
@@ -38,5 +38,21 @@ export class UserService {
   async logout(): Promise<void> {
     await this.server.logout();
     this.currentUser = null;
+  }
+
+  //   username?: string;
+  // bio?: string;
+  // profilePhoto?: string;
+  // instruments?: string[];
+  // postVisibility?: Visibility;
+  updateUser(
+    userId: string, 
+    username?: string, 
+    bio?: string,  
+    profilePhoto?: string,
+    instruments?: string[],
+    postVisibility?: Visibility
+  ): Promise<User> {
+    return this.server.updateUser(userId, {username, bio, profilePhoto, instruments, postVisibility});
   }
 }

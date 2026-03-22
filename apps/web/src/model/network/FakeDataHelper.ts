@@ -261,6 +261,9 @@ export class FakeDataHelper {
       entityType: "user",
       entityId: me.userId,
     });
+
+    // temporary remove later
+    this.upsertFriend(receiverId);
   }
 
   getIncomingFriendRequests(

@@ -5,19 +5,23 @@ import { userService, practiceLogService } from "../../model";
 
 type FeedPracticeLogCardProps = {
   practiceLog: PracticeLog;
+  currentUserId?: string;
   onLike: (practiceLogId: string) => Promise<void> | void;
   onUnlike: (practiceLogId: string) => Promise<void> | void;
   onComment: (practiceLogId: string, text: string) => Promise<void> | void;
   onShare: (practiceLog: PracticeLog) => Promise<void> | void;
+  onDelete?: (PracticeLogId: string) => Promise<void> | void;
   onProfileClick?: (userId: string) => void;
 };
 
 const FeedPracticeLogCard = ({
   practiceLog,
+  currentUserId,
   onLike,
   onUnlike,
   onComment,
   onShare,
+  onDelete,
   onProfileClick,
 }: FeedPracticeLogCardProps) => {
   const [commentOpen, setCommentOpen] = useState(false);
@@ -27,7 +31,12 @@ const FeedPracticeLogCard = ({
   const [username, setUsername] = useState<string>("User");
   const [userInitial, setUserInitial] = useState<string>("U");
   const [media, setMedia] = useState<Media[]>([]);
+  // temporary for now
+  const [showMenu, setShowMenu] = useState(false);
+  const [comments, setComments] = useState<Array<{text: String; username: string }>>([]);
 
+  const isOwnPost = currentUserId === practiceLog.userId;
+    
   useEffect(() => {
     const fetchUser = async () => {
         try {
@@ -57,25 +66,90 @@ const FeedPracticeLogCard = ({
     fetchMedia();
   }, [practiceLog.practiceLogId]);
 
+  useEffect(() => {
+    const fetchLikesAndComments = async () => {
+        try {
+            const likes = await practiceLogService.getPracticeLogLikes(
+                practiceLog.practiceLogId
+            );
+            setLikeCount(likes.length);
+
+            if (currentUserId) {
+                setIsLiked(likes.some((like) => like.userId === currentUserId));
+            }
+
+            const commentsData = await practiceLogService.getPracticeLogComments(
+                practiceLog.practiceLogId
+            );
+
+            const commentsWithUsernames = await Promise.all(
+                commentsData.map(async (comment) => {
+                    try {
+                        const user = await userService.getUser(comment.userId);
+                        return { text: comment.text, username: user.username }
+                    } catch {
+                        return { text: comment.text, username: "User" }
+                    }
+                })
+            );
+            setComments(commentsWithUsernames);
+        } catch (error) {
+            console.error("Failed to fetch likes/comments:", error);
+        }
+    };
+    fetchLikesAndComments();
+  }, [practiceLog.practiceLogId, currentUserId]);
+
   const handleCommentSubmit = async () => {
     if (!commentText.trim()) return;
-    await onComment(practiceLog.practiceLogId, commentText);
-    setCommentText("");
-    setCommentOpen(true);
+        try {
+            await onComment(practiceLog.practiceLogId, commentText);
+      
+            // Add comment to local state immediately
+            const currentUser = await userService.getCurrentUser();
+            setComments((prev) => [
+                ...prev,
+                { text: commentText, username: currentUser?.username || "You" },
+            ]);
+            setCommentText("");
+            // setCommentOpen(true);
+        } catch (error) {
+            console.error("Failed to submit comment:", error);
+        }
+    // await onComment(practiceLog.practiceLogId, commentText);
+    // setCommentText("");
+    // setCommentOpen(true);
   };
 
   const handleLikeToggle = async () => {
+    const previousLiked = isLiked;
+    const previousCount = likeCount;
+
+    setIsLiked(!isLiked);
+    setLikeCount((prev) => (isLiked ? Math.max(0, prev-1): prev+1));
+
     try {
       if (isLiked) {
         await onUnlike(practiceLog.practiceLogId);
-        setLikeCount((prev) => Math.max(0, prev - 1));
+        // setLikeCount((prev) => Math.max(0, prev - 1));
       } else {
         await onLike(practiceLog.practiceLogId);
-        setLikeCount((prev) => prev + 1);
+        // setLikeCount((prev) => prev + 1);
       }
-      setIsLiked(!isLiked);
+    //   setIsLiked(!isLiked);
     } catch (error) {
-      console.error("Failed to toggle like:", error);
+        setIsLiked(previousLiked);
+        setLikeCount(previousCount);
+        console.error("Failed to toggle like:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this practice log?")) {
+        setShowMenu(false);
+        if (onDelete) {
+            await onDelete(practiceLog.practiceLogId);
+        }
     }
   };
 
@@ -130,9 +204,29 @@ const FeedPracticeLogCard = ({
           </div>
         </div>
 
-        <button className="feed-more" aria-label="More options" type="button">
+        {isOwnPost && (
+            <div className="feed-more-container">
+                <button
+                    className="feed-more"
+                    aria-label="More options"
+                    type="button"
+                    onClick={() => setShowMenu(!showMenu)}
+                >
+                    •••
+                </button>
+                {showMenu && (
+                <div className="feed-menu">
+                    <button onClick={handleDelete} className="feed-menu-item delete">
+                    Delete Post
+                    </button>
+                </div>
+                )}
+            </div>
+        )}
+
+        {/* <button className="feed-more" aria-label="More options" type="button">
           •••
-        </button>
+        </button> */}
       </div>
 
       <div className="feed-card-body">
@@ -140,6 +234,10 @@ const FeedPracticeLogCard = ({
         <div className="feed-post-title">{practiceLog.title}</div>
         {practiceLog.postText && (
           <div className="feed-post-text">{practiceLog.postText}</div>
+        )}
+
+        {isOwnPost && practiceLog.privateText && (
+            <div className="feed-post-text">{practiceLog.privateText}</div>
         )}
 
         {/* Practice Stats - Strava-like */}
@@ -197,9 +295,23 @@ const FeedPracticeLogCard = ({
           {media.map((m) => (
             <div key={m.mediaId} className="feed-media-item">
               {m.type === "audio" ? (
-                <audio src={m.url} controls className="feed-audio-player" />
+                <audio 
+                    src={m.url} 
+                    controls 
+                    className="feed-audio-player" 
+                    preload="metadata"
+                >
+                    Your browser does not support the audio element
+                </audio>
               ) : (
-                <video src={m.url} controls className="feed-video-player" />
+                <video 
+                    src={m.url} 
+                    controls 
+                    className="feed-video-player" 
+                    preload="metadata"
+                >
+                    Your browser does not support the video element
+                </video>
               )}
             </div>
           ))}
@@ -220,7 +332,7 @@ const FeedPracticeLogCard = ({
           type="button"
           onClick={() => setCommentOpen((prev) => !prev)}
         >
-          Comment
+          Comment {comments.length > 0 ? `(${comments.length})` : ""}
         </button>
 
         <button
@@ -228,13 +340,21 @@ const FeedPracticeLogCard = ({
           type="button"
           onClick={() => onShare(practiceLog)}
         >
-         {/* <FaShare /> */}
            Share
         </button>
       </div>
 
       {commentOpen && (
         <div className="comment-section">
+            {comments.length > 0 && (
+                <div className="comments-list">
+                    {comments.map((comment, idx) => (
+                        <div key={idx} className="comment-item">
+                            <strong>{comment.username}:</strong> {comment.text}
+                        </div>
+                    ))}
+                </div>
+            )}
           {/* Comments would be fetched from server */}
           <div className="comment-box">
             <input
