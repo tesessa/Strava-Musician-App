@@ -1,5 +1,5 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
-import type { User } from "@strava-musician-app/shared";
+import type { User, Visibility } from "@strava-musician-app/shared";
 
 /**
  * User/auth-related business logic. Receives KodaServerApi via dependency injection.
@@ -17,21 +17,42 @@ export class UserService {
     return user;
   }
 
+  async getUser(userId: string): Promise<User> {
+    return this.server.getUser(userId);
+  }
+
   async login(email: string, password: string): Promise<User | null> {
-    // should return user & authToken (to be implemented later)
-    const user = await this.server.login(email, password);
+    const auth = await this.server.login({ email, password });
+    const user = auth.user ?? null;
     this.currentUser = user;
     return user;
   }
 
-  async register(username: string, email: string, password: string): Promise<User> {
-    // should return user & authToken (to be implemented later)
-    const user = await this.server.register(username, email, password);
+  async register(username: string, email: string, password: string): Promise<User | null> {
+    const auth = await this.server.register({ username, email, password });
+    const user = auth.user ?? null;
     this.currentUser = user;
     return user;
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    await this.server.logout();
     this.currentUser = null;
+  }
+
+  //   username?: string;
+  // bio?: string;
+  // profilePhoto?: string;
+  // instruments?: string[];
+  // postVisibility?: Visibility;
+  updateUser(
+    userId: string, 
+    username?: string, 
+    bio?: string,  
+    profilePhoto?: string,
+    instruments?: string[],
+    postVisibility?: Visibility
+  ): Promise<User> {
+    return this.server.updateUser(userId, {username, bio, profilePhoto, instruments, postVisibility});
   }
 }

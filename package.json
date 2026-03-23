@@ -18,8 +18,10 @@
     "@esbuild/win32-x64": "^0.27.4",
     "@types/bcrypt": "^6.0.0",
     "@types/jest": "^30.0.0",
+    "@types/supertest": "^7.2.0",
     "concurrently": "^8.2.2",
     "jest": "^30.2.0",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.4.6"
   },
   "dependencies": {

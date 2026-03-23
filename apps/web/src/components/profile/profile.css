@@ -1,0 +1,340 @@
+/* ============================= */
+/* PROFILE PAGE                   */
+/* ============================= */
+
+.profile-container {
+  min-height: 100vh;
+  background: #0e0e10;
+  color: white;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 70px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #1e1e22;
+  background: #0e0e10;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.profile-back-btn {
+  background: rgba(108, 78, 246, 0.15);
+  border: none;
+  color: #8b7cf8;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
+.profile-back-btn:hover {
+  background: rgba(108, 78, 246, 0.25);
+}
+
+.profile-header-title {
+  font-weight: 700;
+  font-size: 20px;
+  color: white;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.profile-edit-btn,
+.profile-save-btn {
+  background: transparent;
+  border: none;
+  color: #6c4ef6;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.profile-edit-btn:hover,
+.profile-save-btn:hover {
+  color: #8b7cf8;
+}
+
+.profile-content {
+  flex: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 16px;
+}
+
+/* Avatar Section */
+.profile-avatar-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.profile-avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c4ef6, #8b7cf8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  border: 4px solid #1e1e22;
+}
+
+/* User Info */
+.profile-info-section {
+  background: #16161a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #1e1e22;
+}
+
+.profile-username {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.profile-email {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.profile-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.profile-bio-section {
+  margin-top: 16px;
+}
+
+.profile-bio {
+  color: #ccc;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Instruments */
+.profile-instruments-section {
+  margin-top: 16px;
+}
+
+.instruments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.instrument-tag {
+  background: rgba(108, 78, 246, 0.2);
+  color: #8b7cf8;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Stats */
+.profile-stats-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #1e1e22;
+}
+
+.profile-stat {
+  margin-bottom: 12px;
+}
+
+.profile-stat-label {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.profile-stat-value {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Edit Mode */
+.profile-field {
+  margin-bottom: 16px;
+}
+
+.profile-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.profile-input,
+.profile-textarea {
+  width: 100%;
+  padding: 12px;
+  background: #0e0e10;
+  border: 2px solid #222;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.95rem;
+  font-family: 'DM Sans', sans-serif;
+  box-sizing: border-box;
+}
+
+.profile-input:focus,
+.profile-textarea:focus {
+  outline: none;
+  border-color: #6c4ef6;
+}
+
+.profile-input::placeholder,
+.profile-textarea::placeholder {
+  color: #555;
+}
+
+.profile-value-readonly {
+  padding: 12px;
+  background: #0e0e10;
+  border: 2px solid #222;
+  border-radius: 8px;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.instruments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.instrument-chip {
+  padding: 8px 12px;
+  background: #0e0e10;
+  border: 2px solid #222;
+  border-radius: 8px;
+  color: #888;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.instrument-chip:hover {
+  border-color: #6c4ef6;
+  color: #8b7cf8;
+}
+
+.instrument-chip.selected {
+  background: rgba(108, 78, 246, 0.2);
+  border-color: #6c4ef6;
+  color: #8b7cf8;
+}
+
+.profile-cancel-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1e1e24;
+  border: none;
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 16px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.profile-cancel-btn:hover {
+  background: #2a2a35;
+}
+
+/* Actions */
+.profile-actions {
+  margin-top: 16px;
+}
+
+.profile-logout-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 2px solid #c0392b;
+  border-radius: 8px;
+  color: #e74c3c;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.profile-logout-btn:hover {
+  background: rgba(192, 57, 43, 0.1);
+  border-color: #e74c3c;
+}
+
+/* Loading/Error States */
+.profile-loading,
+.profile-error {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .profile-content {
+    padding: 16px 12px;
+  }
+
+  .profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+  }
+
+  .profile-username {
+    font-size: 1.5rem;
+  }
+
+  .instruments-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+}

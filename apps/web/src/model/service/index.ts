@@ -1,2 +1,5 @@
 export { UserService } from "./UserService";
-export { PostService } from './PostService'
+export { PracticeLogService } from './PracticeLogService';
+export { LikesService } from './LikesService';
+export { CommentsService } from './CommentsService';
+export { MediaUploadService } from './mediaUploadService';

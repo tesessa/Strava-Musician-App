@@ -1,6 +1,8 @@
+/** User table: id is UUID (string) per architecture. */
 export interface User {
-  id: number;
+  id: string;
   created_at: Date;
+  updated_at: Date;
   email: string;
   username: string;
   password: string;
@@ -10,9 +12,24 @@ export interface User {
   instruments: string[];
 }
 
+/** AuthSession table: user_id is UUID (string), FK to User.id. */
 export interface AuthSession {
   auth_session_id: number;
-  user_id: number;
+  user_id: string;
   token: string;
   expires_at: Date;
+}
+
+export interface PracticeSession {
+  userId: string;
+  sessionId: string;
+  title: string;
+  postText?: string;
+  privateText?: string;
+  instrument?: string;
+  createdAt: Date;
+  durationMinutes: number;
+  tempo?: number;
+  pieceTitle?: string;
+  composer?: string;
 }
