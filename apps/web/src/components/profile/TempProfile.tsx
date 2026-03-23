@@ -2,11 +2,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
 import type { PracticeLog, User } from "@strava-musician-app/shared";
-import { userService, practiceLogService } from "../../model";
+import { userService, practiceLogService, friendService } from "../../model";
+import type {
+  FriendWithProfile,
+  PendingFriendRequestWithProfile,
+} from "../../model/service/FriendService";
 import BottomNav from "../navigation/BottomNav";
 import "./profile.css";
 
-type ProfileTab = "overview" | "practice" | "challenges" | "friends" | "settings";
+type ProfileTab =
+  | "overview"
+  | "practice"
+  | "challenges"
+  | "friends"
+  | "settings";
 
 const VALID_TABS: ProfileTab[] = [
   "overview",
@@ -40,13 +49,24 @@ const TempProfile = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [friendsSearchQuery, setFriendsSearchQuery] = useState("");
+  const [friends, setFriends] = useState<FriendWithProfile[]>([]);
+  const [pendingFriendRequests, setPendingFriendRequests] = useState<
+    PendingFriendRequestWithProfile[]
+  >([]);
+  const [cancellingPendingRequestIds, setCancellingPendingRequestIds] = useState<
+    Set<string>
+  >(new Set());
   const [isEditing, setIsEditing] = useState(false);
 
   const [editUsername, setEditUsername] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editInstruments, setEditInstruments] = useState<string[]>([]);
   const [editProfilePhoto, setEditProfilePhoto] = useState("");
-  const [editVisibility, setEditVisibility] = useState<"public" | "friends" | "private">("friends");
+  const [editVisibility, setEditVisibility] = useState<
+    "public" | "friends" | "private"
+  >("friends");
 
   const isOwnProfile = useMemo(() => {
     if (!currentUser || !profileUser) return false;
@@ -64,8 +84,16 @@ const TempProfile = () => {
   }, [routeTab, profileUser]);
 
   useEffect(() => {
+    if (routeTab === "friends" && profileUser && isOwnProfile) {
+      void loadFriends();
+    }
+  }, [routeTab, profileUser, isOwnProfile]);
+
+  useEffect(() => {
     if (routeTab === "settings" && !loading && !isOwnProfile) {
-      navigate(routeUserId ? `/profile/${routeUserId}` : "/profile", { replace: true });
+      navigate(routeUserId ? `/profile/${routeUserId}` : "/profile", {
+        replace: true,
+      });
     }
   }, [routeTab, loading, isOwnProfile, navigate, routeUserId]);
 
@@ -107,13 +135,74 @@ const TempProfile = () => {
       setPracticeLoading(true);
       setErrorMessage("");
 
-      const logs = await practiceLogService.getUserPracticeLogs(userId, undefined, 20);
+      const logs = await practiceLogService.getUserPracticeLogs(
+        userId,
+        undefined,
+        20,
+      );
       setPracticeLogs(logs ?? []);
     } catch (error) {
       console.error("Failed to load practice logs:", error);
       setErrorMessage("Failed to load practice sessions.");
     } finally {
       setPracticeLoading(false);
+    }
+  };
+
+  const loadFriends = async () => {
+    try {
+      setFriendsLoading(true);
+      setErrorMessage("");
+
+      const [friendsResult, pendingRequestsResult] = await Promise.all([
+        friendService.getFriendsWithProfiles(100),
+        friendService.getIncomingFriendRequestsWithProfiles(25),
+      ]);
+
+      setFriends(friendsResult);
+      setPendingFriendRequests(pendingRequestsResult);
+    } catch (error) {
+      console.error("Failed to load friends:", error);
+      setErrorMessage("Failed to load friends.");
+    } finally {
+      setFriendsLoading(false);
+    }
+  };
+
+  const filteredFriends = useMemo(() => {
+    const query = friendsSearchQuery.trim().toLowerCase();
+    if (!query) return friends;
+
+    return friends.filter((friend) => {
+      const username = friend.user?.username?.toLowerCase() ?? "";
+      const bio = friend.user?.bio?.toLowerCase() ?? "";
+      return username.includes(query) || bio.includes(query);
+    });
+  }, [friends, friendsSearchQuery]);
+
+  const handleCancelPendingRequest = async (requestId: string) => {
+    if (!requestId || cancellingPendingRequestIds.has(requestId)) {
+      return;
+    }
+
+    const previous = pendingFriendRequests;
+    setCancellingPendingRequestIds((prev) => new Set(prev).add(requestId));
+    setPendingFriendRequests((prev) =>
+      prev.filter((item) => item.request.requestId !== requestId),
+    );
+
+    try {
+      await friendService.cancelPendingFriendRequest(requestId);
+    } catch (error) {
+      console.error("Failed to cancel pending friend request:", error);
+      setPendingFriendRequests(previous);
+      setErrorMessage("Failed to cancel pending friend request.");
+    } finally {
+      setCancellingPendingRequestIds((prev) => {
+        const next = new Set(prev);
+        next.delete(requestId);
+        return next;
+      });
     }
   };
 
@@ -141,7 +230,7 @@ const TempProfile = () => {
         editBio.trim(),
         editProfilePhoto.trim() || undefined,
         editInstruments,
-        editVisibility
+        editVisibility,
       );
 
       setProfileUser(updatedUser);
@@ -180,12 +269,12 @@ const TempProfile = () => {
     setEditInstruments((prev) =>
       prev.includes(instrument)
         ? prev.filter((i) => i !== instrument)
-        : [...prev, instrument]
+        : [...prev, instrument],
     );
   };
 
   const handleProfilePhotoFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -230,7 +319,9 @@ const TempProfile = () => {
         <div className="profile-card">
           <div className="profile-username">{profileUser.username}</div>
 
-          {isOwnProfile && <div className="profile-email">{profileUser.email}</div>}
+          {isOwnProfile && (
+            <div className="profile-email">{profileUser.email}</div>
+          )}
 
           {profileUser.bio && (
             <div className="profile-bio-section">
@@ -262,7 +353,9 @@ const TempProfile = () => {
 
             <div className="profile-stat">
               <div className="profile-stat-label">Visibility</div>
-              <div className="profile-stat-value">{profileUser.postVisibility}</div>
+              <div className="profile-stat-value">
+                {profileUser.postVisibility}
+              </div>
             </div>
 
             <div className="profile-stat">
@@ -274,7 +367,11 @@ const TempProfile = () => {
 
         {isOwnProfile && (
           <div className="profile-actions">
-            <button className="profile-logout-btn" onClick={handleLogout} type="button">
+            <button
+              className="profile-logout-btn"
+              onClick={handleLogout}
+              type="button"
+            >
               Logout
             </button>
           </div>
@@ -285,11 +382,15 @@ const TempProfile = () => {
 
   const renderPractice = () => {
     if (practiceLoading) {
-      return <div className="profile-panel-empty">Loading practice sessions...</div>;
+      return (
+        <div className="profile-panel-empty">Loading practice sessions...</div>
+      );
     }
 
     if (!practiceLogs.length) {
-      return <div className="profile-panel-empty">No practice sessions yet.</div>;
+      return (
+        <div className="profile-panel-empty">No practice sessions yet.</div>
+      );
     }
 
     return (
@@ -306,7 +407,9 @@ const TempProfile = () => {
                 {log.composer ? ` — ${log.composer}` : ""}
               </div>
             )}
-            {log.postText && <div className="profile-list-card-body">{log.postText}</div>}
+            {log.postText && (
+              <div className="profile-list-card-body">{log.postText}</div>
+            )}
             <div className="profile-list-card-date">
               {new Date(log.createdAt).toLocaleString()}
             </div>
@@ -321,17 +424,118 @@ const TempProfile = () => {
       <div className="profile-panel-empty">
         Challenges tab
         <br />
-        Need backend route to dispatch completed challenges for profile?
+        🚧 Coming Soon 🚧
       </div>
     );
   };
 
   const renderFriends = () => {
+    if (!isOwnProfile) {
+      return (
+        <div className="profile-panel-empty">
+          Friends are only visible on your own profile for now.
+        </div>
+      );
+    }
+
+    if (friendsLoading) {
+      return <div className="profile-panel-empty">Loading friends...</div>;
+    }
+
     return (
-      <div className="profile-panel-empty">
-        Friends tab
-        <br />
-        No route yet?
+      <div className="profile-friends-panel">
+        <div className="profile-field">
+          <label className="profile-label" htmlFor="friends-search">
+            Search Friends
+          </label>
+          <input
+            id="friends-search"
+            type="text"
+            className="profile-input"
+            value={friendsSearchQuery}
+            onChange={(e) => setFriendsSearchQuery(e.target.value)}
+            placeholder="Search by username or bio..."
+          />
+        </div>
+
+        <div className="profile-friends-section">
+          <div className="profile-section-title">Pending Friend Requests</div>
+          {pendingFriendRequests.length === 0 ? (
+            <div className="profile-friends-empty">
+              No pending friend requests.
+            </div>
+          ) : (
+            <div className="profile-friends-list">
+              {pendingFriendRequests.map((item) => (
+                <div
+                  key={item.request.requestId}
+                  className="profile-friends-item pending"
+                >
+                  <div className="profile-friends-item-row">
+                    <div className="profile-friends-item-name">
+                      {item.user?.username ?? "Unknown user"}
+                    </div>
+                    <button
+                      className="profile-friends-item-action"
+                      type="button"
+                      onClick={() =>
+                        handleCancelPendingRequest(item.request.requestId)
+                      }
+                      disabled={cancellingPendingRequestIds.has(
+                        item.request.requestId,
+                      )}
+                    >
+                      {cancellingPendingRequestIds.has(item.request.requestId)
+                        ? "Canceling..."
+                        : "Cancel"}
+                    </button>
+                  </div>
+                  <div className="profile-friends-item-meta">
+                    Requested{" "}
+                    {new Date(item.request.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="profile-friends-section">
+          <div className="profile-section-title">Current Friends</div>
+          {filteredFriends.length === 0 ? (
+            <div className="profile-friends-empty">
+              {friendsSearchQuery.trim()
+                ? "No friends match your search."
+                : "No friends found yet."}
+            </div>
+          ) : (
+            <div className="profile-friends-list">
+              {filteredFriends.map((item) => (
+                <div
+                  key={item.friendship.friendId}
+                  className="profile-friends-item"
+                >
+                  <div className="profile-friends-item-name">
+                    {item.user?.username ?? item.friendship.friendId}
+                  </div>
+                  <div className="profile-friends-item-meta">
+                    Friends since{" "}
+                    {item.friendship.friendsSince
+                      ? new Date(
+                          item.friendship.friendsSince,
+                        ).toLocaleDateString()
+                      : "Unknown"}
+                  </div>
+                  {item.user?.bio && (
+                    <div className="profile-friends-item-bio">
+                      {item.user.bio}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -385,7 +589,8 @@ const TempProfile = () => {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                style={{ display: "none" }}
+                className="profile-hidden-input"
+                aria-label="Upload profile picture"
                 onChange={handleProfilePhotoFileChange}
               />
 
@@ -414,7 +619,9 @@ const TempProfile = () => {
                 className="profile-input"
                 value={editVisibility}
                 onChange={(e) =>
-                  setEditVisibility(e.target.value as "public" | "friends" | "private")
+                  setEditVisibility(
+                    e.target.value as "public" | "friends" | "private",
+                  )
                 }
               >
                 <option value="public">Public</option>
@@ -489,7 +696,11 @@ const TempProfile = () => {
   return (
     <div className="profile-container">
       <header className="profile-header">
-        <button className="profile-back-btn" onClick={() => navigate("/home")} type="button">
+        <button
+          className="profile-back-btn"
+          onClick={() => navigate("/home")}
+          type="button"
+        >
           ←
         </button>
 
