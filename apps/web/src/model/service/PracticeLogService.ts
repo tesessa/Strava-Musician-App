@@ -102,5 +102,11 @@ export class PracticeLogService {
     return this.server.deletePracticeLog(practiceLogId);
   }
 
-  
+  async getUserPracticeLogs(
+    userId: string,
+    lastItem?: string,
+    pageSize = 20
+  ): Promise<PracticeLog[]> {
+    return this.server.getUserPracticeLogs(userId, { lastItem, pageSize });
+  }
 }

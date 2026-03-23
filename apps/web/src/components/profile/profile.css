@@ -337,4 +337,144 @@
   .instruments-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
+
+  .profile-header-spacer {
+  width: 36px;
+}
+
+  .profile-card {
+    background: #16161a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #1e1e22;
+  }
+
+  .profile-tab-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+  }
+
+  .profile-tab-btn {
+    background: #16161a;
+    border: 1px solid #24242c;
+    color: #aaa;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .profile-tab-btn.active {
+    background: rgba(108, 78, 246, 0.2);
+    border-color: #6c4ef6;
+    color: #8b7cf8;
+  }
+
+  .profile-primary-btn {
+    width: 100%;
+    padding: 12px;
+    background: #6c4ef6;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: "DM Sans", sans-serif;
+  }
+
+  .profile-primary-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .profile-settings-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .profile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .profile-list-card {
+    background: #16161a;
+    border: 1px solid #1e1e22;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .profile-list-card-title {
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .profile-list-card-meta {
+    color: #8b7cf8;
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+  }
+
+  .profile-list-card-body {
+    color: #ccc;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .profile-list-card-date {
+    color: #777;
+    font-size: 0.8rem;
+  }
+
+  .profile-panel-empty {
+    background: #16161a;
+    border: 1px solid #1e1e22;
+    border-radius: 12px;
+    padding: 24px;
+    color: #999;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .profile-upload-preview-wrap {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .profile-upload-preview {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #1e1e22;
+  }
+
+  .profile-avatar-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1e1e22;
+  }
+
+  @media (max-width: 640px) {
+    .profile-avatar-image {
+      width: 100px;
+      height: 100px;
+    }
+  }
 }
