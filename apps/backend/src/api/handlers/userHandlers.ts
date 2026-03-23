@@ -6,7 +6,7 @@ import { authenticateToken, authenticateTokenToUserId } from "../utils/authentic
 const userService = new UserService(createUserDAO());
 
 export const getUser = async (req: Request, userId: string) => {
-  const { user, token, error } = await authenticateTokenToUserId(req, userId);
+  const { user, token, error } = await authenticateToken(req);
   if (error) return error;
 
   try {
