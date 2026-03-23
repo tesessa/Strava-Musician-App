@@ -11,6 +11,7 @@ type FeedPracticeLogCardProps = {
   onComment: (practiceLogId: string, text: string) => Promise<void> | void;
   onShare: (practiceLog: PracticeLog) => Promise<void> | void;
   onDelete?: (PracticeLogId: string) => Promise<void> | void;
+  onEdit?: (PracticeLogId: string) => void;
   onProfileClick?: (userId: string) => void;
 };
 
@@ -22,6 +23,7 @@ const FeedPracticeLogCard = ({
   onComment,
   onShare,
   onDelete,
+  onEdit,
   onProfileClick,
 }: FeedPracticeLogCardProps) => {
   const [commentOpen, setCommentOpen] = useState(false);
@@ -153,6 +155,13 @@ const FeedPracticeLogCard = ({
     }
   };
 
+  const handleEdit = () => {
+    setShowMenu(false);
+    if (onEdit) {
+        onEdit(practiceLog.practiceLogId);
+    }
+  };
+
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -216,6 +225,9 @@ const FeedPracticeLogCard = ({
                 </button>
                 {showMenu && (
                 <div className="feed-menu">
+                    <button onClick={handleEdit} className="feed-menu-item">
+                        Edit Post
+                    </button>
                     <button onClick={handleDelete} className="feed-menu-item delete">
                     Delete Post
                     </button>
@@ -239,6 +251,14 @@ const FeedPracticeLogCard = ({
         {isOwnPost && practiceLog.privateText && (
             <div className="feed-post-text">{practiceLog.privateText}</div>
         )}
+
+        {/* {isOwnPost && practiceLog.privateText && (
+            <div className="feed-private-notes">
+              <div className="private-notes-label">🔒 Private Notes</div>
+              <div className="feed-post-text">{practiceLog.privateText}</div>
+            </div>
+        )} */}
+
 
         {/* Practice Stats - Strava-like */}
         <div className="practice-stats">

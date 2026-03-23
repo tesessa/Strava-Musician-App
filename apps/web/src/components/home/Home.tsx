@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
-import type { PracticeLog, Instrument, UserSearchResult } from "@strava-musician-app/shared";
+import { Bell, Search } from "lucide-react";
+import type { PracticeLog, Instrument, UserSearchResult, User, FriendRequest } from "@strava-musician-app/shared";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
 import "./index.css";
 import FeedPracticeLogCard from "./FeedPracticeLogCard";
 import BottomNav from "../navigation/BottomNav";
-import { practiceLogService, userService } from "../../model";
+import { practiceLogService, userService, notificationService } from "../../model";
 type InstrumentFilter = "All" | Instrument;
 
 const Home = () => {
@@ -19,8 +19,7 @@ const Home = () => {
  
   const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
   const [loading, setLoading] = useState(true);
-  //change to user
-  const [currentUser, setCurrentUser] = useState<{ userId: String, username: string} | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userInitial, setUserInitial] = useState<string>("👤");
   
   // User search state
@@ -29,14 +28,19 @@ const Home = () => {
   // change this as well
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
 
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [requestSenders, setRequestSenders] = useState<Map<string, User>>(new Map());
+
     // Load current user and initial feed
   useEffect(() => {
     const init = async () => {
       try {
         const user = await userService.getCurrentUser();
         if (user) {
-          setCurrentUser({ userId: user.userId, username: user.username });
-          setUserInitial(user.username[0]?.toUpperCase() || "U");
+          setCurrentUser(user);
+          setUserInitial(user.username[0]?.toUpperCase() || "👤");
           
           // Load friends list
           const friends = await practiceLogService.getFriends(undefined, 100);
@@ -44,12 +48,33 @@ const Home = () => {
           setFollowedUsers(friendIds);
         }
         await loadFeed();
+        await loadNotifications(); // FIXED: Call loadNotifications
       } catch (error) {
         console.error("Failed to initialize:", error);
       }
     };
     init();
   }, []);
+
+  // Reload user data when page becomes visible (catches profile photo updates)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && currentUser) {
+        try {
+          const user = await userService.getCurrentUser();
+          if (user) {
+            setCurrentUser(user);
+            setUserInitial(user.username[0]?.toUpperCase() || "👤");
+          }
+        } catch (error) {
+          console.error("Failed to reload user:", error);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentUser]);
 
   const loadFeed = async () => {
     try {
@@ -63,16 +88,61 @@ const Home = () => {
     }
   };
 
+  const loadNotifications = async () => {
+    try {
+      const requests = await notificationService.getIncomingFriendRequests(undefined, 20);
+      setFriendRequests(requests);
+      setUnreadCount(requests.length);
+
+      const senderMap = new Map<string, User>();
+      for (const req of requests) {
+        try {
+          const sender = await userService.getUser(req.senderId);
+          senderMap.set(req.senderId, sender);
+        } catch (err) {
+          console.error("Failed to load sender:", err);
+        }
+      }
+      setRequestSenders(senderMap);
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+    }
+  }
+
+    const handleAcceptFriendRequest = async (requestId: string) => {
+    try {
+      await notificationService.acceptFriendRequest(requestId);
+      await loadNotifications();
+      await loadFeed();
+      
+      // Reload friends list
+      const friends = await practiceLogService.getFriends(undefined, 100);
+      const friendIds = new Set(friends.map((f) => f.friendId));
+      setFollowedUsers(friendIds);
+    } catch (error) {
+      console.error("Failed to accept friend request:", error);
+    }
+  };
+ 
+  const handleRejectFriendRequest = async (requestId: string) => {
+    try {
+      await notificationService.rejectFriendRequest(requestId);
+      await loadNotifications();
+    } catch (error) {
+      console.error("Failed to reject friend request:", error);
+    }
+  };
+
   // Filter posts by instrument and search text
   const visiblePosts = useMemo(() => {
     let filtered = practiceLogs;
 
-    if (currentUser) {
-      filtered = filtered.filter(
-        (log) =>
-          log.userId === currentUser.userId || followedUsers.has(log.userId)
-      );
-    }
+    // if (currentUser) {
+    //   filtered = filtered.filter(
+    //     (log) =>
+    //       log.userId === currentUser.userId || followedUsers.has(log.userId)
+    //   );
+    // }
     // Filter by instrument
     if (selectedInstrument !== "All") {
       filtered = filtered.filter((log) => log.instrument === selectedInstrument);
@@ -190,6 +260,10 @@ const Home = () => {
     }
   };
 
+  const handleEdit = (practiceLogId: string) => {
+    navigate(`/practice-log/edit/${practiceLogId}`);
+  };
+
   const handleUserClick = (userId: string) => {
     navigate(`/profile/${userId}`);
     closeSearch();
@@ -198,12 +272,14 @@ const Home = () => {
   const handleFollowUser = async (userId: string) => {
     try {
       await practiceLogService.sendFriendRequest(userId);
-      setFollowedUsers((prev) => new Set([...prev, userId]));
+      alert("Friend request sent!");
+      // setFollowedUsers((prev) => new Set([...prev, userId]));
       closeSearch();
       await loadFeed();
     } catch (error) {
       console.error("Failed to send friend request:", error);
-      alert("Failed to follow user");
+      alert("Failed to send request to user");
+      closeSearch();
     }
   };
 
@@ -226,16 +302,34 @@ const Home = () => {
               </button>
 
               <button
+                className="home-icon-btn notification-btn"
+                aria-label="Notifications"
+                onClick={() => setNotificationOpen(!notificationOpen)}
+                type="button"
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
+                )}
+              </button> 
+
+              <button
                 className="home-icon-btn profile-avatar-btn"
                 aria-label="Profile"
                 onClick={() => navigate("/profile")}
                 type="button"
               >
-                <div className="topbar-avatar-circle">
+                {currentUser?.profilePhoto ? (
+                  <img 
+                    src={currentUser.profilePhoto} 
+                    alt={currentUser.username}
+                    className="topbar-avatar-image"
+                  />
+                ) : (
+                  <div className="topbar-avatar-circle">
                     {userInitial}
-                </div>
-                {/* profile icon / initials later */}
-                👤
+                  </div>
+                )}
               </button>
             </div>
           </>
@@ -258,6 +352,62 @@ const Home = () => {
           </div>
         )}
       </header>
+
+      {/* Notification Dropdown */}
+      {notificationOpen && (
+        <div className="notification-dropdown">
+          <div className="notification-header">
+            <span className="notification-title">Friend Requests</span>
+            <button
+              className="notification-close"
+              onClick={() => setNotificationOpen(false)}
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="notification-list">
+            {friendRequests.length === 0 ? (
+              <div className="notification-empty">No pending friend requests</div>
+            ) : (
+              friendRequests.map((request) => {
+                const sender = requestSenders.get(request.senderId);
+                if (!sender) return null;
+ 
+                return (
+                  <div key={request.requestId} className="notification-item">
+                    <div className="notification-user-info">
+                      <div className="notification-avatar">
+                        {sender.username[0].toUpperCase()}
+                      </div>
+                      <div className="notification-details">
+                        <div className="notification-username">{sender.username}</div>
+                        <div className="notification-text">wants to be friends</div>
+                      </div>
+                    </div>
+                    <div className="notification-actions">
+                      <button
+                        className="notification-accept-btn"
+                        onClick={() => handleAcceptFriendRequest(request.requestId)}
+                        type="button"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="notification-reject-btn"
+                        onClick={() => handleRejectFriendRequest(request.requestId)}
+                        type="button"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
 
     {searchOpen && searchText.trim() && (
         <div className="search-results">
@@ -345,6 +495,39 @@ const Home = () => {
             <div className="feed-empty">Loading feed...</div>
           ) : visiblePosts.length === 0 ? (
             <div className="feed-empty">
+              {selectedInstrument !== "All" ? (
+                <>
+                  No practice logs found for <strong>{selectedInstrument}</strong>.
+                </>
+              ) : (
+                <>No practice logs yet. Start practicing and share your progress!</>
+              )}
+            </div>
+          ) : (
+            visiblePosts.map((practiceLog) => (
+              <FeedPracticeLogCard
+                key={practiceLog.practiceLogId}
+                practiceLog={practiceLog}
+                currentUserId={currentUser?.userId}
+                onLike={handleLike}
+                onUnlike={handleUnlike}
+                onComment={handleComment}
+                onShare={handleShare}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onProfileClick={handleUserClick}
+              />
+            ))
+          )}
+        </main>
+      )}
+      {/* {!searchOpen && (
+        <main className="home-feed">
+          {loading ? (
+            <div className="feed-empty">Loading feed...</div>
+          ) : visiblePosts.length === 0 ? (
+            <div className="feed-empty">
+
               {followedUsers.size === 0 ? (
                 <>
                   <p>Welcome to Koda! 🎵</p>
@@ -372,7 +555,7 @@ const Home = () => {
             ))
           )}
         </main>
-      )}
+      )} */}
 
       {/* Bottom Nav */}
       <BottomNav active="home" />

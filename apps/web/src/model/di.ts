@@ -6,7 +6,7 @@ import { MediaService } from "./media/MediaService";
 import { FakeMediaService } from "./media/FakeMediaService";
 import { UserService } from "./service/UserService";
 import { PracticeLogService } from "./service/PracticeLogService";
-import { LikesService } from "./service";
+import { LikesService, NotificationService } from "./service";
 import { CommentsService } from "./service";
 import { MediaUploadService } from "./service";
 
@@ -40,5 +40,6 @@ export const practiceLogService = new PracticeLogService(server);
 export const likesService = new LikesService(server);
 export const commentsService = new CommentsService(server);
 export const mediaUploadService = new MediaUploadService(mediaApi, server);
+export const notificationService = new NotificationService(server);
 
 export { mediaApi };

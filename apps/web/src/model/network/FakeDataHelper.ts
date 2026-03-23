@@ -263,7 +263,7 @@ export class FakeDataHelper {
     });
 
     // temporary remove later
-    this.upsertFriend(receiverId);
+    // this.upsertFriend(receiverId);
   }
 
   getIncomingFriendRequests(
@@ -970,6 +970,15 @@ export class FakeDataHelper {
       {
         practiceLogId: "practiceLog-103",
         userId: "demo-user-3",
+        title: "Excerpt session",
+        postText: "Rite of Spring opening",
+        instrument: "Clarinet",
+        createdAt: "2026-03-13T12:00:00.000Z",
+        durationMinutes: 30,
+      },
+      {
+        practiceLogId: "practiceLog-103",
+        userId: "demo-user-4",
         title: "Excerpt session",
         postText: "Rite of Spring opening",
         instrument: "Clarinet",

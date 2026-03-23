@@ -9,7 +9,8 @@ import type {
   MediaListResponse,
   LikesListResponse,
   CommentsListResponse,
-  FriendsListResponse
+  FriendsListResponse,
+  UpdatePracticeLogRequest
 } from "@strava-musician-app/shared";
 
 export class PracticeLogService {
@@ -44,6 +45,18 @@ export class PracticeLogService {
 
     const created = await this.server.createPracticeLog(request);
     return created.practiceLogId;
+  }
+
+  async getPracticeLog(practiceLogId: string): Promise<PracticeLog> {
+    return this.server.getPracticeLog(practiceLogId);
+  }
+ 
+ 
+  async updatePracticeLog(
+    practiceLogId: string,
+    updates: UpdatePracticeLogRequest
+  ): Promise<PracticeLog> {
+    return this.server.updatePracticeLog(practiceLogId, updates);
   }
 
   async discardPracticeLog(practiceLogId: string): Promise<void> {
@@ -114,6 +127,10 @@ export class PracticeLogService {
 
   async deletePracticeLog(practiceLogId: string): Promise<void> {
     return this.server.deletePracticeLog(practiceLogId);
+  }
+
+    async deleteMedia(mediaId: string): Promise<void> {
+    return this.server.deleteMedia(mediaId);
   }
 
   async getUserPracticeLogs(
