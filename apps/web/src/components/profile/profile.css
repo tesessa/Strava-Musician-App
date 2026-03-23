@@ -343,6 +343,10 @@
   font-size: 0.95rem;
 }
 
+.profile-hidden-input {
+  display: none;
+}
+
 .instruments-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -438,6 +442,107 @@
   cursor: pointer;
   font-family: "DM Sans", sans-serif;
   transition: background 0.2s;
+}
+.profile-friends-panel {
+  background: #16161a;
+  border: 1px solid #1e1e22;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.profile-friends-section {
+  margin-top: 16px;
+}
+
+.profile-friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-friends-item {
+  background: #0e0e10;
+  border: 1px solid #24242c;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.profile-friends-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-friends-item.pending {
+  border-color: #6c4ef6;
+}
+
+.profile-friends-item-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.profile-friends-item-meta {
+  color: #8b7cf8;
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.profile-friends-item-bio {
+  color: #bbb;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.profile-friends-item-action {
+  background: transparent;
+  border: 1px solid #6c4ef6;
+  color: #8b7cf8;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-friends-item-action:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.profile-friends-empty {
+  background: #0e0e10;
+  border: 1px solid #24242c;
+  border-radius: 10px;
+  padding: 14px;
+  color: #999;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .profile-content {
+    padding: 16px 12px;
+  }
+
+  .profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+  }
+
+  .profile-username {
+    font-size: 1.5rem;
+  }
+
+  .instruments-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .profile-header-spacer {
+  width: 36px;
 }
 
 .profile-primary-btn:hover {

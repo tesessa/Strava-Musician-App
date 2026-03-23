@@ -66,14 +66,7 @@ export class PracticeLogService {
   // Home-feed methods
   async getFeed(): Promise<PracticeLog[]> {
     const request: FeedRequest = { pageSize: 15 };
-    const response = await this.server.getPracticeLogsFeed(request);
-
-    if (Array.isArray(response)) {
-      return response as PracticeLog[];
-    }
-
-    const wrapped = response as { practiceLogs?: PracticeLog[] };
-    return Array.isArray(wrapped.practiceLogs) ? wrapped.practiceLogs : [];
+    return this.server.getPracticeLogsFeed(request);
   }
 
   async likePracticeLog(practiceLogId: string): Promise<void> {
@@ -114,15 +107,8 @@ export class PracticeLogService {
     return this.server.getPracticeLogComments(practiceLogId);
   }
 
-  async getFriends(lastItem?: string, pageSize?: number): Promise<any[]> {
-    const response = await this.server.getFriends({ lastItem, pageSize });
-
-    if (Array.isArray(response)) {
-      return response;
-    }
-
-    const wrapped = response as { friends?: any[] };
-    return Array.isArray(wrapped.friends) ? wrapped.friends : [];
+  async getFriends(lastItem?: string, pageSize?: number): Promise<FriendsListResponse> {
+    return this.server.getFriends({lastItem, pageSize});
   }
 
   async deletePracticeLog(practiceLogId: string): Promise<void> {

@@ -28,7 +28,11 @@ export class UserService {
     return user;
   }
 
-  async register(username: string, email: string, password: string): Promise<User | null> {
+  async register(
+    username: string,
+    email: string,
+    password: string,
+  ): Promise<User | null> {
     const auth = await this.server.register({ username, email, password });
     const user = auth.user ?? null;
     this.currentUser = user;
@@ -52,27 +56,21 @@ export class UserService {
     bio?: string,
     profilePhoto?: string,
     instruments?: string[],
-    postVisibility?: Visibility
+    postVisibility?: Visibility,
   ): Promise<User> {
-    const updatedUser = await this.server.updateUser(userId, {
+    return this.server.updateUser(userId, {
       username,
       bio,
       profilePhoto,
       instruments,
       postVisibility,
     });
-
-    if (this.currentUser?.userId === userId) {
-      this.currentUser = updatedUser;
-    }
-
-    return updatedUser;
   }
 
   async refreshCurrentUser(): Promise<User | null> {
     const user = await this.server.getMe();
     this.currentUser = user;
-    
+
     return user;
-}
+  }
 }
