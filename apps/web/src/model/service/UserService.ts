@@ -45,14 +45,34 @@ export class UserService {
   // profilePhoto?: string;
   // instruments?: string[];
   // postVisibility?: Visibility;
-  updateUser(
-    userId: string, 
-    username?: string, 
-    bio?: string,  
+
+  async updateUser(
+    userId: string,
+    username?: string,
+    bio?: string,
     profilePhoto?: string,
     instruments?: string[],
     postVisibility?: Visibility
   ): Promise<User> {
-    return this.server.updateUser(userId, {username, bio, profilePhoto, instruments, postVisibility});
+    const updatedUser = await this.server.updateUser(userId, {
+      username,
+      bio,
+      profilePhoto,
+      instruments,
+      postVisibility,
+    });
+
+    if (this.currentUser?.userId === userId) {
+      this.currentUser = updatedUser;
+    }
+
+    return updatedUser;
   }
+
+  async refreshCurrentUser(): Promise<User | null> {
+    const user = await this.server.getMe();
+    this.currentUser = user;
+    
+    return user;
+}
 }

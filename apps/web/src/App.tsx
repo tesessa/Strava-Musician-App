@@ -1,4 +1,3 @@
-// import { APP_CONFIG } from "@strava-musician-app/shared";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./components/home/Home";
 import PracticeLog from "./components/practice/PracticeLog";
@@ -16,12 +15,12 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
+
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:tab" element={<Profile />} />
         <Route path="/profile/:userId" element={<Profile />} />
-        {/* <Route
-          path="/profile"
-          element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>}
-        /> */}
+        <Route path="/profile/:userId/:tab" element={<Profile />} />
+
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice-log" element={<PracticeLog />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />

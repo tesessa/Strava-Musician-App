@@ -194,11 +194,16 @@ export class ServerFacade implements KodaServerApi {
   }
 
   async getUser(userId: string): Promise<User> {
-    return this.get<User>(`/users/${userId}`);
+    const response = await this.get<User | { user: User }>(`/users/${userId}`);
+    return "user" in response ? response.user : response;
   }
 
   async updateUser(userId: string, request: UserUpdateRequest): Promise<User> {
-    return this.patch<UserUpdateRequest, User>(`/users/${userId}`, request);
+    const response = await this.patch<UserUpdateRequest, User | { user: User }>(
+      `/users/${userId}`,
+      request
+    );
+    return "user" in response ? response.user : response;
   }
 
   async getUserPracticeLogs(
