@@ -4,7 +4,7 @@ import type { MediaDAO } from "../daos/mediaDao";
 const mediaById = new Map<string, Media>();
 const mediaByPracticeLog = new Map<string, Media[]>();
 
-export const InMemoryMediaDao: MediaDAO = {
+class InMemoryMediaDAO implements MediaDAO {
   async createMedia(practiceLogId: string, data: CreateMediaRequest): Promise<Media> {
     const mediaId = crypto.randomUUID();
     const createdAt = new Date().toISOString();
@@ -21,15 +21,15 @@ export const InMemoryMediaDao: MediaDAO = {
     }
     mediaByPracticeLog.get(practiceLogId)!.push(media);
     return media;
-  },
+  }
 
   async listMedia(practiceLogId: string): Promise<MediaListResponse> {
     return mediaByPracticeLog.get(practiceLogId) || [];
-  },
+  }
 
   async getMedia(mediaId: string): Promise<Media | null> {
     return mediaById.get(mediaId) || null;
-  },
+  }
 
   async deleteMedia(mediaId: string): Promise<void> {
     const media = mediaById.get(mediaId);
@@ -40,5 +40,7 @@ export const InMemoryMediaDao: MediaDAO = {
       const idx = arr.findIndex(m => m.mediaId === mediaId);
       if (idx !== -1) arr.splice(idx, 1);
     }
-  },
+  }
 };
+
+export const MediaDao = new InMemoryMediaDAO();

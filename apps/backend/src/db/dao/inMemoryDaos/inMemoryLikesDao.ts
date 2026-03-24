@@ -1,7 +1,7 @@
 import type { Like } from "@strava-musician-app/shared";
 import type { LikesDAO } from "../daos/likesDao";
 
-export class InMemoryLikesDao implements LikesDAO {
+class InMemoryLikesDao implements LikesDAO {
   private likes: Like[] = [];
 
   async addLike(like: Like): Promise<void> {
@@ -28,3 +28,5 @@ export class InMemoryLikesDao implements LikesDAO {
     return this.likes.filter(l => l.practiceLogId === practiceLogId);
   }
 }
+
+export const LikesDao = new InMemoryLikesDao();

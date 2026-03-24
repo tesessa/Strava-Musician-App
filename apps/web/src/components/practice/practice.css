@@ -724,7 +724,7 @@
   gap: 10px;
   margin-top: 16px;
 }
-.metronome-actions .start-btn {
+.start-btn {
   flex: 1;
   padding: 12px;
   border-radius: 10px;
@@ -736,7 +736,7 @@
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
 }
-.metronome-actions .cancel-btn {
+.cancel-btn {
   flex: 1;
   padding: 12px;
   border-radius: 10px;
@@ -885,3 +885,235 @@
   transition: background 0.2s;
 }
 .confirm-leave-btn:hover { background: #e74c3c; }
+
+
+/* Tuner Popup */
+.tuner-popup {
+  background: #16161a;
+  border: 1px solid #2a2a35;
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 88%;
+  max-width: 320px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+/* .tuner-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+} */
+
+/* ── TUNER DIAL ── */
+.tuner-dial {
+  position: relative;
+  width: 200px;
+  height: 100px; /* half circle */
+  overflow: visible;
+  margin: 0 auto;
+}
+
+.tuner-dial-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-top-left-radius: 100px;
+  border-top-right-radius: 100px;
+  background: #222;
+  border: 2px solid #6c4ef6;
+}
+
+.tuner-dial-needle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  height: 90px;
+  background: #27ae60;
+  transform-origin: bottom center;
+  transition: transform 0.1s ease-out;
+}
+
+.tuner-dial-note,
+.tuner-dial-nearest {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  color: #fff;
+}
+
+.tuner-dial-note {
+  top: 40%;
+  font-size: 28px;
+}
+
+.tuner-dial-nearest {
+  bottom: -20px;
+  font-size: 14px;
+}
+
+.tuner-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* .tuner-cents {
+  font-size: 18px;
+  font-weight: 700;
+  color: #8b7cf8;
+} */
+
+.tuner-direction {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tuner-direction.flat {
+  color: #c0392b;
+}
+
+.tuner-direction.sharp {
+  color: #27ae60;
+}
+
+.tuner-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================= */
+/* NEW SEGMENTED TUNER            */
+/* ============================= */
+
+.tuner-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Arc container */
+.tuner-arc {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 6px;
+  height: 80px;
+}
+
+/* Each block */
+.tuner-segment {
+  width: 16px;
+  height: 40px;
+  background: #444;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+/* Make arc shape */
+.tuner-segment:nth-child(1)  { transform: rotate(-40deg) translateY(10px); }
+.tuner-segment:nth-child(2)  { transform: rotate(-30deg) translateY(6px); }
+.tuner-segment:nth-child(3)  { transform: rotate(-20deg) translateY(3px); }
+.tuner-segment:nth-child(4)  { transform: rotate(-10deg); }
+.tuner-segment:nth-child(5)  { transform: rotate(-5deg); }
+.tuner-segment:nth-child(6)  { transform: rotate(0deg); height: 50px; } /* center */
+.tuner-segment:nth-child(7)  { transform: rotate(5deg); }
+.tuner-segment:nth-child(8)  { transform: rotate(10deg); }
+.tuner-segment:nth-child(9)  { transform: rotate(20deg) translateY(3px); }
+.tuner-segment:nth-child(10) { transform: rotate(30deg) translateY(6px); }
+.tuner-segment:nth-child(11) { transform: rotate(40deg) translateY(10px); }
+
+/* ACTIVE COLORS */
+
+/* flat side (left) */
+.tuner-segment.active-flat {
+  background: #e74c3c;
+}
+
+/* sharp side (right) */
+.tuner-segment.active-sharp {
+  background: #e74c3c;
+}
+
+/* perfectly in tune (center) */
+.tuner-segment.active-center {
+  background: #2ecc71;
+  box-shadow: 0 0 10px rgba(46,204,113,0.8);
+}
+
+/* NOTE TEXT */
+.tuner-note {
+  font-size: 42px;
+  font-weight: 700;
+  color: white;
+}
+
+.tuner-sub {
+  font-size: 14px;
+  color: #aaa;
+}
+
+
+.tuner-popup h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #8b7cf8;
+  margin-bottom: 10px;
+}
+
+/* smoother animation */
+.tuner-segment {
+  width: 14px;
+  height: 42px;
+  background: #2a2a35;
+  border-radius: 8px;
+  transition: all 0.12s ease;
+}
+
+/* softer red */
+.tuner-segment.active-flat,
+.tuner-segment.active-sharp {
+  background: #ff5a5a;
+}
+
+/* nicer green */
+.tuner-segment.active-center {
+  background: #2ecc71;
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.8);
+}
+
+/* big clean note */
+.tuner-note {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* subtle subtitle if you want later */
+.tuner-subtle {
+  font-size: 12px;
+  color: #666;
+}
+
+.tuner-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.start-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(108,78,246,0.4);
+}
+
+.cancel-btn:hover {
+  background: #2a2a35;
+}

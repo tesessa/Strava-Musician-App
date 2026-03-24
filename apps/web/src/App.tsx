@@ -1,12 +1,13 @@
-// import { APP_CONFIG } from "@strava-musician-app/shared";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
+import Home from "./components/home/Home";
 import PracticeLog from "./components/practice/PracticeLog";
 import Login from "./components/authentication/Login";
 import Register from "./components/authentication/Register";
 import ForgotPassword from "./components/authentication/ForgotPassword";
 import CalendarPage from "./pages/calendar";
 import Practice from "./components/practice/Practice";
+import Profile from "./components/profile/Profile";
+import PracticeLogEdit from "./components/practice/PracticeLogEdit";
 
 function App() {
   return (
@@ -15,14 +16,17 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
-        <Route
-          path="/profile"
-          element={<div style={{ padding: 24 }}>Profile / Settings (TBD)</div>}
-        />
+
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:tab" element={<Profile />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/profile/:userId/:tab" element={<Profile />} />
+
         <Route path="/practice" element={<Practice />} />
         <Route path="/practice-log" element={<PracticeLog />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/practice-log/edit/:practiceLogId" element={<PracticeLogEdit />} />
       </Routes>
     </BrowserRouter>
   );

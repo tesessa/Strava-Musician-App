@@ -261,6 +261,9 @@ export class FakeDataHelper {
       entityType: "user",
       entityId: me.userId,
     });
+
+    // temporary remove later
+    // this.upsertFriend(receiverId);
   }
 
   getIncomingFriendRequests(
@@ -961,10 +964,21 @@ export class FakeDataHelper {
         createdAt: "2026-03-14T14:00:00.000Z",
         durationMinutes: 45,
         tempo: 76,
+        pieceTitle: "Etude in E Major",
+        composer: "Fredric Chopin"
       },
       {
         practiceLogId: "practiceLog-103",
         userId: "demo-user-3",
+        title: "Excerpt session",
+        postText: "Rite of Spring opening",
+        instrument: "Clarinet",
+        createdAt: "2026-03-13T12:00:00.000Z",
+        durationMinutes: 30,
+      },
+      {
+        practiceLogId: "practiceLog-103",
+        userId: "demo-user-4",
         title: "Excerpt session",
         postText: "Rite of Spring opening",
         instrument: "Clarinet",

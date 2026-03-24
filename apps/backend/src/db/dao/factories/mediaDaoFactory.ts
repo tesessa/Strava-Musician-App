@@ -1,5 +1,6 @@
-import { InMemoryMediaDao } from "../inMemoryDaos/inMemoryMediaDao";
+import { MediaDAO } from "../daos/mediaDao";
+import { MediaDao } from "../inMemoryDaos/inMemoryMediaDao";
 
-export function createMediaDAO() {
-  return InMemoryMediaDao;
+export function createMediaDAO(): MediaDAO {
+  return MediaDao;
 }

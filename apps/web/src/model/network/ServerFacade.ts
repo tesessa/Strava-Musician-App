@@ -431,8 +431,4 @@ export class ServerFacade implements KodaServerApi {
   async deleteEvent(eventId: string): Promise<void> {
     return this.delete<void>(`/events/${eventId}`);
   }
-
-  async sharePracticeLog(_practiceLogId: string): Promise<void> {
-    throw new Error("sharePracticeLog is not implemented by the backend yet.");
-  }
 }

@@ -1,9 +1,8 @@
 import { useState } from "react";
 import "./practiceLog.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { INSTRUMENTS } from "@strava-musician-app/shared";
-import type { Visibility } from "@strava-musician-app/shared";
-import { practiceLogService } from "../../model";
+import { INSTRUMENTS, Visibility } from "@strava-musician-app/shared";
+import { practiceLogService, mediaUploadService } from "../../model";
 import { userService } from "../../model";
 import { clearAllPracticeStorage } from "./practiceStorage";
 
@@ -50,10 +49,13 @@ const PracticeLog = () => {
   });
 
   const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState("");
-  const [privateNotes, setPrivateNotes] = useState("");
+  const [postText, setPostText] = useState("");
+  const [privateText, setPrivateText] = useState("");
   const [instrument, setInstrument] = useState(state.instrument ?? "");
-  const [visibility, setVisibility] = useState<Visibility>("public");
+  const [pieceTitle, setPieceTitle] = useState("");
+  const [composer, setComposer] = useState("");
+  const [tempo, setTempo] = useState<string>("");
+  const [visibility] = useState<Visibility>("friends");
   const [loading, setLoading] = useState(false);
 
   const formatDuration = (mins: number) => {
@@ -68,15 +70,25 @@ const PracticeLog = () => {
     try {
       const user = await userService.getCurrentUser();
       const userId = user?.userId ?? "user";
-      await practiceLogService.savePracticeLog(
-        userId,
-        title,
-        visibility,
-        durationMinutes,
-        notes,
-        privateNotes,
-        instrument,
+      const tempoNum = tempo ? parseInt(tempo, 10): undefined;
+
+      const practiceLogId = await practiceLogService.savePracticeLog(
+          userId,
+          title,
+          visibility,
+          durationMinutes,
+          postText,
+          privateText,
+          instrument,
+          tempoNum || undefined,
+          pieceTitle || undefined,
+          composer || undefined
       );
+
+      if(mediaEntries.length > 0) {
+        await mediaUploadService.uploadMediaForPracticeLog(practiceLogId, mediaEntries);
+      }
+
       await clearAllPracticeStorage();
       navigate("/home");
     } catch (err) {
@@ -88,14 +100,15 @@ const PracticeLog = () => {
   };
 
   const handleDiscard = async () => {
+    navigate("/home");
     setLoading(true);
+
     try {
-      await practiceLogService.discardPracticeLog("unsaved");
+      await clearAllPracticeStorage();
       navigate("/home");
     } catch {
       // navigate to home in finally block
     } finally {
-      await clearAllPracticeStorage();
       setLoading(false);
       navigate("/home");
     }
@@ -145,8 +158,8 @@ const PracticeLog = () => {
         <textarea
           className="notes-input"
           placeholder="How'd it go? What did you work on?"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          value={postText}
+          onChange={(e) => setPostText(e.target.value)}
         />
 
         {/* Instrument */}
@@ -167,6 +180,34 @@ const PracticeLog = () => {
           </select>
         </div>
 
+        <h4 className="section-title">Piece Title (Optional)</h4>
+        <input
+          className="title-input"
+          type="text"
+          placeholder="e.g., Etude Op 10 no 3"
+          value={pieceTitle}
+          onChange={(e) => setPieceTitle(e.target.value)}
+        />
+      
+        <h4 className="section-title">Composer (Optional)</h4>
+        <input
+          className="title-input"
+          type="text"
+          placeholder="e.g., Fredric Chopin"
+          value={composer}
+          onChange={(e) => setComposer(e.target.value)}
+        />
+
+        <h4 className="section-title">Tempo (Optional)</h4>
+        <input
+          className="title-input"
+          type="number"
+          placeholder="BPM (e.g., 76)"
+          value={tempo}
+          onChange={(e) => setTempo(e.target.value)}
+        />
+
+
         {/* Media from practice (audio/video clips) */}
         {mediaEntries.length > 0 && (
           <>
@@ -176,7 +217,6 @@ const PracticeLog = () => {
                 <div key={entry.id} className="media-preview-item">
                   {entry.kind === "audio" ? (
                     <div className="media-preview-audio">
-                      {/* <span>🎙</span> */}
                       <audio src={entry.url} controls />
                     </div>
                   ) : (
@@ -197,8 +237,8 @@ const PracticeLog = () => {
         <textarea
           className="notes-input"
           placeholder="Write down private notes here. Only you can see these."
-          value={privateNotes}
-          onChange={(e) => setPrivateNotes(e.target.value)}
+          value={privateText}
+          onChange={(e) => setPrivateText(e.target.value)}
         />
 
         {/* Visibility
