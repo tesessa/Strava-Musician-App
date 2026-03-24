@@ -13,9 +13,8 @@ export class AuthService {
     const hashedPassword = hashPassword(password);
     const user = await this.userDao.validateCredentials(email, hashedPassword);
     if (!user) return { error: "invalid credentials", status: 401 };
-
     const authToken = await this.authDao.createTokenForUser(user.userId);
-    return { token: authToken.token, user, status: 200 };
+    return { authToken, user, status: 200 };
   }
 
   async logout(token: string) {
@@ -37,13 +36,10 @@ export class AuthService {
     if (!data.email || !data.username || !data.password) {
       return { error: "email, username and password required", status: 400 };
     }
-
     const existingEmail = await this.userDao.findUserByEmail(data.email);
     const existingUsername = await this.userDao.findUserByUsername(data.username);
-
     if (existingEmail) return { error: "email already in use", status: 400 };
     if (existingUsername) return { error: "username already in use", status: 400 };
-
     const hashedPassword = hashPassword(data.password);
     const now: string = new Date().toISOString();
     const newUser: User = {
@@ -57,10 +53,14 @@ export class AuthService {
       createdAt: now,
       updatedAt: now,
     };
+    const user = await this.userDao.createUser(newUser, hashedPassword);
+    const authToken = await this.authDao.createTokenForUser(user.userId);
+    return { authToken, user, status: 201 };
+  }
 
-      const user = await this.userDao.createUser(newUser, hashedPassword);
-      const authToken = await this.authDao.createTokenForUser(user.userId);
-
-      return { token: authToken.token, user, status: 201 };
+  async me(token: string) {
+    const user = await this.authDao.getUserByToken(token);
+    if (!user) return { error: "invalid_token", status: 401 };
+    return { user, status: 200 };
   }
 }

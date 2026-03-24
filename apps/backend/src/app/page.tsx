@@ -108,7 +108,7 @@ export default function Home() {
       purpose: "Create a new user account",
       requestBody:
         "{ email: string, username: string, password: string, visibility: 'public' | 'private' | 'friends', imageUrl?: string, bio?: string, instruments?: string[]}",
-      responseBody: "{ token: string, expiresAt: number, user: User } (201) or { error } (4xx/409)",
+      responseBody: "{ authToken: { token: string, expiresAt: number }, user: User } (201) or { error } (4xx/409)",
       exampleCurl: `curl -i -X POST http://localhost:3001/auth/register \\
   -H "Content-Type: application/json" \\
   -d '{"email":"alice@example.com","username":"alice","password":"secret","visibility":"public"}'`,

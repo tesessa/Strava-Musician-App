@@ -49,31 +49,13 @@ class InMemoryUserDao implements UserDAO {
     return user as User;
   }
 
-  async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
+async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
     const rec = usersById.get(id);
     if (!rec) return null;
-
-    const oldEmailKey = rec.email.toLowerCase();
-    const oldUsernameKey = rec.username;
-
-    const updated: UserRecord = {
-      ...rec,
-      ...patch,
-      updatedAt: new Date().toISOString(),
-    };
-
+    const updated = { ...rec, ...patch, updatedAt: new Date().toISOString() };
     usersById.set(id, updated);
-
-    if (oldEmailKey !== updated.email.toLowerCase()) {
-      usersByEmail.delete(oldEmailKey);
-    }
-    if (oldUsernameKey !== updated.username) {
-      usersByUsername.delete(oldUsernameKey);
-    }
-
-    usersByEmail.set(updated.email.toLowerCase(), updated);
-    usersByUsername.set(updated.username, updated);
-
+    if (patch.email) usersByEmail.set(patch.email.toLowerCase(), updated);
+    if (patch.username) usersByUsername.set(patch.username, updated);
     const { passwordHashPerm, ...user } = updated;
     return user as User;
   }
