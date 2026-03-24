@@ -35,7 +35,7 @@ export async function completeChallenge(req: Request, challengeId: string) {
   if (error) return error;
   const result = await getChallengesService().completeChallenge(user.userId, challengeId);
   if (result.error) return NextResponse.json({ error: result.error }, { status: result.status });
-  return NextResponse.json({ success: true }, { status: 201 });
+  return NextResponse.json({ success: true }, { status: 200 });
 }
 
 // GET /users/:userId/completed-challenges

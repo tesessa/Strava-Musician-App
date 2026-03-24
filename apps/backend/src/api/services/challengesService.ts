@@ -1,5 +1,7 @@
 import { createChallengesDao } from "../../db/dao/factories/challengesDaoFactory";
 import type { Challenge, CreateChallengeRequest, CompletedChallenge } from "@strava-musician-app/shared";
+import { createNotification } from "./notificationsService";
+import { NotificationType, NotificationEntityType } from "@strava-musician-app/shared";
 
 export function getChallengesService() {
   const challengesDao = createChallengesDao();
@@ -31,6 +33,16 @@ export function getChallengesService() {
         completedAt: new Date().toISOString(),
       };
       await challengesDao.addCompletedChallenge(completed);
+      // Notify the user
+      await createNotification({
+        userId,
+        actorId: userId,
+        type: "challengeCompleted" as NotificationType,
+        entityType: "challenge" as NotificationEntityType,
+        entityId: challengeId,
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      });
       return { success: true };
     },
     async listCompletedChallenges(userId: string): Promise<CompletedChallenge[]> {

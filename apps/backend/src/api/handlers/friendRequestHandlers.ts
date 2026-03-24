@@ -18,7 +18,7 @@ export async function createFriendRequest(req: Request, receiverId: string) {
     return NextResponse.json({ error: "user_not_found" }, { status: 404 });
   }
   const result = await friendRequestsService.createFriendRequest(auth.user.userId, receiverId);
-  return NextResponse.json(result);
+  return NextResponse.json({ ...result }, { status: 201 });
 }
 
 export async function listIncoming(req: Request) {

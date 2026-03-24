@@ -3,6 +3,8 @@ import { createPracticeLogDAO } from "../../db/dao/factories/practiceLogDaoFacto
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 import { createFriendsDAO } from "../../db/dao/factories/friendsDaoFactory";
 import type { Comment } from "@strava-musician-app/shared";
+import { createNotification } from "./notificationsService";
+import { NotificationType, NotificationEntityType } from "@strava-musician-app/shared";
 
 export function getCommentsService() {
   const commentsDao = createCommentsDAO();
@@ -34,6 +36,18 @@ export function getCommentsService() {
         createdAt: new Date().toISOString(),
       };
       await commentsDao.addComment(comment);
+      // Notify the log owner
+      if (log.userId !== userId) {
+        await createNotification({
+          userId: log.userId,
+          actorId: userId,
+          type: "comment" as NotificationType,
+          entityType: "practiceLog" as NotificationEntityType,
+          entityId: practiceLogId,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      }
       return { comment };
     },
     async listComments(practiceLogId: string): Promise<Comment[]> {

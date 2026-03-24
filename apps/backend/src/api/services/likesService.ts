@@ -2,6 +2,8 @@ import { createLikesDAO } from "../../db/dao/factories/likesDaoFactory";
 import { createPracticeLogDAO } from "../../db/dao/factories/practiceLogDaoFactory";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 import type { Like } from "@strava-musician-app/shared";
+import { createNotification } from "./notificationsService";
+import { NotificationType, NotificationEntityType } from "@strava-musician-app/shared";
 import { createFriendsDAO } from "@/db/dao/factories/friendsDaoFactory";
 
 export function getLikesService() {
@@ -17,6 +19,19 @@ export function getLikesService() {
         return { error: "already_liked", status: 400 };
       }
       await likesDao.addLike({ userId, practiceLogId, createdAt: new Date().toISOString() });
+      // Notify the log owner
+      const log = await practiceLogDAO.getPracticeLog(practiceLogId);
+      if (log && log.userId !== userId) {
+        await createNotification({
+          userId: log.userId,
+          actorId: userId,
+          type: "like" as NotificationType,
+          entityType: "practiceLog" as NotificationEntityType,
+          entityId: practiceLogId,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+        });
+      }
       return { success: true };
     },
     async unlikePracticeLog(userId: string, practiceLogId: string) {
