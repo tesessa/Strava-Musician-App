@@ -2,6 +2,7 @@ import { APP_CONFIG } from "@strava-musician-app/shared";
 
 export default function Home() {
   const routes = [
+    // --- Health ---
     {
       path: "/health",
       method: "GET",
@@ -52,7 +53,7 @@ export default function Home() {
     {
       path: "/users/:userId",
       method: "GET",
-      purpose: "Get a user's profile (must be the user)",
+      purpose: "Get a user's profile by ID. (Does not require ou to be the user)",
       requestBody: "none (must send Authorization header)",
       responseBody: "{ user: User } (200) or { error } (404/401/403)",
       exampleCurl: `curl -X GET http://localhost:3001/users/<userId> \\
@@ -146,7 +147,82 @@ export default function Home() {
       exampleCurl: `curl -X DELETE http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
-    // --- Friends & Friend Requests ---
+    // --- Media Routes ---
+    {
+      path: "/practice-logs/:practiceLogId/media",
+      method: "POST",
+      purpose: "Add media to a practice log (must be the owner)",
+      requestBody: "{ type: 'image' | 'audio' | 'video', url: string } (must send Authorization header)",
+      responseBody: "{ media: Media } (201) or { error } (400/401/403/404)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/media \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{"type":"image","url":"http://example.com/img.png"}'`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/media",
+      method: "GET",
+      purpose: "List media for a practice log (must have access to the log)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ media: Media[] } (200) or { error } (401/403/404)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/media \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/media/:mediaId",
+      method: "DELETE",
+      purpose: "Delete a media item (must be the owner)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (401/403/404)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/media/<mediaId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    // --- Likes Routes ---
+    {
+      path: "/practice-logs/:practiceLogId/likes",
+      method: "POST",
+      purpose: "Like a practice log (must have access to the log)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ success: true } (201) or { error } (400/401/403/404)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/likes",
+      method: "DELETE",
+      purpose: "Unlike a practice log (must have previously liked it)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (401/403/404)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/likes",
+      method: "GET",
+      purpose: "List users who liked the practice log (must have access to the log)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ likes: Like[] } (200) or { error } (401/403/404)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+        // --- Comments Routes ---
+    {
+      path: "/practice-logs/:practiceLogId/comments",
+      method: "POST",
+      purpose: "Add a comment to a practice log (must have access)",
+      requestBody: "{ text: string } (must send Authorization header)",
+      responseBody: "{ comment: Comment } (201) or { error } (400/401/403/404)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/comments \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{\"text\":\"Nice practice!\"}'`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/comments",
+      method: "GET",
+      purpose: "List comments for a practice log (must have access)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "{ comments: Comment[] } (200) or { error } (401/403/404)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/comments \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/comments/:commentId",
+      method: "DELETE",
+      purpose: "Delete a comment (must be the comment's author)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (401/403/404)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/comments/<commentId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+     // --- Friends and Friend Requests Routes ---
     {
       path: "/friends",
       method: "GET",
@@ -227,6 +303,7 @@ export default function Home() {
       responseBody: "{ success: true } (200) or { error } (404/403/401)",
       exampleCurl: `curl -X DELETE http://localhost:3001/friend-requests/<requestId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
     },
+    
   ];
 
   // Group routes by section
@@ -241,7 +318,30 @@ export default function Home() {
     },
     {
       title: "Practice Logs",
-      routes: routes.filter(r => r.path.startsWith("/practice-logs")),
+      routes: routes.filter(r =>
+        r.path.startsWith("/practice-logs") &&
+        !r.path.includes("/media") &&
+        !r.path.includes("/likes") &&
+        !r.path.includes("/comments")
+      ),
+    },
+    {
+      title: "Media",
+      routes: routes.filter(r =>
+        r.path.includes("/media") || r.path.startsWith("/media")
+      ),
+    },
+    {
+      title: "Likes",
+      routes: routes.filter(r =>
+        r.path.includes("/likes") || r.path.startsWith("/likes")
+      ),
+    },
+    {
+      title: "Comments",
+      routes: routes.filter(r =>
+        r.path.includes("/comments") || r.path.startsWith("/comments")
+      ),
     },
     {
       title: "Friends & Friend Requests",

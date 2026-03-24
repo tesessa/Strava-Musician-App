@@ -1,3 +1,4 @@
+import * as commentsHandlers from "../../api/handlers/commentsHandlers";
 import { NextResponse } from "next/server";
 import * as authHandlers from "../../api/handlers/authHandlers";
 import * as practiceLogHandlers from "../../api/handlers/practiceLogHandlers";
@@ -103,6 +104,20 @@ async function dispatch(req: Request, method: string) {
     } else if (method === "GET") {
       res = await mediaHandlers.listMedia(req, parts[1]);
     }
+  }
+
+  // /practice-logs/:practiceLogId/comments (POST, GET)
+  if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "comments") {
+    if (method === "POST") {
+      res = await commentsHandlers.createComment(req, parts[1]);
+    } else if (method === "GET") {
+      res = await commentsHandlers.listComments(req, parts[1]);
+    }
+  }
+
+  // /comments/:commentId (DELETE)
+  if (parts[0] === "comments" && parts.length === 2 && method === "DELETE") {
+    res = await commentsHandlers.deleteComment(req, parts[1]);
   }
 
   // /practice-logs/:practiceLogId/likes (POST, DELETE, GET)
