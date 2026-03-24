@@ -1,30 +1,190 @@
-import { useState } from "react";
-import type { FeedPracticeLog } from "@strava-musician-app/shared";
-import "../../index.css";
+import { useEffect, useState } from "react";
+import type { PracticeLog, Media } from "@strava-musician-app/shared";
+import "./index.css";
+import { userService, practiceLogService } from "../../model";
 
 type FeedPracticeLogCardProps = {
-  practiceLog: FeedPracticeLog;
+  practiceLog: PracticeLog;
+  currentUserId?: string;
   onLike: (practiceLogId: string) => Promise<void> | void;
+  onUnlike: (practiceLogId: string) => Promise<void> | void;
   onComment: (practiceLogId: string, text: string) => Promise<void> | void;
-  onShare: (practiceLogId: string) => Promise<void> | void;
-  onProfileClick?: (userId?: string) => void;
+  onShare: (practiceLog: PracticeLog) => Promise<void> | void;
+  onDelete?: (PracticeLogId: string) => Promise<void> | void;
+  onEdit?: (PracticeLogId: string) => void;
+  onProfileClick?: (userId: string) => void;
 };
 
 const FeedPracticeLogCard = ({
   practiceLog,
+  currentUserId,
   onLike,
+  onUnlike,
   onComment,
   onShare,
+  onDelete,
+  onEdit,
   onProfileClick,
 }: FeedPracticeLogCardProps) => {
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [isLiked, setIsLiked] = useState(false); // This should come from server data eventually
+  const [likeCount, setLikeCount] = useState(0); // This should come from server data eventually
+  const [username, setUsername] = useState<string>("User");
+  const [userInitial, setUserInitial] = useState<string>("U");
+  const [media, setMedia] = useState<Media[]>([]);
+  // temporary for now
+  const [showMenu, setShowMenu] = useState(false);
+  const [comments, setComments] = useState<Array<{text: String; username: string }>>([]);
+
+  const isOwnPost = currentUserId === practiceLog.userId;
+    
+  useEffect(() => {
+    const fetchUser = async () => {
+        try {
+            const user = await userService.getUser(practiceLog.userId);
+            if (user) {
+                setUsername(user.username || "User");
+                setUserInitial(user.username?.[0]?.toUpperCase() || "U");
+            }
+        } catch (error) {
+            console.error("Failed to fetch user:", error);
+        }
+    };
+    fetchUser();
+  }, [practiceLog.userId]);
+
+  useEffect(() => {
+    const fetchMedia = async () => {
+        try {
+            const mediaList = await practiceLogService.getPracticeLogMedia(
+                practiceLog.practiceLogId
+            );
+            setMedia(mediaList);
+        } catch (error) {
+            console.error("Failed to fetch media", error);
+        }
+    };
+    fetchMedia();
+  }, [practiceLog.practiceLogId]);
+
+  useEffect(() => {
+    const fetchLikesAndComments = async () => {
+        try {
+            const likes = await practiceLogService.getPracticeLogLikes(
+                practiceLog.practiceLogId
+            );
+            setLikeCount(likes.length);
+
+            if (currentUserId) {
+                setIsLiked(likes.some((like) => like.userId === currentUserId));
+            }
+
+            const commentsData = await practiceLogService.getPracticeLogComments(
+                practiceLog.practiceLogId
+            );
+
+            const commentsWithUsernames = await Promise.all(
+                commentsData.map(async (comment) => {
+                    try {
+                        const user = await userService.getUser(comment.userId);
+                        return { text: comment.text, username: user.username }
+                    } catch {
+                        return { text: comment.text, username: "User" }
+                    }
+                })
+            );
+            setComments(commentsWithUsernames);
+        } catch (error) {
+            console.error("Failed to fetch likes/comments:", error);
+        }
+    };
+    fetchLikesAndComments();
+  }, [practiceLog.practiceLogId, currentUserId]);
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim()) return;
-    await onComment(practiceLog.practiceLogId, commentText);
-    setCommentText("");
-    setCommentOpen(true);
+        try {
+            await onComment(practiceLog.practiceLogId, commentText);
+      
+            // Add comment to local state immediately
+            const currentUser = await userService.getCurrentUser();
+            setComments((prev) => [
+                ...prev,
+                { text: commentText, username: currentUser?.username || "You" },
+            ]);
+            setCommentText("");
+            // setCommentOpen(true);
+        } catch (error) {
+            console.error("Failed to submit comment:", error);
+        }
+    // await onComment(practiceLog.practiceLogId, commentText);
+    // setCommentText("");
+    // setCommentOpen(true);
+  };
+
+  const handleLikeToggle = async () => {
+    const previousLiked = isLiked;
+    const previousCount = likeCount;
+
+    setIsLiked(!isLiked);
+    setLikeCount((prev) => (isLiked ? Math.max(0, prev-1): prev+1));
+
+    try {
+      if (isLiked) {
+        await onUnlike(practiceLog.practiceLogId);
+        // setLikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        await onLike(practiceLog.practiceLogId);
+        // setLikeCount((prev) => prev + 1);
+      }
+    //   setIsLiked(!isLiked);
+    } catch (error) {
+        setIsLiked(previousLiked);
+        setLikeCount(previousCount);
+        console.error("Failed to toggle like:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this practice log?")) {
+        setShowMenu(false);
+        if (onDelete) {
+            await onDelete(practiceLog.practiceLogId);
+        }
+    }
+  };
+
+  const handleEdit = () => {
+    setShowMenu(false);
+    if (onEdit) {
+        onEdit(practiceLog.practiceLogId);
+    }
+  };
+
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    }
+    return `${mins}m`;
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return date.toLocaleDateString();
   };
 
   return (
@@ -34,39 +194,157 @@ const FeedPracticeLogCard = ({
           className="feed-avatar"
           type="button"
           onClick={() => onProfileClick?.(practiceLog.userId)}
-          aria-label="Open profile"
+          aria-label="View profile"
         >
-          {practiceLog.name[0]}
+          <div className="feed-avatar-circle">
+            {userInitial}
+          </div>
+          {/* Avatar placeholder - would use username from User entity
+          👤 */}
         </button>
 
         <div className="feed-meta">
-          <div className="feed-name">{practiceLog.name}</div>
+          <div className="feed-name">
+            {/* Username would come from User entity - for now use userId */}
+            {username}
+          </div>
           <div className="feed-subtitle">
-            {new Date(practiceLog.createdAt).toLocaleString()}
+            {formatDate(practiceLog.createdAt)}
           </div>
         </div>
 
-        <button className="feed-more" aria-label="More options" type="button">
+        {isOwnPost && (
+            <div className="feed-more-container">
+                <button
+                    className="feed-more"
+                    aria-label="More options"
+                    type="button"
+                    onClick={() => setShowMenu(!showMenu)}
+                >
+                    •••
+                </button>
+                {showMenu && (
+                <div className="feed-menu">
+                    <button onClick={handleEdit} className="feed-menu-item">
+                        Edit Post
+                    </button>
+                    <button onClick={handleDelete} className="feed-menu-item delete">
+                    Delete Post
+                    </button>
+                </div>
+                )}
+            </div>
+        )}
+
+        {/* <button className="feed-more" aria-label="More options" type="button">
           •••
-        </button>
+        </button> */}
       </div>
 
       <div className="feed-card-body">
+        {/* Title and Post Text */}
         <div className="feed-post-title">{practiceLog.title}</div>
-        <div className="feed-post-details">{practiceLog.details}</div>
-        <div className="feed-instrument-tag">Instrument: {practiceLog.instrument}</div>
+        {practiceLog.postText && (
+          <div className="feed-post-text">{practiceLog.postText}</div>
+        )}
+
+        {isOwnPost && practiceLog.privateText && (
+            <div className="feed-post-text">{practiceLog.privateText}</div>
+        )}
+
+        {/* {isOwnPost && practiceLog.privateText && (
+            <div className="feed-private-notes">
+              <div className="private-notes-label">🔒 Private Notes</div>
+              <div className="feed-post-text">{practiceLog.privateText}</div>
+            </div>
+        )} */}
+
+
+        {/* Practice Stats - Strava-like */}
+        <div className="practice-stats">
+          <div className="stat-item">
+            {/* <div className="stat-icon">⏱️</div> */}
+            <div className="stat-content">
+              <div className="stat-label">Duration</div>
+              <div className="stat-value">{formatDuration(practiceLog.durationMinutes)}</div>
+            </div>
+          </div>
+
+          {practiceLog.instrument && (
+            <div className="stat-item">
+              {/* <div className="stat-icon">🎵</div> */}
+              <div className="stat-content">
+                <div className="stat-label">Instrument</div>
+                <div className="stat-value">{practiceLog.instrument}</div>
+              </div>
+            </div>
+          )}
+
+          {practiceLog.tempo && (
+            <div className="stat-item">
+              {/* <div className="stat-icon">🎼</div> */}
+              <div className="stat-content">
+                <div className="stat-label">Tempo</div>
+                <div className="stat-value">{practiceLog.tempo} BPM</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Piece Information */}
+        {(practiceLog.pieceTitle || practiceLog.composer) && (
+          <div className="piece-info">
+            {practiceLog.pieceTitle && (
+              <div className="piece-title">
+                <strong>Piece:</strong> {practiceLog.pieceTitle}
+              </div>
+            )}
+            {practiceLog.composer && (
+              <div className="piece-composer">
+                <strong>Composer:</strong> {practiceLog.composer}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="feed-media-placeholder" />
+      {/* Media Placeholder - for future media attachments */}
+      {/* <div className="feed-media-placeholder" /> */}
+      {media.length > 0 && (
+        <div className="feed-media">
+          {media.map((m) => (
+            <div key={m.mediaId} className="feed-media-item">
+              {m.type === "audio" ? (
+                <audio 
+                    src={m.url} 
+                    controls 
+                    className="feed-audio-player" 
+                    preload="metadata"
+                >
+                    Your browser does not support the audio element
+                </audio>
+              ) : (
+                <video 
+                    src={m.url} 
+                    controls 
+                    className="feed-video-player" 
+                    preload="metadata"
+                >
+                    Your browser does not support the video element
+                </video>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="feed-card-footer">
         <button
-          className="feed-action-btn"
+          className={`feed-action-btn ${isLiked ? "liked" : ""}`}
           type="button"
-          onClick={() => onLike(practiceLog.practiceLogId)}
+          onClick={handleLikeToggle}
         >
-          {practiceLog.likedByMe ? "Unlike" : "Like"}
-          {typeof practiceLog.likeCount === "number" ? ` (${practiceLog.likeCount})` : ""}
+          {isLiked ? "❤️" : "🤍"} {likeCount > 0 ? likeCount : ""}
         </button>
 
         <button
@@ -74,34 +352,30 @@ const FeedPracticeLogCard = ({
           type="button"
           onClick={() => setCommentOpen((prev) => !prev)}
         >
-          Comment
-          {typeof practiceLog.commentCount === "number"
-            ? ` (${practiceLog.commentCount})`
-            : ""}
+          Comment {comments.length > 0 ? `(${comments.length})` : ""}
         </button>
 
         <button
           className="feed-action-btn"
           type="button"
-          onClick={() => onShare(practiceLog.practiceLogId)}
+          onClick={() => onShare(practiceLog)}
         >
-          Share
+           Share
         </button>
       </div>
 
       {commentOpen && (
         <div className="comment-section">
-          {practiceLog.comments && practiceLog.comments.length > 0 && (
-            <div className="comment-list">
-              {practiceLog.comments.map((comment) => (
-                <div key={comment.id} className="comment-item">
-                  <div className="comment-author">{comment.authorName}</div>
-                  <div className="comment-text">{comment.text}</div>
+            {comments.length > 0 && (
+                <div className="comments-list">
+                    {comments.map((comment, idx) => (
+                        <div key={idx} className="comment-item">
+                            <strong>{comment.username}:</strong> {comment.text}
+                        </div>
+                    ))}
                 </div>
-              ))}
-            </div>
-          )}
-
+            )}
+          {/* Comments would be fetched from server */}
           <div className="comment-box">
             <input
               className="comment-input"
@@ -109,6 +383,11 @@ const FeedPracticeLogCard = ({
               placeholder="Write a comment..."
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  handleCommentSubmit();
+                }
+              }}
             />
             <button
               className="comment-send"

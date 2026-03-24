@@ -232,9 +232,4 @@ export class FakeDataServer implements KodaServerApi {
   async deleteEvent(eventId: string): Promise<void> {
     this.helper.deleteEvent(eventId);
   }
-
-  async sharePracticeLog(practiceLogId: string): Promise<void> {
-    // Legacy endpoint placeholder retained for backward compatibility.
-    console.log("[FakeDataServer] Share practice log:", practiceLogId);
-  }
 }

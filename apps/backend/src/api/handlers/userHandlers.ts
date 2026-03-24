@@ -11,7 +11,9 @@ export const getUser = async (req: Request, userId: string) => {
 
   try {
     const userData = await userService.getUser(userId);
-    if (!userData) return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+    if (!userData) {
+      return NextResponse.json({ error: "user_not_found" }, { status: 404 });
+    }
     return NextResponse.json({ user: userData }, { status: 200 });
   } catch {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
