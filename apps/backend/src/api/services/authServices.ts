@@ -54,10 +54,10 @@ export class AuthService {
       updatedAt: now,
     };
     const user = await this.userDao.createUser(newUser, hashedPassword);
-    const AuthToken = await this.authDao.createTokenForUser(user.userId);
-    return { AuthToken, user, status: 201 };
+    const authToken = await this.authDao.createTokenForUser(user.userId);
+    return { authToken, user, status: 201 };
   }
-  
+
   async me(token: string) {
     const user = await this.authDao.getUserByToken(token);
     if (!user) return { error: "invalid_token", status: 401 };
