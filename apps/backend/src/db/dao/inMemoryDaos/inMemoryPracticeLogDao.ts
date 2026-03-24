@@ -6,7 +6,7 @@ const authDao = createAuthDAO();
 
 export const practiceLogs = new Map<string, PracticeLog>();
 
-export const PracticeLogDao: PracticeLogDAO = {
+class InMemoryPracticeLogDao implements PracticeLogDAO {
   async getUserPracticeLogs(userId: string, lastItemId: string | null, pageSize: number) {
     // Get all practice logs for the user, sorted chronologically by createdAt
     const userPracticeLogs = Array.from(practiceLogs.values())
@@ -21,13 +21,13 @@ export const PracticeLogDao: PracticeLogDAO = {
       return [];
     }
     return userPracticeLogs.slice(idx + 1, idx + 1 + pageSize);
-  },
+  }
 
   async createPracticeLog(practiceLog: PracticeLog) {
     const id = practiceLog.practiceLogId;
     practiceLogs.set(id, practiceLog);
     return practiceLog;
-  },
+  }
 
   async getFeed(lastItemId: string | null, pageSize: number, token: string) {
     const user = await authDao.getUserByToken(token);
@@ -52,21 +52,23 @@ export const PracticeLogDao: PracticeLogDAO = {
       return [];
     }
     return feedLogs.slice(idx + 1, idx + 1 + pageSize);
-  },
+  }
 
-  async getPracticeLog(practiceLogId) {
+  async getPracticeLog(practiceLogId: string) {
     return practiceLogs.get(practiceLogId) ?? null;
-  },
+  }
 
-  async updatePracticeLog(practiceLogId, patch) {
+  async updatePracticeLog(practiceLogId: string, patch: Partial<PracticeLog>) {
     const existing = practiceLogs.get(practiceLogId);
     if (!existing) return null;
     const updated = { ...existing, ...patch };
     practiceLogs.set(practiceLogId, updated);
     return updated;
-  },
+  }
 
-  async deletePracticeLog(practiceLogId) {
+  async deletePracticeLog(practiceLogId: string) {
     return practiceLogs.delete(practiceLogId);
-  },
+  }
 };
+
+export const PracticeLogDao = new InMemoryPracticeLogDao();

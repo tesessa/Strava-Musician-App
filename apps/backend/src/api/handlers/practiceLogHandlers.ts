@@ -1,6 +1,6 @@
 import { UserService } from "../services/userServices";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
-import { createFriendsService } from "../services/friendsService";
+import { FriendsService } from "../services/friendsService";
 import { createFriendsDAO } from "../../db/dao/factories/friendsDaoFactory";
 import { NextResponse } from "next/server";
 import { PracticeLogService } from "../services/practiceLogServices";
@@ -9,7 +9,7 @@ import { authenticateToken, authenticateTokenToUserId } from "../utils/authentic
 
 const practiceLogService = new PracticeLogService(createPracticeLogDAO());
 const userService = new UserService(createUserDAO());
-const friendsService = createFriendsService(createFriendsDAO());
+const friendsService = new FriendsService(createFriendsDAO());
 
 
 // GET /users/:userId/practice-logs

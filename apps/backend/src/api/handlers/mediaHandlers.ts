@@ -6,13 +6,13 @@ import { PracticeLogService } from "../services/practiceLogServices";
 import { createPracticeLogDAO } from "../../db/dao/factories/practiceLogDaoFactory";
 import { UserService } from "../services/userServices";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
-import { createFriendsService } from "../services/friendsService";
+import { FriendsService } from "../services/friendsService";
 import { createFriendsDAO } from "../../db/dao/factories/friendsDaoFactory";
 
 const mediaService = new MediaService(createMediaDAO());
 const practiceLogService = new PracticeLogService(createPracticeLogDAO());
 const userService = new UserService(createUserDAO());
-const friendsService = createFriendsService(createFriendsDAO());
+const friendsService = new FriendsService(createFriendsDAO());
 
 export async function createMedia(req: Request, practiceLogId: string) {
   const { user, token, error } = await authenticateToken(req);
