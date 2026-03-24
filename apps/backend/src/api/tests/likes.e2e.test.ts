@@ -14,7 +14,7 @@ describe("LIKES API Integration", () => {
       password: "secret",
       displayName: "LikeUser"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.authToken.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -23,7 +23,7 @@ describe("LIKES API Integration", () => {
       password: "secret",
       displayName: "LikeFriend"
     });
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.authToken.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -32,7 +32,7 @@ describe("LIKES API Integration", () => {
       password: "secret",
       displayName: "LikeStranger"
     });
-    strangerToken = res.body.AuthToken.token;
+    strangerToken = res.body.authToken.token;
 
     // Set postVisibility on user profiles
     await request(API).patch(`/users/${userId}`).set("Authorization", `Bearer ${userToken}`).send({ postVisibility: "public" });

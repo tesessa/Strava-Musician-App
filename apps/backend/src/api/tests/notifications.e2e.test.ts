@@ -14,7 +14,7 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "NotifUser"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.authToken.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -23,7 +23,7 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "NotifFriend"
     });
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.authToken.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -32,7 +32,7 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "NotifStranger"
     });
-    strangerToken = res.body.AuthToken.token;
+    strangerToken = res.body.authToken.token;
     strangerId = res.body.user.userId;
 
     // Make user and friend friends
@@ -56,7 +56,7 @@ describe("NOTIFICATIONS API Integration", () => {
     res = await request(API)
       .post("/auth/register")
       .send({ email: "adminnotif@example.com", username: "adminnotif", password: "secret", displayName: "AdminNotif" });
-    const adminToken = res.body.AuthToken.token;
+    const adminToken = res.body.authToken.token;
     res = await request(API)
       .post("/challenges")
       .set("Authorization", `Bearer ${adminToken}`)
@@ -160,7 +160,7 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "EmptyUser"
     });
-    const emptyToken = res.body.AuthToken.token;
+    const emptyToken = res.body.authToken.token;
     const notifRes = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${emptyToken}`);

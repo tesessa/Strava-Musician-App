@@ -15,7 +15,7 @@ describe("COMMENTS API Integration", () => {
       password: "secret",
       displayName: "CommentUser"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.authToken.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -24,7 +24,7 @@ describe("COMMENTS API Integration", () => {
       password: "secret",
       displayName: "CommentFriend"
     });
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.authToken.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -33,7 +33,7 @@ describe("COMMENTS API Integration", () => {
       password: "secret",
       displayName: "CommentStranger"
     });
-    strangerToken = res.body.AuthToken.token;
+    strangerToken = res.body.authToken.token;
 
     // Set postVisibility on user profiles
     await request(API).patch(`/users/${userId}`).set("Authorization", `Bearer ${userToken}`).send({ postVisibility: "public" });
