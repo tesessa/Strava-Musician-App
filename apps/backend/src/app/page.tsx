@@ -197,31 +197,6 @@ export default function Home() {
       responseBody: "{ likes: Like[] } (200) or { error } (401/403/404)",
       exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
     },
-        // --- Comments Routes ---
-    {
-      path: "/practice-logs/:practiceLogId/comments",
-      method: "POST",
-      purpose: "Add a comment to a practice log (must have access)",
-      requestBody: "{ text: string } (must send Authorization header)",
-      responseBody: "{ comment: Comment } (201) or { error } (400/401/403/404)",
-      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/comments \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{\"text\":\"Nice practice!\"}'`,
-    },
-    {
-      path: "/practice-logs/:practiceLogId/comments",
-      method: "GET",
-      purpose: "List comments for a practice log (must have access)",
-      requestBody: "none (must send Authorization header)",
-      responseBody: "{ comments: Comment[] } (200) or { error } (401/403/404)",
-      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/comments \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
-    },
-    {
-      path: "/comments/:commentId",
-      method: "DELETE",
-      purpose: "Delete a comment (must be the comment's author)",
-      requestBody: "none (must send Authorization header)",
-      responseBody: "204 No Content on success, or { error } (401/403/404)",
-      exampleCurl: `curl -X DELETE http://localhost:3001/comments/<commentId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
-    },
      // --- Friends and Friend Requests Routes ---
     {
       path: "/friends",
