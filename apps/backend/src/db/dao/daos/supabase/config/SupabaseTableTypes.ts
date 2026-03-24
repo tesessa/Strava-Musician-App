@@ -20,9 +20,9 @@ export interface AuthSession {
   expires_at: Date;
 }
 
-export interface PracticeSession {
+export interface PracticeLog {
   userId: string;
-  sessionId: string;
+  practiceLogId: string;
   title: string;
   postText?: string;
   privateText?: string;
