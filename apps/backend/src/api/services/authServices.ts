@@ -41,13 +41,17 @@ export class AuthService {
     if (existingEmail) return { error: "email already in use", status: 400 };
     if (existingUsername) return { error: "username already in use", status: 400 }; 
     const hashedPassword = hashPassword(data.password);
-    const newUser: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
+    const now: string = new Date().toISOString();
+    const newUser: User = {
       email: data.email,
       username: data.username,
       profilePhoto: data.profilePhoto ?? data.imageUrl,
       bio: data.bio,
       postVisibility: data.postVisibility ?? "friends",
       instruments: data.instruments ?? [],
+      userId: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
     };
     const user = await this.userDao.createUser(newUser, hashedPassword);
     const AuthToken = await this.authDao.createTokenForUser(user.userId);

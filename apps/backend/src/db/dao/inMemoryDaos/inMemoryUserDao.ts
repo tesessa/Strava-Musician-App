@@ -23,15 +23,12 @@ class InMemoryUserDao implements UserDAO {
     return user as User;
   }
 
-  async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwordHash: string): Promise<User> {
-    const userId = crypto.randomUUID();
-    const now = new Date().toISOString();
-    const fullUser: User = { ...user, userId, createdAt: now, updatedAt: now };
+  async createUser(user: User, passwordHash: string): Promise<User> {
     const rec: UserRecord = {
-      ...fullUser,
+      ...user,
       passwordHashPerm: passwordHash,
     };
-    usersById.set(userId, rec);
+    usersById.set(user.userId, rec);
     usersByEmail.set(user.email.toLowerCase(), rec);
     usersByUsername.set(user.username, rec);
     const { passwordHashPerm, ...userWithoutHash } = rec;
