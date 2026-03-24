@@ -22,16 +22,16 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
         .send(u);
       if (u.username === "publicuser") {
         publicUser = res.body.user;
-        publicToken = res.body.AuthToken.token;
+        publicToken = res.body.authToken.token;
       } else if (u.username === "privateuser") {
         privateUser = res.body.user;
-        privateToken = res.body.AuthToken.token;
+        privateToken = res.body.authToken.token;
       } else if (u.username === "frienduser") {
         friendUser = res.body.user;
-        friendToken = res.body.AuthToken.token;
+        friendToken = res.body.authToken.token;
       } else if (u.username === "stranger") {
         stranger = res.body.user;
-        strangerToken = res.body.AuthToken.token;
+        strangerToken = res.body.authToken.token;
       }
     }
     // Set visibilities explicitly (in case not set at registration)
@@ -148,13 +148,13 @@ describe("GET /practice-logs/feed - Feed, Friends, Pagination", () => {
         .send(u);
       if (u.username === "publicuser2") {
         publicUser = res.body.user;
-        publicToken = res.body.AuthToken.token;
+        publicToken = res.body.authToken.token;
       } else if (u.username === "frienduser2") {
         friendUser = res.body.user;
-        friendToken = res.body.AuthToken.token;
+        friendToken = res.body.authToken.token;
       } else if (u.username === "stranger2") {
         stranger = res.body.user;
-        strangerToken = res.body.AuthToken.token;
+        strangerToken = res.body.authToken.token;
       }
     }
     // Make publicUser and friendUser friends

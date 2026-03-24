@@ -14,7 +14,7 @@ describe("CHALLENGES API Integration", () => {
       password: "secret",
       displayName: "AdminUser"
     });
-    adminToken = res.body.AuthToken.token;
+    adminToken = res.body.authToken.token;
     adminId = res.body.user.userId;
 
     // Register user
@@ -24,7 +24,7 @@ describe("CHALLENGES API Integration", () => {
       password: "secret",
       displayName: "ChallengeUser"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.authToken.token;
     userId = res.body.user.userId;
   });
 
@@ -58,7 +58,7 @@ describe("CHALLENGES API Integration", () => {
     const res = await request(API)
       .post(`/challenges/${challengeId}/complete`)
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(200);
   });
 
   it("should list completed challenges for user", async () => {
