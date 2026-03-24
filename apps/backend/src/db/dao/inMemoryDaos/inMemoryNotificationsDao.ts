@@ -1,9 +1,9 @@
 import { Notification } from "@strava-musician-app/shared";
-import { NotificationsDao } from "../daos/notificationsDao";
+import { NotificationsDAO } from "../daos/notificationsDao";
 
 const notificationsByUser: Record<string, Notification[]> = {};
 
-export class InMemoryNotificationsDao implements NotificationsDao {
+class InMemoryNotificationsDao implements NotificationsDAO {
   async listNotifications(userId: string): Promise<Notification[]> {
     return notificationsByUser[userId] || [];
   }
@@ -46,4 +46,10 @@ export class InMemoryNotificationsDao implements NotificationsDao {
     }
     return null;
   }
+  
+  reset() {
+    Object.keys(notificationsByUser).forEach(key => delete notificationsByUser[key]);
+  }
 }
+
+export const NotificationsDao = new InMemoryNotificationsDao();

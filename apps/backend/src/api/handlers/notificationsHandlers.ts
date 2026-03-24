@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import * as notificationsService from "../services/notificationsService";
+import { NotificationsService } from "../services/notificationsService";
 import { authenticateToken } from "../utils/authenticateToken";
+
+const notificationsService = new NotificationsService();
 
 export async function listNotifications(req: Request) {
   const {user, token, error} = await authenticateToken(req);

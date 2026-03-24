@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
-import { getChallengesService } from "../services/challengesService";
+import { ChallengesService } from "../services/challengesService";
 import { authenticateToken, authenticateTokenToUserId } from "../utils/authenticateToken";
+
+const challengesService = new ChallengesService();
 
 // GET /challenges
 export async function listChallenges(req: Request) {
   const { user, error } = await authenticateToken(req);
   if (error) return error;
-  const challenges = await getChallengesService().listChallenges();
+  const challenges = await challengesService.listChallenges();
   return NextResponse.json({ challenges }, { status: 200 });
 }
 
@@ -15,7 +17,7 @@ export async function createChallenge(req: Request) {
   const { user, error } = await authenticateToken(req);
   if (error) return error;
   const body = await req.json();
-  const result = await getChallengesService().createChallenge(body);
+  const result = await challengesService.createChallenge(body);
   if (result.error) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ challenge: result.challenge }, { status: 201 });
 }
@@ -24,7 +26,7 @@ export async function createChallenge(req: Request) {
 export async function getChallenge(req: Request, challengeId: string) {
   const { user, error } = await authenticateToken(req);
   if (error) return error;
-  const challenge = await getChallengesService().getChallenge(challengeId);
+  const challenge = await challengesService.getChallenge(challengeId);
   if (!challenge) return NextResponse.json({ error: "not_found" }, { status: 404 });
   return NextResponse.json({ challenge }, { status: 200 });
 }
@@ -33,7 +35,7 @@ export async function getChallenge(req: Request, challengeId: string) {
 export async function completeChallenge(req: Request, challengeId: string) {
   const { user, error } = await authenticateToken(req);
   if (error) return error;
-  const result = await getChallengesService().completeChallenge(user.userId, challengeId);
+  const result = await challengesService.completeChallenge(user.userId, challengeId);
   if (result.error) return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json({ success: true }, { status: 200 });
 }
@@ -44,6 +46,6 @@ export async function listCompletedChallenges(req: Request, userId: string) {
   if (error) return error;
   // Only allow self or admin (for demo, just self)
   if (user.userId !== userId) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  const completed = await getChallengesService().listCompletedChallenges(userId);
+  const completed = await challengesService.listCompletedChallenges(userId);
   return NextResponse.json({ completed }, { status: 200 });
 }

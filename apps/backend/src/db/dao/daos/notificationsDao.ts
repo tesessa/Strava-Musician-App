@@ -1,6 +1,6 @@
 import { Notification } from "@strava-musician-app/shared";
 
-export interface NotificationsDao {
+export interface NotificationsDAO {
   listNotifications(userId: string): Promise<Notification[]>;
   markNotificationRead(notificationId: string): Promise<boolean>;
   deleteNotification(notificationId: string): Promise<boolean>;

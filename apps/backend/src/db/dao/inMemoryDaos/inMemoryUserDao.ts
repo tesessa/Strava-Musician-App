@@ -7,23 +7,23 @@ export const usersById = new Map<string, UserRecord>();
 export const usersByEmail = new Map<string, UserRecord>();
 export const usersByUsername = new Map<string, UserRecord>();
 
-export const UserDao: UserDAO = {
+class InMemoryUserDao implements UserDAO {
   async validateCredentials(email: string, passwordHash: string): Promise<User | null> {
     const rec = usersByEmail.get(email.toLowerCase());
     if (!rec) return null;
     if (rec.passwordHashPerm !== passwordHash) return null;
     const { passwordHashPerm, ...user } = rec;
     return user as User;
-  },
+  }
 
   async findUserByEmail(email: string): Promise<User | null> {
     const rec = usersByEmail.get(email.toLowerCase());
     if (!rec) return null;
     const { passwordHashPerm, ...user } = rec;
     return user as User;
-  },
+  }
 
-async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwordHash: string): Promise<User> {
+  async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwordHash: string): Promise<User> {
     const userId = crypto.randomUUID();
     const now = new Date().toISOString();
     const fullUser: User = { ...user, userId, createdAt: now, updatedAt: now };
@@ -36,21 +36,21 @@ async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwor
     usersByUsername.set(user.username, rec);
     const { passwordHashPerm, ...userWithoutHash } = rec;
     return userWithoutHash as User;
-  },
+  }
 
   async findUserById(id: string): Promise<User | null> {
     const rec = usersById.get(id);
     if (!rec) return null;
     const { passwordHashPerm, ...user } = rec;
     return user as User;
-  },
+  }
 
   async findUserByUsername(username: string): Promise<User | null> {
     const rec = usersByUsername.get(username);
     if (!rec) return null;
     const { passwordHashPerm, ...user } = rec;
     return user as User;
-  },
+  }
 
   async updateUser(id: string, patch: Partial<User>): Promise<User | null> {
     const rec = usersById.get(id);
@@ -61,7 +61,7 @@ async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwor
     if (patch.username) usersByUsername.set(patch.username, updated);
     const { passwordHashPerm, ...user } = updated;
     return user as User;
-  },
+  }
 
   async searchUsers(query: string): Promise<User[]> {
     const q = query.toLowerCase();
@@ -73,7 +73,7 @@ async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwor
           (u.bio && u.bio.toLowerCase().includes(q))
       )
       .map(({ passwordHashPerm, ...user }) => user as User);
-  },
+  }
 
   async deleteUser(userId: string): Promise<boolean> {
     const rec = usersById.get(userId);
@@ -84,3 +84,5 @@ async createUser(user: Omit<User, "userId" | "createdAt" | "updatedAt">, passwor
     return true;
   }
 };
+
+export const UserDao = new InMemoryUserDao();

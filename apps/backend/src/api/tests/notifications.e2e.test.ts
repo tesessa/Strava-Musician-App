@@ -194,7 +194,7 @@ describe("NOTIFICATIONS API Integration", () => {
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications.find((n) => !n.isRead);
+    const notification = res.body.notifications.find((n: any) => !n.isRead);
     if (notification) {
       await request(API)
         .patch(`/notifications/${notification.notificationId}/read`)

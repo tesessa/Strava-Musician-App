@@ -1,11 +1,6 @@
-import { InMemoryNotificationsDao } from "../inMemoryDaos/notificationsInMemoryDao";
-import type { NotificationsDao } from "../daos/notificationsDao";
+import type { NotificationsDAO } from '../daos/notificationsDao';
+import { NotificationsDao } from '../inMemoryDaos/inMemoryNotificationsDao';
 
-let dao: NotificationsDao | null = null;
-
-export function createNotificationsDao(): NotificationsDao {
-  if (!dao) {
-    dao = new InMemoryNotificationsDao();
-  }
-  return dao;
+export function createNotificationsDao(): NotificationsDAO {
+  return NotificationsDao;
 }

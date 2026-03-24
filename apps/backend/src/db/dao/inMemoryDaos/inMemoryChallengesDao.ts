@@ -1,7 +1,7 @@
 import type { Challenge, CompletedChallenge } from "@strava-musician-app/shared";
 import type { ChallengesDAO } from "../daos/challengesDao";
 
-export class InMemoryChallengesDao implements ChallengesDAO {
+class InMemoryChallengesDao implements ChallengesDAO {
   private challenges: Challenge[] = [];
   private completed: CompletedChallenge[] = [];
 
@@ -21,3 +21,5 @@ export class InMemoryChallengesDao implements ChallengesDAO {
     return this.completed.filter(c => c.userId === userId);
   }
 }
+
+export const ChallengesDao = new InMemoryChallengesDao();
