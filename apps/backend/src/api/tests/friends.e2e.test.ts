@@ -22,7 +22,7 @@ describe("Friends API Integration", () => {
       });
     expect(res.status).toBe(201);
     userId = res.body.user.userId || res.body.user.id;
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.authToken.token;
   });
 
   it("should register a friend user", async () => {
@@ -36,7 +36,7 @@ describe("Friends API Integration", () => {
       });
     expect(res.status).toBe(201);
     friendId = res.body.user.userId || res.body.user.id;
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.authToken.token;
   });
 
   it("should send a friend request and accept it", async () => {
@@ -44,7 +44,7 @@ describe("Friends API Integration", () => {
     let res = await request(API)
       .post(`/friend-requests/${friendId}`)
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201); //because it creates a new request
 
     // Accept as friendId
     const reqId = res.body.requestId || res.body.request?.requestId;
@@ -113,12 +113,12 @@ describe("Friends API Integration", () => {
     let res = await request(API)
       .post(`/friend-requests/${friendId}`)
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     // Send again (should not create duplicate)
     res = await request(API)
       .post(`/friend-requests/${friendId}`)
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(400);
   });
 
   it("should not allow accepting a non-existent friend request", async () => {
@@ -161,14 +161,14 @@ describe("Friends API Integration", () => {
         });
       expect(res.status).toBe(201);
       const extraId = res.body.user.userId || res.body.user.id;
-      const extraToken = res.body.AuthToken.token;
+      const extraToken = res.body.authToken.token;
       extraUserIds.push(extraId);
       extraUserTokens.push(extraToken);
       // Send and accept friend request
       let reqRes = await request(API)
         .post(`/friend-requests/${extraId}`)
         .set("Authorization", `Bearer ${userToken}`);
-      expect(reqRes.status).toBe(200);
+      expect(reqRes.status).toBe(201);
       const reqId = reqRes.body.requestId || reqRes.body.request?.requestId;
       expect(reqId).toBeTruthy();
       reqRes = await request(API)
@@ -213,7 +213,7 @@ describe("Friends API Integration", () => {
       });
     expect(resNew.status).toBe(201);
     const incomingUserId = resNew.body.user.userId || resNew.body.user.id;
-    const incomingToken = resNew.body.AuthToken.token;
+    const incomingToken = resNew.body.authToken.token;
     extraUserIds.push(incomingUserId);
     extraUserTokens.push(incomingToken);
 
@@ -221,7 +221,7 @@ describe("Friends API Integration", () => {
     let reqRes = await request(API)
       .post(`/friend-requests/${userId}`)
       .set("Authorization", `Bearer ${incomingToken}`);
-    expect(reqRes.status).toBe(200);
+    expect(reqRes.status).toBe(201);
     const requestId = reqRes.body.requestId || reqRes.body.request?.requestId;
     expect(requestId).toBeTruthy();
 
@@ -268,7 +268,7 @@ describe("Friends API Integration", () => {
       });
     expect(resNew.status).toBe(201);
     const rejectUserId = resNew.body.user.userId || resNew.body.user.id;
-    const rejectToken = resNew.body.AuthToken.token;
+    const rejectToken = resNew.body.authToken.token;
     extraUserIds.push(rejectUserId);
     extraUserTokens.push(rejectToken);
 
@@ -276,7 +276,7 @@ describe("Friends API Integration", () => {
     let reqRes = await request(API)
       .post(`/friend-requests/${userId}`)
       .set("Authorization", `Bearer ${rejectToken}`);
-    expect(reqRes.status).toBe(200);
+    expect(reqRes.status).toBe(201);
     const requestId = reqRes.body.requestId || reqRes.body.request?.requestId;
 
     // Reject the friend request as userId
@@ -299,7 +299,7 @@ describe("Friends API Integration", () => {
       });
     expect(resNew.status).toBe(201);
     const cancelUserId = resNew.body.user.userId || resNew.body.user.id;
-    const cancelToken = resNew.body.AuthToken.token;
+    const cancelToken = resNew.body.authToken.token;
     extraUserIds.push(cancelUserId);
     extraUserTokens.push(cancelToken);
 
@@ -307,7 +307,7 @@ describe("Friends API Integration", () => {
     let reqRes = await request(API)
       .post(`/friend-requests/${userId}`)
       .set("Authorization", `Bearer ${cancelToken}`);
-    expect(reqRes.status).toBe(200);
+    expect(reqRes.status).toBe(201);
     const requestId = reqRes.body.requestId || reqRes.body.request?.requestId;
 
     // Cancel the friend request as sender
@@ -365,12 +365,12 @@ describe("Friends API Integration", () => {
       });
     expect(resNew.status).toBe(201);
     const statusUserId = resNew.body.user.userId || resNew.body.user.id;
-    const statusToken = resNew.body.AuthToken.token;
+    const statusToken = resNew.body.authToken.token;
     // Send a friend request to userId
     let reqRes = await request(API)
       .post(`/friend-requests/${userId}`)
       .set("Authorization", `Bearer ${statusToken}`);
-    expect(reqRes.status).toBe(200);
+    expect(reqRes.status).toBe(201);
     const requestId = reqRes.body.requestId || reqRes.body.request?.requestId;
     // Accept the request
     let res = await request(API)
@@ -400,12 +400,12 @@ describe("Friends API Integration", () => {
       });
     expect(resNew.status).toBe(201);
     const forbidUserId = resNew.body.user.userId || resNew.body.user.id;
-    const forbidToken = resNew.body.AuthToken.token;
+    const forbidToken = resNew.body.authToken.token;
     // Send a friend request to userId
     let reqRes = await request(API)
       .post(`/friend-requests/${userId}`)
       .set("Authorization", `Bearer ${forbidToken}`);
-    expect(reqRes.status).toBe(200);
+    expect(reqRes.status).toBe(201);
     const requestId = reqRes.body.requestId || reqRes.body.request?.requestId;
     // Try to cancel as userId (not sender)
     let res = await request(API)
@@ -426,12 +426,12 @@ describe("Friends API Integration", () => {
       });
     expect(resNew.status).toBe(201);
     const forbidUserId = resNew.body.user.userId || resNew.body.user.id;
-    const forbidToken = resNew.body.AuthToken.token;
+    const forbidToken = resNew.body.authToken.token;
     // Send a friend request to userId
     let reqRes = await request(API)
       .post(`/friend-requests/${userId}`)
       .set("Authorization", `Bearer ${forbidToken}`);
-    expect(reqRes.status).toBe(200);
+    expect(reqRes.status).toBe(201);
     const requestId = reqRes.body.requestId || reqRes.body.request?.requestId;
     // Try to accept as sender (not receiver)
     let res = await request(API)
@@ -458,9 +458,9 @@ describe("Friends API Integration", () => {
         password: "secret",
         displayName: "Cross B"
       });
-    const tokenA = resA.body.AuthToken.token;
+    const tokenA = resA.body.authToken.token;
     const idA = resA.body.user.userId || resA.body.user.id;
-    const tokenB = resB.body.AuthToken.token;
+    const tokenB = resB.body.authToken.token;
     const idB = resB.body.user.userId || resB.body.user.id;
     // A sends to B, B sends to A
     let reqA = await request(API)

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { createFriendRequestsService } from "../services/friendRequestsService";
+import { FriendRequestsService } from "../services/friendRequestsService";
 import { authenticateToken } from "../utils/authenticateToken";
 import { createFriendRequestsDAO } from "../../db/dao/factories/friendRequestsDaoFactory";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 
-const friendRequestsService = createFriendRequestsService(createFriendRequestsDAO());
+const friendRequestsService = new FriendRequestsService(createFriendRequestsDAO());
 
 export async function createFriendRequest(req: Request, receiverId: string) {
   const auth = await authenticateToken(req);
@@ -17,8 +17,17 @@ export async function createFriendRequest(req: Request, receiverId: string) {
   if (!receiver) {
     return NextResponse.json({ error: "user_not_found" }, { status: 404 });
   }
+  //fixme check for duplicate friend request or existing friendship
+  // const existingRequest = await friendRequestsService.listOutgoing(auth.user.userId, { pageSize: 100 });
+  // if (existingRequest.some(req => req.receiverId === receiverId)) {
+  //   return NextResponse.json({ error: "request_already_sent" }, { status: 400 });
+  // }
+  // const existingIncoming = await friendRequestsService.listIncoming(auth.user.userId, { pageSize: 100 });
+  // if (existingIncoming.some(req => req.senderId === receiverId)) {
+  //   return NextResponse.json({ error: "request_already_received" }, { status: 400 });
+  // }
   const result = await friendRequestsService.createFriendRequest(auth.user.userId, receiverId);
-  return NextResponse.json(result);
+  return NextResponse.json({ ...result }, { status: 201 });
 }
 
 export async function listIncoming(req: Request) {

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createFriendsService } from "../services/friendsService";
+import { FriendsService } from "../services/friendsService";
 import { authenticateToken } from "../utils/authenticateToken";
 import { createFriendsDAO } from "@/db/dao/factories/friendsDaoFactory";
 
-const friendsService = createFriendsService(createFriendsDAO());
+const friendsService = new FriendsService(createFriendsDAO());
 
 export async function listFriends(req: Request) {
   const auth = await authenticateToken(req);

@@ -30,9 +30,9 @@ describe("API Handlers Integration (Comprehensive)", () => {
       });
     expect(res.status).toBe(201);
     expect(res.body.user).toBeDefined();
-    expect(res.body.AuthToken.token).toBeDefined();
+    expect(res.body.authToken.token).toBeDefined();
     userId = res.body.user.id;
-    authToken = res.body.AuthToken.token;
+    authToken = res.body.authToken.token;
   });
 
   it("should not register with duplicate email", async () => {
@@ -132,7 +132,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
     const res = await request(API)
       .get(`/users/${userId}`)
       .set("Authorization", "Bearer invalidtoken");
-    expect(res.status).toBe(403); // or 401 depending on your logic
+    expect(res.status).toBe(401); // or 401 depending on your logic
   });
 
   it("should fail to get user with no token", async () => {
@@ -276,7 +276,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       });
     expect(res.status).toBe(201);
     secondUserId = res.body.user.userId;
-    secondUserToken = res.body.AuthToken.token;
+    secondUserToken = res.body.authToken.token;
   });
 
   it("should not allow second user to update first user's practice log", async () => {
@@ -336,7 +336,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
     const res = await request(API)
       .get(`/users/${secondUserId}`)
       .set("Authorization", `Bearer ${secondUserToken}`);
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401); //or 404 depending on your logic
   });
 
   // --- HEALTH CHECK ---

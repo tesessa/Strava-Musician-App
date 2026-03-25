@@ -15,7 +15,7 @@ describe("MEDIA API Integration", () => {
       displayName: "MediaUser",
       postVisibility: "public"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.authToken.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -25,7 +25,7 @@ describe("MEDIA API Integration", () => {
       displayName: "MediaFriend",
       postVisibility: "friends"
     });
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.authToken.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -35,7 +35,7 @@ describe("MEDIA API Integration", () => {
       displayName: "MediaStranger",
       postVisibility: "public"
     });
-    strangerToken = res.body.AuthToken.token;
+    strangerToken = res.body.authToken.token;
 
     // Make user and friend friends
     await request(API).post(`/friends/${friendId}`).set("Authorization", `Bearer ${userToken}`);

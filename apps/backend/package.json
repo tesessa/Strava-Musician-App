@@ -16,6 +16,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@next/swc-win32-x64-msvc": "^14.2.33",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.43",
