@@ -11,6 +11,7 @@
     "start": "concurrently --names \"web,backend\" --kill-others \"npm run start:web\" \"npm run start:backend\"",
     "start:web": "npm run dev -w apps/web",
     "start:backend": "npm run dev -w apps/backend",
+    "start:ai": "uvicorn apps.backend.ai.ai_service:app --host 0.0.0.0 --port 8000",
     "build": "npm run build -w packages/shared && npm run build -w apps/web && npm run build -w apps/backend",
     "database_test": "NODE_ENV=test jest --runInBand"
   },

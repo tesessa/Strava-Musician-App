@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 
 import os
 import sys
+import requests
+
 from openai import OpenAI
 
 from fastapi import FastAPI, UploadFile, File
@@ -49,10 +51,16 @@ def send_prompt(client, prompt: str, model: str = "gpt-4o-mini") -> str:
 app = FastAPI()
 
 @app.post("/analyze")
-async def analyze_audio(file: UploadFile = File(...)):
+async def analyze_audio(file_url: str):
     # the file is in oracle cloud.
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        shutil.copyfileobj(file.file, tmp)
+
+    response = requests.get(file_url)
+
+    if response.status_code != 200:
+        return {"error": "Failed to download file"}
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        tmp.write(response.content)
         tmp_path = tmp.name
 
     bpm, beats, beats_confidence = beat_analysis(tmp_path)
@@ -82,24 +90,3 @@ async def analyze_audio(file: UploadFile = File(...)):
 if __name__ == "__main__":
     uvicorn.run("ai_service:app", host="0.0.0.0", port=8000, reload=True)
 
-# if __name__ == "__main__":
-#     args = sys.argv
-#     if len(args) > 1:
-#         if not os.path.isfile(args[1]):
-#             print(f"Error: not a valid audiofile.")
-#             sys.exit(1)
-#     audio_file = args[1]
-#     #analyze beats of audio file
-#     bpm, beats, beats_confidence = beat_analysis(audio_file)
-#     #send output to ai
-#     prompt = f"""
-#     You are a guide for practicing guitarists. You give brief helpful feedback based on the data you are given.
-#     It should consist of the BPM from the data, and if their rhythm was good or bad. 
-#     Give no more than two or three sentences.
-#     Here is the data: BPM: {bpm}, Beats: {beats}
-#     """
-#     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-#     response = send_prompt(client, prompt)
-#     #return model output
-#     print(f"Prompt: {prompt}")
-#     print(f"Response: {response}")
