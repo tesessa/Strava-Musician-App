@@ -1,5 +1,15 @@
 export { userService } from "./di";
-export { postService } from "./di";
+export { practiceLogService } from "./di";
+export { mediaUploadService } from './di';
+export { mediaApi } from "./di";
+export { notificationService } from './di';
+export { friendService } from "./di";
 export type { KodaServerApi } from "./network";
+export type { KodaMediaApi } from "./media";
 export { UserService } from "./service";
-export { PostService } from "./service";
+export { PracticeLogService } from "./service";
+export { LikesService } from './service';
+export { CommentsService } from './service';
+export { MediaUploadService } from './service';
+export { NotificationService } from './service';
+export { FriendService } from "./service";

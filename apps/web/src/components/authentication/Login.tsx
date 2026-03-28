@@ -19,12 +19,22 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-        const user = await userService.login(formData.email ?? "", formData.password ?? "");
+        if (!formData.email || !formData.password) {
+          return;
+        }
+        let user;
+        try {
+          user = await userService.login(formData.email, formData.password);
+        } catch(error) {
+          setError("Invalid email or password. Please try again.");
+          // alert("Invalid email or password please try again");
+        }
         if (user) {
             navigate("/home");
-        } else {
-            setError("Invalid email or password. Please try again.");
-        }
+        } 
+        // else {
+        //     setError("Invalid email or password. Please try again.");
+        // }
     }
 
     const loginFields = [
@@ -43,11 +53,12 @@ const Login = () => {
         onSubmit={handleSubmit}
         submitLabel="Log In"
       >
+        <p className="error">{error}</p>
         <Link to="/forgotPassword" className="forgot-password">
           Forgot password?
         </Link>
       </AuthForm>
-
+      {/* <p className="error">{error}</p> */}
       <div className="divider" />
 
       <Link to="/register">

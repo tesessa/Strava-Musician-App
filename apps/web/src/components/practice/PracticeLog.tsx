@@ -1,0 +1,279 @@
+import { useState } from "react";
+import "./practiceLog.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import { INSTRUMENTS, Visibility } from "@strava-musician-app/shared";
+import { practiceLogService, mediaUploadService } from "../../model";
+import { userService } from "../../model";
+import { clearAllPracticeStorage } from "./practiceStorage";
+
+type LocationState = {
+  audioClips?: Blob[];
+  videoClips?: Blob[];
+  sheetMusic?: File[];
+  durationMinutes?: number;
+  instrument?: string;
+};
+
+type MediaEntry = {
+  id: string;
+  blob: Blob;
+  url: string;
+  kind: "audio" | "video";
+};
+
+const PracticeLog = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = (location.state ?? {}) as LocationState;
+  const durationMinutes = state.durationMinutes ?? 0;
+
+  const [mediaEntries] = useState<MediaEntry[]>(() => {
+    const entries: MediaEntry[] = [];
+    (state.audioClips ?? []).forEach((blob, i) => {
+      entries.push({
+        id: `audio-${i}`,
+        blob,
+        url: URL.createObjectURL(blob),
+        kind: "audio",
+      });
+    });
+    (state.videoClips ?? []).forEach((blob, i) => {
+      entries.push({
+        id: `video-${i}`,
+        blob,
+        url: URL.createObjectURL(blob),
+        kind: "video",
+      });
+    });
+    return entries;
+  });
+
+  const [title, setTitle] = useState("");
+  const [postText, setPostText] = useState("");
+  const [privateText, setPrivateText] = useState("");
+  const [instrument, setInstrument] = useState(state.instrument ?? "");
+  const [pieceTitle, setPieceTitle] = useState("");
+  const [composer, setComposer] = useState("");
+  const [tempo, setTempo] = useState<string>("");
+  const [visibility] = useState<Visibility>("friends");
+  const [loading, setLoading] = useState(false);
+
+  const formatDuration = (mins: number) => {
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const user = await userService.getCurrentUser();
+      const userId = user?.userId ?? "user";
+      const tempoNum = tempo ? parseInt(tempo, 10): undefined;
+
+      const practiceLogId = await practiceLogService.savePracticeLog(
+          userId,
+          title,
+          visibility,
+          durationMinutes,
+          postText,
+          privateText,
+          instrument,
+          tempoNum || undefined,
+          pieceTitle || undefined,
+          composer || undefined
+      );
+
+      if(mediaEntries.length > 0) {
+        await mediaUploadService.uploadMediaForPracticeLog(practiceLogId, mediaEntries);
+      }
+
+      await clearAllPracticeStorage();
+      navigate("/home");
+    } catch (err) {
+      console.error("Failed to save practice log:", err);
+      alert("Something went wrong saving your practice. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDiscard = async () => {
+    navigate("/home");
+    setLoading(true);
+
+    try {
+      await clearAllPracticeStorage();
+      navigate("/home");
+    } catch {
+      // navigate to home in finally block
+    } finally {
+      setLoading(false);
+      navigate("/home");
+    }
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div className="practice-log-container">
+      {/* Header */}
+      <div className="practice-log-header">
+        <button
+          className="header-btn resume"
+          onClick={() => navigate("/practice")}
+          disabled={loading}
+        >
+          ← Resume
+        </button>
+        <span className="practice-log-header-title">Save Practice</span>
+        <button
+          className="header-btn save"
+          onClick={handleSave}
+          disabled={loading}
+        >
+          {loading ? "Saving…" : "Save"}
+        </button>
+      </div>
+
+      <div className="practice-log-content">
+        {/* Activity summary card */}
+        <div className="activity-card">
+          <div className="activity-type">
+            {instrument ? `🎵 ${instrument}` : "🎵 Practice"} Log
+          </div>
+          <div className="activity-meta">{formatDuration(durationMinutes)}</div>
+        </div>
+
+        {/* Title */}
+        <input
+          className="title-input"
+          type="text"
+          placeholder="Title your practice"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+
+        {/* Notes */}
+        <textarea
+          className="notes-input"
+          placeholder="How'd it go? What did you work on?"
+          value={postText}
+          onChange={(e) => setPostText(e.target.value)}
+        />
+
+        {/* Instrument */}
+        <h4 className="section-title">Instrument</h4>
+        <div className="visibility-row">
+          <select
+            value={instrument}
+            onChange={(e) => setInstrument(e.target.value)}
+          >
+            <option value="" disabled>
+              Select instrument…
+            </option>
+            {INSTRUMENTS.map((inst) => (
+              <option key={inst} value={inst}>
+                {inst}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <h4 className="section-title">Piece Title (Optional)</h4>
+        <input
+          className="title-input"
+          type="text"
+          placeholder="e.g., Etude Op 10 no 3"
+          value={pieceTitle}
+          onChange={(e) => setPieceTitle(e.target.value)}
+        />
+      
+        <h4 className="section-title">Composer (Optional)</h4>
+        <input
+          className="title-input"
+          type="text"
+          placeholder="e.g., Fredric Chopin"
+          value={composer}
+          onChange={(e) => setComposer(e.target.value)}
+        />
+
+        <h4 className="section-title">Tempo (Optional)</h4>
+        <input
+          className="title-input"
+          type="number"
+          placeholder="BPM (e.g., 76)"
+          value={tempo}
+          onChange={(e) => setTempo(e.target.value)}
+        />
+
+
+        {/* Media from practice (audio/video clips) */}
+        {mediaEntries.length > 0 && (
+          <>
+            <h4 className="section-title">Recordings from Practice</h4>
+            <div className="media-preview-grid">
+              {mediaEntries.map((entry) => (
+                <div key={entry.id} className="media-preview-item">
+                  {entry.kind === "audio" ? (
+                    <div className="media-preview-audio">
+                      <audio src={entry.url} controls />
+                    </div>
+                  ) : (
+                    <video
+                      src={entry.url}
+                      controls
+                      className="media-preview-img"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Private notes */}
+        <h2 className="section-title">Private Notes</h2>
+        <textarea
+          className="notes-input"
+          placeholder="Write down private notes here. Only you can see these."
+          value={privateText}
+          onChange={(e) => setPrivateText(e.target.value)}
+        />
+
+        {/* Visibility
+        <h4 className="section-title">Who can view</h4>
+        <div className="visibility-row">
+          <select
+            value={visibility}
+            onChange={(e) => setVisibility(e.target.value as Visibility)}
+          >
+            <option value="public">Everyone</option>
+            <option value="friends">Friends</option>
+            <option value="private">Only me</option>
+          </select>
+        </div> */}
+      </div>
+
+      {/* Footer actions */}
+      <div className="practice-log-footer">
+        <button
+          className="header-btn discard"
+          onClick={handleDiscard}
+          disabled={loading}
+        >
+          Discard Practice
+        </button>
+        <button
+          className="header-btn save footer-save"
+          onClick={handleSave}
+          disabled={loading}
+        >
+          {loading ? "Saving…" : "Save Practice"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default PracticeLog;

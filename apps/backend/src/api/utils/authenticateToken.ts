@@ -23,7 +23,7 @@ export async function authenticateTokenToUserId(req: Request, userId: string) {
     return { error: NextResponse.json({ error: "unauthorized" }, { status: 401 }) };
   }
   const user = await authDao.getUserByToken(token);
-  if (!user || user.id !== userId) {
+  if (!user || user.userId !== userId) {
     return { error: NextResponse.json({ error: "forbidden" }, { status: 403 }) };
   }
   return { user, token };

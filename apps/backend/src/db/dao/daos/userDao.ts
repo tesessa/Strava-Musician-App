@@ -1,6 +1,7 @@
 import type { User } from "@strava-musician-app/shared";
 
 export interface UserDAO {
+  /** Creates a user; userId, createdAt, and updatedAt are set by the implementation, not from the input. */
   createUser(user: User, passwordHash: string): Promise<User>;
   validateCredentials(email: string, passwordHash: string): Promise<User | null>;
   findUserByEmail(email: string): Promise<User | null>;
