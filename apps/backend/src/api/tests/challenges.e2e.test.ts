@@ -14,7 +14,7 @@ describe("CHALLENGES API Integration", () => {
       password: "secret",
       displayName: "AdminUser"
     });
-    adminToken = res.body.authToken.token;
+    adminToken = res.body.token;
     adminId = res.body.user.userId;
 
     // Register user
@@ -24,7 +24,7 @@ describe("CHALLENGES API Integration", () => {
       password: "secret",
       displayName: "ChallengeUser"
     });
-    userToken = res.body.authToken.token;
+    userToken = res.body.token;
     userId = res.body.user.userId;
   });
 
@@ -34,7 +34,7 @@ describe("CHALLENGES API Integration", () => {
       .set("Authorization", `Bearer ${adminToken}`)
       .send({ description: "Test challenge", task: "Practice 5 days", targetNumber: 5, instrument: "piano" });
     expect(res.status).toBe(201);
-    challengeId = res.body.challenge.challengeId;
+    challengeId = res.body.challengeId;
   });
 
   it("should list all challenges", async () => {
@@ -42,8 +42,8 @@ describe("CHALLENGES API Integration", () => {
       .get("/challenges")
       .set("Authorization", `Bearer ${userToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.challenges)).toBe(true);
-    expect(res.body.challenges.length).toBeGreaterThan(0);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
   it("should fetch a challenge by id", async () => {
@@ -58,7 +58,7 @@ describe("CHALLENGES API Integration", () => {
     const res = await request(API)
       .post(`/challenges/${challengeId}/complete`)
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(204);
   });
 
   it("should list completed challenges for user", async () => {
@@ -66,8 +66,8 @@ describe("CHALLENGES API Integration", () => {
       .get(`/users/${userId}/completed-challenges`)
       .set("Authorization", `Bearer ${userToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.completed)).toBe(true);
-    expect(res.body.completed.length).toBeGreaterThan(0);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
 //   it("should not allow non-admin to create a challenge", async () => {

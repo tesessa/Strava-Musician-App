@@ -9,7 +9,7 @@ export class ChallengesService {
   async listChallenges(): Promise<Challenge[]> {
     return this.challengesDao.listChallenges();
   }
-  async createChallenge(data: CreateChallengeRequest) {
+  async createChallenge(data: CreateChallengeRequest): Promise<Challenge | { error: string; status: number }> {
     if (!data.description || !data.task || !data.targetNumber) {
       return { error: "missing_fields", status: 400 };
     }
@@ -18,12 +18,15 @@ export class ChallengesService {
       ...data,
     };
     await this.challengesDao.addChallenge(challenge);
-    return { challenge };
+    return challenge;
   }
   async getChallenge(challengeId: string): Promise<Challenge | undefined> {
     return this.challengesDao.getChallengeById(challengeId);
   }
-  async completeChallenge(userId: string, challengeId: string) {
+  async completeChallenge(
+    userId: string,
+    challengeId: string,
+  ): Promise<void | { error: string; status: number }> {
     const challenge = await this.challengesDao.getChallengeById(challengeId);
     if (!challenge) return { error: "not_found", status: 404 };
     const completed: CompletedChallenge = {
@@ -32,7 +35,6 @@ export class ChallengesService {
       completedAt: new Date().toISOString(),
     };
     await this.challengesDao.addCompletedChallenge(completed);
-    // Notify the user
     await this.notificationsService.createNotification({
       userId,
       actorId: userId,
@@ -42,7 +44,7 @@ export class ChallengesService {
       createdAt: new Date().toISOString(),
       isRead: false,
     });
-    return { success: true };
+    return;
   }
   async listCompletedChallenges(userId: string): Promise<CompletedChallenge[]> {
     return this.challengesDao.getCompletedChallengesForUser(userId);

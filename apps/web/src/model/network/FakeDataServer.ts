@@ -14,6 +14,7 @@ import type {
   Event,
   FeedRequest,
   FeedResponse,
+  FriendRequest,
   FriendRequestsPageRequest,
   FriendsListRequest,
   FriendsListResponse,
@@ -76,10 +77,6 @@ export class FakeDataServer implements KodaServerApi {
     return this.helper.searchUsers(query);
   }
 
-  async upsertFriend(friendId: string): Promise<void> {
-    this.helper.upsertFriend(friendId);
-  }
-
   async deleteFriend(friendId: string): Promise<void> {
     this.helper.deleteFriend(friendId);
   }
@@ -88,8 +85,8 @@ export class FakeDataServer implements KodaServerApi {
     return this.helper.getFriends(request);
   }
 
-  async createFriendRequest(receiverId: string): Promise<void> {
-    this.helper.createFriendRequest(receiverId);
+  async createFriendRequest(receiverId: string): Promise<FriendRequest> {
+    return this.helper.createFriendRequest(receiverId);
   }
 
   async getIncomingFriendRequests(

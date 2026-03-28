@@ -3,8 +3,13 @@ import { createPracticeLogDAO } from "../../db/dao/factories/practiceLogDaoFacto
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 import type { Like } from "@strava-musician-app/shared";
 import { NotificationsService } from "./notificationsService";
-import { NotificationType, NotificationEntityType } from "@strava-musician-app/shared";
+import {
+  NotificationType,
+  NotificationEntityType,
+} from "@strava-musician-app/shared";
 import { createFriendsDAO } from "@/db/dao/factories/friendsDaoFactory";
+
+export type LikeMutationFailure = { error: string; status: number };
 
 export class LikesService {
   private likesDao = createLikesDAO();
@@ -13,12 +18,18 @@ export class LikesService {
   private userDAO = createUserDAO();
   private friendsDAO = createFriendsDAO();
 
-  async likePracticeLog(userId: string, practiceLogId: string) {
-    // Check if already liked
+  async likePracticeLog(
+    userId: string,
+    practiceLogId: string,
+  ): Promise<void | LikeMutationFailure> {
     if (await this.likesDao.hasUserLikedPracticeLog(userId, practiceLogId)) {
       return { error: "already_liked", status: 400 };
     }
-    await this.likesDao.addLike({ userId, practiceLogId, createdAt: new Date().toISOString() });
+    await this.likesDao.addLike({
+      userId,
+      practiceLogId,
+      createdAt: new Date().toISOString(),
+    });
     // Notify the log owner
     const log = await this.practiceLogDAO.getPracticeLog(practiceLogId);
     if (log && log.userId !== userId) {
@@ -32,33 +43,45 @@ export class LikesService {
         isRead: false,
       });
     }
-    return { success: true };
+    return;
   }
-  async unlikePracticeLog(userId: string, practiceLogId: string) {
-    // Check if the practice log exists
+
+  async unlikePracticeLog(
+    userId: string,
+    practiceLogId: string,
+  ): Promise<void | LikeMutationFailure> {
     const log = await this.practiceLogDAO.getPracticeLog(practiceLogId);
     if (!log) {
       return { error: "not_found", status: 404 };
     }
-    // Check if the user has liked the log
-    const hasLiked = await this.likesDao.hasUserLikedPracticeLog(userId, practiceLogId);
+    const hasLiked = await this.likesDao.hasUserLikedPracticeLog(
+      userId,
+      practiceLogId,
+    );
     if (!hasLiked) {
       return { error: "forbidden", status: 403 };
     }
     await this.likesDao.removeLike(userId, practiceLogId);
-    return { success: true };
+    return;
   }
+
   async hasUserLikedPracticeLog(userId: string, practiceLogId: string) {
     return this.likesDao.hasUserLikedPracticeLog(userId, practiceLogId);
   }
+
   async getPracticeLogLikes(practiceLogId: string): Promise<Like[]> {
     return this.likesDao.getLikesForPracticeLog(practiceLogId);
   }
+
   async getPracticeLogOwnerId(practiceLogId: string): Promise<string | null> {
     const log = await this.practiceLogDAO.getPracticeLog(practiceLogId);
     return log ? log.userId : null;
   }
-  async canUserAccessPracticeLog(userId: string, practiceLogId: string): Promise<boolean> {
+
+  async canUserAccessPracticeLog(
+    userId: string,
+    practiceLogId: string,
+  ): Promise<boolean> {
     const log = await this.practiceLogDAO.getPracticeLog(practiceLogId);
     if (!log) return false;
     const owner = await this.userDAO.findUserById(log.userId);
@@ -71,4 +94,4 @@ export class LikesService {
     }
     return false;
   }
-};
+}

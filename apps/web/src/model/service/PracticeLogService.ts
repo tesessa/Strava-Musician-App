@@ -10,7 +10,8 @@ import type {
   LikesListResponse,
   CommentsListResponse,
   FriendsListResponse,
-  UpdatePracticeLogRequest
+  UpdatePracticeLogRequest,
+  FriendRequest,
 } from "@strava-musician-app/shared";
 
 export class PracticeLogService {
@@ -82,9 +83,9 @@ export class PracticeLogService {
         return this.server.searchUsers(query);
     }
     
-    async sendFriendRequest(receiverId: string): Promise<void> {
-        return this.server.createFriendRequest(receiverId);
-    }
+  async sendFriendRequest(receiverId: string): Promise<FriendRequest> {
+    return this.server.createFriendRequest(receiverId);
+  }
 
 
   async commentOnPracticeLog(
@@ -107,8 +108,8 @@ export class PracticeLogService {
     return this.server.getPracticeLogComments(practiceLogId);
   }
 
-  async getFriends(lastItem?: string, pageSize?: number): Promise<FriendsListResponse> {
-    return this.server.getFriends({lastItem, pageSize});
+  async getFriends(lastFriendId?: string, pageSize?: number): Promise<FriendsListResponse> {
+    return this.server.getFriends({ lastFriendId, pageSize });
   }
 
   async deletePracticeLog(practiceLogId: string): Promise<void> {
@@ -121,9 +122,9 @@ export class PracticeLogService {
 
   async getUserPracticeLogs(
     userId: string,
-    lastItem?: string,
+    lastItemId?: string,
     pageSize = 20
   ): Promise<PracticeLog[]> {
-    return this.server.getUserPracticeLogs(userId, { lastItem, pageSize });
+    return this.server.getUserPracticeLogs(userId, { lastItemId, pageSize });
   }
 }

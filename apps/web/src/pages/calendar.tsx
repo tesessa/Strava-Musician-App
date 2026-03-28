@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./calendar.css";
 
@@ -246,9 +246,6 @@ export default function CalendarPage() {
 
            const dateKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${dayNumber}`;
            const dayEvents = eventsForDate(dateKey);
-           const hasEvents = dayEvents.length > 0;
-           const multipleEvents = dayEvents.length > 1;
-
 
            return (
              <div

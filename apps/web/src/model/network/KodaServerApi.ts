@@ -12,6 +12,7 @@ import type {
   Event,
   FeedRequest,
   FeedResponse,
+  FriendRequest,
   FriendRequestsPageRequest,
   FriendsListRequest,
   FriendsListResponse,
@@ -85,7 +86,7 @@ export interface KodaServerApi {
   // ===================
 
   /** POST /friend-requests/:receiverId */
-  createFriendRequest(receiverId: string): Promise<void>;
+  createFriendRequest(receiverId: string): Promise<FriendRequest>;
 
   /** GET /friend-requests/incoming (keyset pagination) */
   getIncomingFriendRequests(

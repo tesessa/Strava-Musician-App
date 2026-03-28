@@ -25,7 +25,7 @@ export async function createMedia(req: Request, practiceLogId: string) {
   try {
     const body = await req.json();
     const media = await mediaService.createMedia(practiceLogId, body);
-    return NextResponse.json({ media }, { status: 201 });
+    return NextResponse.json(media, { status: 201 });
   } catch {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
@@ -40,19 +40,19 @@ export async function listMedia(req: Request, practiceLogId: string) {
   if (practiceLog.userId === user.userId) {
     // owner can always view
     const media = await mediaService.listMedia(practiceLogId);
-    return NextResponse.json({ media }, { status: 200 });
+    return NextResponse.json(media, { status: 200 });
   }
   const targetUser = await userService.getUser(practiceLog.userId);
   if (!targetUser) return NextResponse.json({ error: "user_not_found" }, { status: 404 });
   if (targetUser.postVisibility === "public") {
     const media = await mediaService.listMedia(practiceLogId);
-    return NextResponse.json({ media }, { status: 200 });
+    return NextResponse.json(media, { status: 200 });
   }
   if (targetUser.postVisibility === "friends") {
     const isFriend = await friendsService.isFriend(user.userId, targetUser.userId);
     if (isFriend) {
       const media = await mediaService.listMedia(practiceLogId);
-      return NextResponse.json({ media }, { status: 200 });
+      return NextResponse.json(media, { status: 200 });
     }
   }
   return NextResponse.json({ error: "forbidden" }, { status: 403 });

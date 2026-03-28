@@ -244,7 +244,7 @@ export default function Home() {
       method: "POST",
       purpose: "Add media to a practice log (must be the owner)",
       requestBody: "{ type: 'image' | 'audio' | 'video', url: string } (must send Authorization header)",
-      responseBody: "{ media: Media } (201) or { error } (400/401/403/404)",
+      responseBody: "Media (201) or { error } (400/401/403/404)",
       exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/media \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{"type":"image","url":"http://example.com/img.png"}'`,
     },
     {
@@ -252,7 +252,7 @@ export default function Home() {
       method: "GET",
       purpose: "List media for a practice log (must have access to the log)",
       requestBody: "none (must send Authorization header)",
-      responseBody: "{ media: Media[] } (200) or { error } (401/403/404)",
+      responseBody: "Media[] (200) or { error } (401/403/404)",
       exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/media \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
     },
     {
@@ -269,7 +269,7 @@ export default function Home() {
       method: "POST",
       purpose: "Like a practice log (must have access to the log)",
       requestBody: "none (must send Authorization header)",
-      responseBody: "{ success: true } (201) or { error } (400/401/403/404)",
+      responseBody: "201 No Content (empty body) or { error } (400/401/403/404)",
       exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
     },
     {
@@ -285,7 +285,7 @@ export default function Home() {
       method: "GET",
       purpose: "List users who liked the practice log (must have access to the log)",
       requestBody: "none (must send Authorization header)",
-      responseBody: "{ likes: Like[] } (200) or { error } (401/403/404)",
+      responseBody: "Like[] (200) or { error } (401/403/404)",
       exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
     },
      // --- Friends and Friend Requests Routes ---
@@ -299,18 +299,10 @@ export default function Home() {
     },
     {
       path: "/friends/:friendId",
-      method: "POST",
-      purpose: "Send or accept a friend request",
-      requestBody: "none (must send Authorization header)",
-      responseBody: "{ requestId, status } or { error }",
-      exampleCurl: `curl -X POST http://localhost:3001/friends/<friendId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
-    },
-    {
-      path: "/friends/:friendId",
       method: "DELETE",
       purpose: "Remove a friend",
       requestBody: "none (must send Authorization header)",
-      responseBody: "{ success: true } (200) or { error } (403/401)",
+      responseBody: "204 No Content on success, or { error } (403/401)",
       exampleCurl: `curl -X DELETE http://localhost:3001/friends/<friendId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
     },
     {

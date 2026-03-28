@@ -1,6 +1,5 @@
 import request from "supertest";
-
-const API = "http://localhost:3001";
+import { API, establishFriendship } from "./testHelpers";
 
 describe("COMMENTS API Integration", () => {
   let userToken: string, userId: string, friendToken: string, friendId: string, strangerToken: string;
@@ -15,7 +14,7 @@ describe("COMMENTS API Integration", () => {
       password: "secret",
       displayName: "CommentUser"
     });
-    userToken = res.body.authToken.token;
+    userToken = res.body.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -24,7 +23,7 @@ describe("COMMENTS API Integration", () => {
       password: "secret",
       displayName: "CommentFriend"
     });
-    friendToken = res.body.authToken.token;
+    friendToken = res.body.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -33,29 +32,27 @@ describe("COMMENTS API Integration", () => {
       password: "secret",
       displayName: "CommentStranger"
     });
-    strangerToken = res.body.authToken.token;
+    strangerToken = res.body.token;
 
     // Set postVisibility on user profiles
     await request(API).patch(`/users/${userId}`).set("Authorization", `Bearer ${userToken}`).send({ postVisibility: "public" });
     await request(API).patch(`/users/${friendId}`).set("Authorization", `Bearer ${friendToken}`).send({ postVisibility: "friends" });
     // Stranger remains public (default)
 
-    // Make user and friend friends
-    await request(API).post(`/friends/${friendId}`).set("Authorization", `Bearer ${userToken}`);
-    await request(API).post(`/friends/${userId}`).set("Authorization", `Bearer ${friendToken}`);
+    await establishFriendship(userToken, friendToken, friendId);
 
     // Create practice logs
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${userToken}`)
       .send({ title: "User Log", durationMinutes: 10 });
-    practiceLogId = res.body.practiceLog.practiceLogId;
+    practiceLogId = res.body.practiceLogId;
 
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${friendToken}`)
       .send({ title: "Friend Log", durationMinutes: 10 });
-    friendPracticeLogId = res.body.practiceLog.practiceLogId;
+    friendPracticeLogId = res.body.practiceLogId;
   });
 
   it("should allow user to comment on their own log", async () => {
@@ -64,8 +61,8 @@ describe("COMMENTS API Integration", () => {
       .set("Authorization", `Bearer ${userToken}`)
       .send({ text: "My comment" });
     expect(res.status).toBe(201);
-    expect(res.body.comment).toBeDefined();
-    commentId = res.body.comment.commentId;
+    expect(res.body.commentId).toBeDefined();
+    commentId = res.body.commentId;
   });
 
   it("should allow friend to comment on friend's log if they have access", async () => {
@@ -74,8 +71,8 @@ describe("COMMENTS API Integration", () => {
       .set("Authorization", `Bearer ${friendToken}`)
       .send({ text: "Friend's comment" });
     expect(res.status).toBe(201);
-    expect(res.body.comment).toBeDefined();
-    friendCommentId = res.body.comment.commentId;
+    expect(res.body.commentId).toBeDefined();
+    friendCommentId = res.body.commentId;
   });
 
   it("should not allow stranger to comment on friends-only log", async () => {
@@ -99,8 +96,8 @@ describe("COMMENTS API Integration", () => {
       .get(`/practice-logs/${practiceLogId}/comments`)
       .set("Authorization", `Bearer ${strangerToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.comments)).toBe(true);
-    expect(res.body.comments.length).toBeGreaterThan(0);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
   it("should not allow stranger to get comments for a friends-only log", async () => {

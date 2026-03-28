@@ -3,7 +3,6 @@ import { PracticeLogDAO } from "../practiceLogDao";
 import db from "./config/SupabaseKnexConnection";
 import { SupabaseAuthDao } from "./SupabaseAuthDao";
 import { SupabaseUserDao } from "./SupabaseUserDao";
-import { get } from "http";
 
 export class SupabaseSessionDAO implements PracticeLogDAO {
   authDao = new SupabaseAuthDao(); // replace with factories
@@ -40,8 +39,8 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
       .limit(pageSize);
 
     if (cursor) {
-      query = query.where(function () {
-        this.where("createdAt", ">", cursor.createdAt).orWhere(function () {
+      query = query.where(function (this: any) {
+        this.where("createdAt", ">", cursor.createdAt).orWhere(function (this: any) {
           this.where("created_at", "=", cursor.createdAt).andWhere(
             "id",
             ">",
@@ -107,8 +106,8 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
       .limit(pageSize);
 
     if (cursor) {
-      query = query.where(function () {
-        this.where("createdAt", ">", cursor.createdAt).orWhere(function () {
+      query = query.where(function (this: any) {
+        this.where("createdAt", ">", cursor.createdAt).orWhere(function (this: any) {
           this.where("created_at", "=", cursor.createdAt).andWhere(
             "id",
             ">",

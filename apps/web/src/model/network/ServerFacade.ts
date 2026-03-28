@@ -14,6 +14,7 @@ import type {
   Event,
   FeedRequest,
   FeedResponse,
+  FriendRequest,
   FriendRequestsPageRequest,
   FriendsListRequest,
   FriendsListResponse,
@@ -189,8 +190,7 @@ export class ServerFacade implements KodaServerApi {
   }
 
   async getMe(): Promise<User> {
-    const response = await this.get<User | { user: User }>("/auth/me", true);
-    return "user" in response ? response.user : response;
+    return this.get<User>("/auth/me", true);
   }
 
   async getUser(userId: string): Promise<User> {
@@ -206,7 +206,7 @@ export class ServerFacade implements KodaServerApi {
     request: UserPracticeLogsRequest,
   ): Promise<UserPracticeLogsResponse> {
     const query = this.buildQuery({
-      lastItem: request.lastItem,
+      lastItemId: request.lastItemId,
       pageSize: request.pageSize,
     });
     return this.get<UserPracticeLogsResponse>(`/users/${userId}/practice-logs${query}`);
@@ -217,24 +217,20 @@ export class ServerFacade implements KodaServerApi {
     return this.get<UserSearchResult[]>(`/users/search${queryString}`);
   }
 
-  async upsertFriend(friendId: string): Promise<void> {
-    return this.post<undefined, void>(`/friends/${friendId}`, undefined);
-  }
-
   async deleteFriend(friendId: string): Promise<void> {
     return this.delete<void>(`/friends/${friendId}`);
   }
 
   async getFriends(request: FriendsListRequest): Promise<FriendsListResponse> {
     const query = this.buildQuery({
-      lastItem: request.lastItem,
+      lastFriendId: request.lastFriendId,
       pageSize: request.pageSize,
     });
     return this.get<FriendsListResponse>(`/friends${query}`);
   }
 
-  async createFriendRequest(receiverId: string): Promise<void> {
-    return this.post<undefined, void>(
+  async createFriendRequest(receiverId: string): Promise<FriendRequest> {
+    return this.post<undefined, FriendRequest>(
       `/friend-requests/${receiverId}`,
       undefined,
     );
@@ -244,7 +240,7 @@ export class ServerFacade implements KodaServerApi {
     request: FriendRequestsPageRequest,
   ): Promise<IncomingFriendRequestsResponse> {
     const query = this.buildQuery({
-      lastItem: request.lastItem,
+      lastRequestId: request.lastRequestId,
       pageSize: request.pageSize,
     });
     return this.get<IncomingFriendRequestsResponse>(
@@ -256,7 +252,7 @@ export class ServerFacade implements KodaServerApi {
     request: FriendRequestsPageRequest,
   ): Promise<OutgoingFriendRequestsResponse> {
     const query = this.buildQuery({
-      lastItem: request.lastItem,
+      lastRequestId: request.lastRequestId,
       pageSize: request.pageSize,
     });
     return this.get<OutgoingFriendRequestsResponse>(
@@ -293,7 +289,7 @@ export class ServerFacade implements KodaServerApi {
 
   async getPracticeLogsFeed(request: FeedRequest): Promise<FeedResponse> {
     const query = this.buildQuery({
-      lastItem: request.lastItem,
+      lastItemId: request.lastItemId,
       pageSize: request.pageSize,
     });
     return this.get<FeedResponse>(`/practice-logs/feed${query}`);

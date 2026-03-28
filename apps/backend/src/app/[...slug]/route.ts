@@ -73,8 +73,6 @@ async function dispatch(req: Request, method: string) {
   if (parts[0] === "friends") {
     if (parts.length === 1 && method === "GET") {
       res = await friendsHandlers.listFriends(req);
-    } else if (parts.length === 2 && method === "POST") {
-      res = await friendsHandlers.sendOrAcceptFriendRequest(req, parts[1]);
     } else if (parts.length === 2 && method === "DELETE") {
       res = await friendsHandlers.removeFriend(req, parts[1]);
     } else if (parts.length === 3 && parts[1] === "is-friend" && method === "GET") {

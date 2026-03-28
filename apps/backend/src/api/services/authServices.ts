@@ -3,24 +3,29 @@ import type { AuthDAO } from "../../db/dao/daos/authDao";
 import type { UserDAO } from "../../db/dao/daos/userDao";
 import { hashPassword } from "../utils/hashPassword";
 
+export type AuthFailure = { error: string; status: number };
+
 export class AuthService {
   constructor(
     private userDao: UserDAO,
     private authDao: AuthDAO,
   ) {}
 
-  async login(email: string, password: string) {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ token: string; user: User } | AuthFailure> {
     const hashedPassword = hashPassword(password);
     const user = await this.userDao.validateCredentials(email, hashedPassword);
     if (!user) return { error: "invalid credentials", status: 401 };
     const authToken = await this.authDao.createTokenForUser(user.userId);
-    return { authToken, user, status: 200 };
+    return { token: authToken.token, user };
   }
 
-  async logout(token: string) {
+  async logout(token: string): Promise<void | AuthFailure> {
     const ok = await this.authDao.revokeToken(token);
     if (!ok) return { error: "invalid_token", status: 401 };
-    return { status: 204 };
+    return;
   }
 
   async register(data: {
@@ -32,7 +37,7 @@ export class AuthService {
     bio?: string;
     instruments?: string[];
     postVisibility?: "friends" | "public" | "private";
-  }) {
+  }): Promise<{ token: string; user: User } | AuthFailure> {
     if (!data.email || !data.username || !data.password) {
       return { error: "email, username and password required", status: 400 };
     }
@@ -55,12 +60,12 @@ export class AuthService {
     };
     const user = await this.userDao.createUser(newUser, hashedPassword);
     const authToken = await this.authDao.createTokenForUser(user.userId);
-    return { authToken, user, status: 201 };
+    return { token: authToken.token, user };
   }
 
-  async me(token: string) {
+  async me(token: string): Promise<{ user: User } | AuthFailure> {
     const user = await this.authDao.getUserByToken(token);
     if (!user) return { error: "invalid_token", status: 401 };
-    return { user, status: 200 };
+    return { user };
   }
 }
