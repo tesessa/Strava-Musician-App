@@ -1,6 +1,5 @@
 import request from "supertest";
-
-const API = "http://localhost:3001";
+import { API, establishFriendship } from "./testHelpers";
 
 describe("LIKES API Integration", () => {
   let userToken: string, userId: string, friendToken: string, friendId: string, strangerToken: string;
@@ -14,7 +13,7 @@ describe("LIKES API Integration", () => {
       password: "secret",
       displayName: "LikeUser"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -23,7 +22,7 @@ describe("LIKES API Integration", () => {
       password: "secret",
       displayName: "LikeFriend"
     });
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -32,29 +31,27 @@ describe("LIKES API Integration", () => {
       password: "secret",
       displayName: "LikeStranger"
     });
-    strangerToken = res.body.AuthToken.token;
+    strangerToken = res.body.token;
 
     // Set postVisibility on user profiles
     await request(API).patch(`/users/${userId}`).set("Authorization", `Bearer ${userToken}`).send({ postVisibility: "public" });
     await request(API).patch(`/users/${friendId}`).set("Authorization", `Bearer ${friendToken}`).send({ postVisibility: "friends" });
     // Stranger remains public (default)
 
-    // Make user and friend friends
-    await request(API).post(`/friends/${friendId}`).set("Authorization", `Bearer ${userToken}`);
-    await request(API).post(`/friends/${userId}`).set("Authorization", `Bearer ${friendToken}`);
+    await establishFriendship(userToken, friendToken, friendId);
 
     // Create practice logs (no visibility field)
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${userToken}`)
       .send({ title: "User Log", durationMinutes: 10 });
-    practiceLogId = res.body.practiceLog.practiceLogId;
+    practiceLogId = res.body.practiceLogId;
 
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${friendToken}`)
       .send({ title: "Friend Log", durationMinutes: 10 });
-    friendPracticeLogId = res.body.practiceLog.practiceLogId;
+    friendPracticeLogId = res.body.practiceLogId;
   });
 
   it("should allow user to like a practice log", async () => {
@@ -91,8 +88,8 @@ describe("LIKES API Integration", () => {
       .get(`/practice-logs/${practiceLogId}/likes`)
       .set("Authorization", `Bearer ${strangerToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.likes)).toBe(true);
-    expect(res.body.likes.length).toBeGreaterThan(0);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
   it("should not allow stranger to get likes for a friends-only log", async () => {
@@ -106,7 +103,6 @@ describe("LIKES API Integration", () => {
     const res = await request(API)
       .delete(`/practice-logs/${practiceLogId}/likes`)
       .set("Authorization", `Bearer ${userToken}`);
-    console.log(res.body);
     expect(res.status).toBe(204);
   });
 

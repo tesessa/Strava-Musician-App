@@ -1,3 +1,4 @@
+import * as commentsHandlers from "../../api/handlers/commentsHandlers";
 import { NextResponse } from "next/server";
 import * as authHandlers from "../../api/handlers/authHandlers";
 import * as practiceLogHandlers from "../../api/handlers/practiceLogHandlers";
@@ -6,6 +7,8 @@ import * as friendsHandlers from "../../api/handlers/friendsHandlers";
 import * as friendRequestHandlers from "../../api/handlers/friendRequestHandlers";
 import * as mediaHandlers from "../../api/handlers/mediaHandlers";
 import * as likesHandlers from "../../api/handlers/likesHandlers";
+import * as challengesHandlers from "../../api/handlers/challengesHandlers";
+import * as notificationsHandlers from "../../api/handlers/notificationsHandlers";
 
 // Add CORS headers to all responses
 function withCORS(res: Response) {
@@ -70,8 +73,6 @@ async function dispatch(req: Request, method: string) {
   if (parts[0] === "friends") {
     if (parts.length === 1 && method === "GET") {
       res = await friendsHandlers.listFriends(req);
-    } else if (parts.length === 2 && method === "POST") {
-      res = await friendsHandlers.sendOrAcceptFriendRequest(req, parts[1]);
     } else if (parts.length === 2 && method === "DELETE") {
       res = await friendsHandlers.removeFriend(req, parts[1]);
     } else if (parts.length === 3 && parts[1] === "is-friend" && method === "GET") {
@@ -105,6 +106,20 @@ async function dispatch(req: Request, method: string) {
     }
   }
 
+  // /practice-logs/:practiceLogId/comments (POST, GET)
+  if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "comments") {
+    if (method === "POST") {
+      res = await commentsHandlers.createComment(req, parts[1]);
+    } else if (method === "GET") {
+      res = await commentsHandlers.listComments(req, parts[1]);
+    }
+  }
+
+  // /comments/:commentId (DELETE)
+  if (parts[0] === "comments" && parts.length === 2 && method === "DELETE") {
+    res = await commentsHandlers.deleteComment(req, parts[1]);
+  }
+
   // /practice-logs/:practiceLogId/likes (POST, DELETE, GET)
   if (parts[0] === "practice-logs" && parts.length === 3 && parts[2] === "likes") {
     if (method === "POST") {
@@ -119,6 +134,45 @@ async function dispatch(req: Request, method: string) {
   // /media/:mediaId (DELETE)
   if (parts[0] === "media" && parts.length === 2 && method === "DELETE") {
     res = await mediaHandlers.deleteMedia(req, parts[1]);
+  }
+
+  // /challenges (GET, POST)
+  if (parts[0] === "challenges" && parts.length === 1) {
+    if (method === "GET") {
+      res = await challengesHandlers.listChallenges(req);
+    } else if (method === "POST") {
+      res = await challengesHandlers.createChallenge(req);
+    }
+  }
+
+  // /challenges/:challengeId (GET)
+  if (parts[0] === "challenges" && parts.length === 2 && method === "GET") {
+    res = await challengesHandlers.getChallenge(req, parts[1]);
+  }
+
+  // /challenges/:challengeId/complete (POST)
+  if (parts[0] === "challenges" && parts.length === 3 && parts[2] === "complete" && method === "POST") {
+    res = await challengesHandlers.completeChallenge(req, parts[1]);
+  }
+
+  // /users/:userId/completed-challenges (GET)
+  if (parts[0] === "users" && parts.length === 3 && parts[2] === "completed-challenges" && method === "GET") {
+    res = await challengesHandlers.listCompletedChallenges(req, parts[1]);
+  }
+
+  // /notifications (GET)
+  if (parts[0] === "notifications" && parts.length === 1 && method === "GET") {
+    res = await notificationsHandlers.listNotifications(req);
+  }
+
+  // /notifications/:notificationId/read (PATCH)
+  if (parts[0] === "notifications" && parts.length === 3 && parts[2] === "read" && method === "PATCH") {
+    res = await notificationsHandlers.markNotificationRead(req, parts[1]);
+  }
+
+  // /notifications/:notificationId (DELETE)
+  if (parts[0] === "notifications" && parts.length === 2 && method === "DELETE") {
+    res = await notificationsHandlers.deleteNotification(req, parts[1]);
   }
 
   // fallback: 404

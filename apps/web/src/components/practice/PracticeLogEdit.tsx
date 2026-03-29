@@ -8,10 +8,10 @@ import type { Media } from "@strava-musician-app/shared";
 const PracticeLogEdit = () => {
   const navigate = useNavigate();
   const { practiceLogId } = useParams<{ practiceLogId: string }>();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Form fields
   const [title, setTitle] = useState("");
   const [postText, setPostText] = useState("");
@@ -21,7 +21,7 @@ const PracticeLogEdit = () => {
   const [composer, setComposer] = useState("");
   const [tempo, setTempo] = useState<string>("");
   const [durationMinutes, setDurationMinutes] = useState(0);
-  
+
   // Media
   const [media, setMedia] = useState<Media[]>([]);
 
@@ -38,7 +38,7 @@ const PracticeLogEdit = () => {
     try {
       setLoading(true);
       const log = await practiceLogService.getPracticeLog(practiceLogId);
-      
+
       setTitle(log.title || "");
       setPostText(log.postText || "");
       setPrivateText(log.privateText || "");
@@ -49,7 +49,8 @@ const PracticeLogEdit = () => {
       setDurationMinutes(log.durationMinutes || 0);
 
       // Load media
-      const mediaList = await practiceLogService.getPracticeLogMedia(practiceLogId);
+      const mediaList =
+        await practiceLogService.getPracticeLogMedia(practiceLogId);
       setMedia(mediaList);
     } catch (error) {
       console.error("Failed to load practice log:", error);
@@ -195,7 +196,7 @@ const PracticeLogEdit = () => {
           value={pieceTitle}
           onChange={(e) => setPieceTitle(e.target.value)}
         />
-      
+
         <h4 className="section-title">Composer (Optional)</h4>
         <input
           className="title-input"
@@ -220,17 +221,16 @@ const PracticeLogEdit = () => {
             <h4 className="section-title">Recordings</h4>
             <div className="media-preview-grid">
               {media.map((m) => (
-                <div key={m.mediaId} className="media-preview-item edit-media-item">
+                <div
+                  key={m.mediaId}
+                  className="media-preview-item edit-media-item"
+                >
                   {m.type === "audio" ? (
                     <div className="media-preview-audio">
                       <audio src={m.url} controls />
                     </div>
                   ) : (
-                    <video
-                      src={m.url}
-                      controls
-                      className="media-preview-img"
-                    />
+                    <video src={m.url} controls className="media-preview-img" />
                   )}
                   <button
                     className="delete-media-btn"

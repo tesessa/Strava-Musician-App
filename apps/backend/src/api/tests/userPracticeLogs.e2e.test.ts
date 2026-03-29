@@ -1,6 +1,5 @@
 import request from "supertest";
-
-const API = "http://localhost:3001";
+import { API, establishFriendship } from "./testHelpers";
 
 describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () => {
   let publicUser: any = {}, privateUser: any = {}, friendUser: any = {};
@@ -22,16 +21,16 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
         .send(u);
       if (u.username === "publicuser") {
         publicUser = res.body.user;
-        publicToken = res.body.AuthToken.token;
+        publicToken = res.body.token;
       } else if (u.username === "privateuser") {
         privateUser = res.body.user;
-        privateToken = res.body.AuthToken.token;
+        privateToken = res.body.token;
       } else if (u.username === "frienduser") {
         friendUser = res.body.user;
-        friendToken = res.body.AuthToken.token;
+        friendToken = res.body.token;
       } else if (u.username === "stranger") {
         stranger = res.body.user;
-        strangerToken = res.body.AuthToken.token;
+        strangerToken = res.body.token;
       }
     }
     // Set visibilities explicitly (in case not set at registration)
@@ -45,25 +44,19 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
         .post("/practice-logs")
         .set("Authorization", `Bearer ${publicToken}`)
         .send({ title: `Public Log ${i+1}`, durationMinutes: 10 + i, postVisibility: "public" });
-      publicLogIds.push(res.body.practiceLog.practiceLogId);
+      publicLogIds.push(res.body.practiceLogId);
       res = await request(API)
         .post("/practice-logs")
         .set("Authorization", `Bearer ${privateToken}`)
         .send({ title: `Private Log ${i+1}`, durationMinutes: 10 + i, postVisibility: "private" });
-      privateLogIds.push(res.body.practiceLog.practiceLogId);
+      privateLogIds.push(res.body.practiceLogId);
       res = await request(API)
         .post("/practice-logs")
         .set("Authorization", `Bearer ${friendToken}`)
         .send({ title: `Friend Log ${i+1}`, durationMinutes: 10 + i, postVisibility: "friends" });
-      friendLogIds.push(res.body.practiceLog.practiceLogId);
+      friendLogIds.push(res.body.practiceLogId);
     }
-    // Make publicUser and friendUser friends
-    await request(API)
-      .post(`/friends/${friendUser.userId}`)
-      .set("Authorization", `Bearer ${publicToken}`);
-    await request(API)
-      .post(`/friends/${publicUser.userId}`)
-      .set("Authorization", `Bearer ${friendToken}`);
+    await establishFriendship(publicToken, friendToken, friendUser.userId);
   });
 
   it("should allow self to see all their logs", async () => {
@@ -71,9 +64,10 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
       .get(`/users/${publicUser.userId}/practice-logs`)
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLogs.length).toBe(3);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(3);
     // Should be reverse chronological
-    expect(res.body.practiceLogs[0].createdAt > res.body.practiceLogs[1].createdAt).toBe(true);
+    expect(res.body[0].createdAt > res.body[1].createdAt).toBe(true);
   });
 
   it("should allow friend to see friend's logs if postVisibility is 'friends' or 'public'", async () => {
@@ -81,7 +75,7 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
       .get(`/users/${friendUser.userId}/practice-logs`)
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLogs.length).toBe(3);
+    expect(res.body.length).toBe(3);
   });
 
   it("should not allow stranger to see private user's logs", async () => {
@@ -96,7 +90,7 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
       .get(`/users/${publicUser.userId}/practice-logs`)
       .set("Authorization", `Bearer ${strangerToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLogs.length).toBe(3);
+    expect(res.body.length).toBe(3);
   });
 
   it("should paginate logs correctly", async () => {
@@ -105,15 +99,15 @@ describe("GET /users/:userId/practice-logs - Visibility, Auth, Pagination", () =
       .get(`/users/${publicUser.userId}/practice-logs?pageSize=2`)
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLogs.length).toBe(2);
-    const lastId = res.body.practiceLogs[1].practiceLogId;
+    expect(res.body.length).toBe(2);
+    const lastId = res.body[1].practiceLogId;
     // Get next page
     res = await request(API)
       .get(`/users/${publicUser.userId}/practice-logs?pageSize=2&lastItemId=${lastId}`)
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
     // Should only be 1 left
-    expect(res.body.practiceLogs.length).toBe(1);
+    expect(res.body.length).toBe(1);
   });
 
   it("should return forbidden for non-friend on friends-only logs", async () => {
@@ -148,34 +142,28 @@ describe("GET /practice-logs/feed - Feed, Friends, Pagination", () => {
         .send(u);
       if (u.username === "publicuser2") {
         publicUser = res.body.user;
-        publicToken = res.body.AuthToken.token;
+        publicToken = res.body.token;
       } else if (u.username === "frienduser2") {
         friendUser = res.body.user;
-        friendToken = res.body.AuthToken.token;
+        friendToken = res.body.token;
       } else if (u.username === "stranger2") {
         stranger = res.body.user;
-        strangerToken = res.body.AuthToken.token;
+        strangerToken = res.body.token;
       }
     }
-    // Make publicUser and friendUser friends
-    await request(API)
-      .post(`/friends/${friendUser.userId}`)
-      .set("Authorization", `Bearer ${publicToken}`);
-    await request(API)
-      .post(`/friends/${publicUser.userId}`)
-      .set("Authorization", `Bearer ${friendToken}`);
+    await establishFriendship(publicToken, friendToken, friendUser.userId);
     // Create practice logs for each
     for (let i = 0; i < 3; i++) {
       let res = await request(API)
         .post("/practice-logs")
         .set("Authorization", `Bearer ${publicToken}`)
         .send({ title: `Public2 Log ${i+1}`, durationMinutes: 10 + i, postVisibility: "public" });
-      publicLogIds.push(res.body.practiceLog.practiceLogId);
+      publicLogIds.push(res.body.practiceLogId);
       res = await request(API)
         .post("/practice-logs")
         .set("Authorization", `Bearer ${friendToken}`)
         .send({ title: `Friend2 Log ${i+1}`, durationMinutes: 10 + i, postVisibility: "public" });
-      friendLogIds.push(res.body.practiceLog.practiceLogId);
+      friendLogIds.push(res.body.practiceLogId);
     }
   });
 
@@ -185,10 +173,10 @@ describe("GET /practice-logs/feed - Feed, Friends, Pagination", () => {
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
     // Should include 3 own + 3 friend logs
-    expect(res.body.practiceLogs.length).toBeGreaterThanOrEqual(6);
+    expect(res.body.length).toBeGreaterThanOrEqual(6);
     // Should be reverse chronological
-    expect(new Date(res.body.practiceLogs[0].createdAt).getTime())
-      .toBeGreaterThan(new Date(res.body.practiceLogs[1].createdAt).getTime());
+    expect(new Date(res.body[0].createdAt).getTime())
+      .toBeGreaterThan(new Date(res.body[1].createdAt).getTime());
   });
 
   it("should paginate feed logs", async () => {
@@ -196,13 +184,13 @@ describe("GET /practice-logs/feed - Feed, Friends, Pagination", () => {
       .get("/practice-logs/feed?pageSize=2")
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLogs.length).toBe(2);
-    const lastId = res.body.practiceLogs[1].practiceLogId;
+    expect(res.body.length).toBe(2);
+    const lastId = res.body[1].practiceLogId;
     res = await request(API)
       .get(`/practice-logs/feed?pageSize=2&lastItemId=${lastId}`)
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLogs.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.length).toBeGreaterThanOrEqual(1);
   });
 
   it("should not show stranger's logs in feed", async () => {
@@ -210,7 +198,7 @@ describe("GET /practice-logs/feed - Feed, Friends, Pagination", () => {
       .get("/practice-logs/feed")
       .set("Authorization", `Bearer ${publicToken}`);
     expect(res.status).toBe(200);
-    const strangerLog = res.body.practiceLogs.find(
+    const strangerLog = res.body.find(
       (log: any) => log.userId === stranger.userId
     );
     expect(strangerLog).toBeUndefined();

@@ -50,6 +50,10 @@ export class SupabaseAuthDao implements AuthDAO {
   }
 
   async getUserByToken(token: string): Promise<User | null> {
+    const isValid = await this.checkTokenValidity(token);
+    if (!isValid) {
+      return null;
+    }
     const user = await db("AuthSession")
       .join("User", "AuthSession.user_id", "User.id")
       .where("AuthSession.token", token)
@@ -63,19 +67,15 @@ export class SupabaseAuthDao implements AuthDAO {
 
   async refreshSession(token: string): Promise<void> {
     const newExpiresAt = new Date(Date.now() + this.TOKEN_TTL_MS);
+
+    const isValid = await this.checkTokenValidity(token);
+    if (!isValid) {
+      return;
+    }
+
     await db<AuthSession>("AuthSession")
       .where({ token: token })
       .update({ expires_at: newExpiresAt });
-  }
-
-  async checkAndRefreshSession(token: string): Promise<boolean> {
-    const isValid = await this.checkTokenValidity(token);
-    if (!isValid) {
-      return false;
-    }
-
-    await this.refreshSession(token);
-    return true;
   }
 
   async checkTokenValidity(token: string): Promise<boolean> {

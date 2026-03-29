@@ -1,7 +1,6 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
 import type {
   NotificationsListResponse,
-  FriendRequest,
   IncomingFriendRequestsResponse,
 } from "@strava-musician-app/shared";
 
@@ -21,10 +20,10 @@ export class NotificationService {
   }
 
   async getIncomingFriendRequests(
-    lastItem?: string,
+    lastRequestId?: string,
     pageSize?: number
   ): Promise<IncomingFriendRequestsResponse> {
-    return this.server.getIncomingFriendRequests({ lastItem, pageSize });
+    return this.server.getIncomingFriendRequests({ lastRequestId, pageSize });
   }
 
   async acceptFriendRequest(requestId: string): Promise<void> {

@@ -13,13 +13,11 @@ export interface FriendRequest {
 }
 
 /**
- * GET /friend-requests/incoming and /friend-requests/outgoing body (keyset pagination)
+ * GET /friend-requests/incoming and /friend-requests/outgoing query (keyset pagination)
  */
 export interface FriendRequestsPageRequest {
-  /**
-   * requestId of the last item in the previous page
-   */
-  lastItem?: string;
+  /** requestId cursor from the previous page */
+  lastRequestId?: string;
   pageSize?: number;
 }
 

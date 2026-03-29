@@ -30,7 +30,7 @@ describe("FakeDataHelper", () => {
     expect(login.user?.username).toBe("newperson");
   });
 
-  test("returns visibility-aware feed and paginates by lastItem", () => {
+  test("returns visibility-aware feed and paginates by lastItemId", () => {
     const helper = new FakeDataHelper();
 
     const firstPage = helper.getPracticeLogsFeed({ pageSize: 1 });
@@ -39,7 +39,7 @@ describe("FakeDataHelper", () => {
 
     const secondPage = helper.getPracticeLogsFeed({
       pageSize: 2,
-      lastItem: firstPage[0].practiceLogId,
+      lastItemId: firstPage[0].practiceLogId,
     });
 
     // demo-user-1 can see own + friend/public logs, but not private logs.

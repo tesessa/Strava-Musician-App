@@ -1,6 +1,5 @@
 import request from "supertest";
-
-const API = "http://localhost:3001";
+import { API, establishFriendship } from "./testHelpers";
 
 describe("MEDIA API Integration", () => {
   let userToken: string, userId: string, friendToken: string, friendId: string, strangerToken: string;
@@ -15,7 +14,7 @@ describe("MEDIA API Integration", () => {
       displayName: "MediaUser",
       postVisibility: "public"
     });
-    userToken = res.body.AuthToken.token;
+    userToken = res.body.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -25,7 +24,7 @@ describe("MEDIA API Integration", () => {
       displayName: "MediaFriend",
       postVisibility: "friends"
     });
-    friendToken = res.body.AuthToken.token;
+    friendToken = res.body.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -35,24 +34,22 @@ describe("MEDIA API Integration", () => {
       displayName: "MediaStranger",
       postVisibility: "public"
     });
-    strangerToken = res.body.AuthToken.token;
+    strangerToken = res.body.token;
 
-    // Make user and friend friends
-    await request(API).post(`/friends/${friendId}`).set("Authorization", `Bearer ${userToken}`);
-    await request(API).post(`/friends/${userId}`).set("Authorization", `Bearer ${friendToken}`);
+    await establishFriendship(userToken, friendToken, friendId);
 
     // Create practice logs
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${userToken}`)
       .send({ title: "User Log", durationMinutes: 10, visibility: "public" });
-    practiceLogId = res.body.practiceLog.practiceLogId;
+    practiceLogId = res.body.practiceLogId;
 
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${friendToken}`)
       .send({ title: "Friend Log", durationMinutes: 10, visibility: "friends" });
-    friendPracticeLogId = res.body.practiceLog.practiceLogId;
+    friendPracticeLogId = res.body.practiceLogId;
   });
 
   it("should allow owner to POST media", async () => {
@@ -61,8 +58,8 @@ describe("MEDIA API Integration", () => {
       .set("Authorization", `Bearer ${userToken}`)
       .send({ type: "image", url: "http://example.com/img.png" });
     expect(res.status).toBe(201);
-    expect(res.body.media).toBeDefined();
-    mediaId = res.body.media.mediaId;
+    expect(res.body.mediaId).toBeDefined();
+    mediaId = res.body.mediaId;
   });
 
   it("should not allow non-owner to POST media", async () => {
@@ -78,8 +75,8 @@ describe("MEDIA API Integration", () => {
       .get(`/practice-logs/${practiceLogId}/media`)
       .set("Authorization", `Bearer ${userToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.media)).toBe(true);
-    expect(res.body.media.length).toBe(1);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(1);
   });
 
   it("should allow friend to GET friend's media if visibility is 'friends'", async () => {
@@ -92,8 +89,8 @@ describe("MEDIA API Integration", () => {
       .get(`/practice-logs/${friendPracticeLogId}/media`)
       .set("Authorization", `Bearer ${userToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.media)).toBe(true);
-    expect(res.body.media.length).toBe(1);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(1);
   });
 
   it("should allow stranger to GET public media but not friends-only", async () => {
@@ -101,7 +98,6 @@ describe("MEDIA API Integration", () => {
     let res = await request(API)
       .get(`/practice-logs/${practiceLogId}/media`)
       .set("Authorization", `Bearer ${strangerToken}`);
-    console.log("Stranger GET public media status:", res.status);
     expect(res.status).toBe(200);
     // Friends-only log
     res = await request(API)
@@ -123,7 +119,7 @@ describe("MEDIA API Integration", () => {
       .post(`/practice-logs/${practiceLogId}/media`)
       .set("Authorization", `Bearer ${userToken}`)
       .send({ type: "image", url: "http://example.com/img3.png" });
-    const newMediaId = res1.body.media.mediaId;
+    const newMediaId = res1.body.mediaId;
     const res2 = await request(API)
       .delete(`/media/${newMediaId}`)
       .set("Authorization", `Bearer ${friendToken}`);
