@@ -9,6 +9,7 @@ import * as mediaHandlers from "../../api/handlers/mediaHandlers";
 import * as likesHandlers from "../../api/handlers/likesHandlers";
 import * as challengesHandlers from "../../api/handlers/challengesHandlers";
 import * as notificationsHandlers from "../../api/handlers/notificationsHandlers";
+import * as aiHandlers from "../../api/handlers/aiHandlers";
 
 // Add CORS headers to all responses
 function withCORS(res: Response) {
@@ -177,6 +178,13 @@ async function dispatch(req: Request, method: string) {
     res = await notificationsHandlers.deleteNotification(req, parts[1]);
   }
 
+  // add ai endpoint here
+  // create a handler in api/handlers
+  // the handler should call the ai service and return the response
+  if (parts[0] === "ai" && method === "POST") {
+    res = await aiHandlers.analyzeAudio(req);
+  }
+  
   // fallback: 404
   if (!res) {
     res = NextResponse.json({ error: "path_not_found" }, { status: 404 });

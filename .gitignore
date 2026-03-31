@@ -37,5 +37,7 @@ apps/backend/src/app/api/memory-view/route.ts
 apps/backend/src/app/memory-view/page.tsx
 
 # ai specific
+apps/backend/ai/testAudio/
 apps/backend/ai/venv/
 apps/backend/ai/__pycache__/
+venv/
