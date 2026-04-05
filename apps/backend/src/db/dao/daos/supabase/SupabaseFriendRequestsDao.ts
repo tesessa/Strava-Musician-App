@@ -26,14 +26,72 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
     userId: string,
     options?: { lastRequestId?: string; pageSize?: number },
   ): Promise<FriendRequest[]> {
-    throw new Error("Method not implemented.");
+    const pageSize = options?.pageSize ?? 20;
+
+    let query = db("FriendRequest")
+      .select("*")
+      .where("receiverId", userId)
+      .orderBy("createdAt", "desc")
+      .orderBy("requestId", "desc")
+      .limit(pageSize);
+
+    if (options?.lastRequestId) {
+      const lastRequest = await db("FriendRequest")
+        .select("*")
+        .where({ receiverId: userId, requestId: options.lastRequestId })
+        .first();
+      if (!lastRequest) {
+        throw new Error("Invalid lastRequestId cursor");
+      }
+      query = query.andWhere(function () {
+        this.where("createdAt", "<", lastRequest.createdAt).orWhere(
+          function () {
+            this.where("createdAt", "=", lastRequest.createdAt).andWhere(
+              "requestId",
+              "<",
+              options.lastRequestId!,
+            );
+          },
+        );
+      });
+    }
+    return await query;
   }
 
   async listOutgoing(
     userId: string,
     options?: { lastRequestId?: string; pageSize?: number },
   ): Promise<FriendRequest[]> {
-    throw new Error("Method not implemented.");
+    const pageSize = options?.pageSize ?? 20;
+
+    let query = db("FriendRequest")
+      .select("*")
+      .where("senderId", userId)
+      .orderBy("createdAt", "desc")
+      .orderBy("requestId", "desc")
+      .limit(pageSize);
+
+    if (options?.lastRequestId) {
+      const lastRequest = await db("FriendRequest")
+        .select("*")
+        .where({ senderId: userId, requestId: options.lastRequestId })
+        .first();
+      if (!lastRequest) {
+        throw new Error("Invalid lastRequestId cursor");
+      }
+      query = query.andWhere(function () {
+        this.where("createdAt", "<", lastRequest.createdAt).orWhere(
+          function () {
+            this.where("createdAt", "=", lastRequest.createdAt).andWhere(
+              "requestId",
+              "<",
+              options.lastRequestId!,
+            );
+          },
+        );
+      });
+    }
+    return await query;
   }
 
   async acceptRequest(requestId: string): Promise<void> {
