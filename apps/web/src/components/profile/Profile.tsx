@@ -2,11 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
 import type { PracticeLog, User } from "@strava-musician-app/shared";
-import { userService, practiceLogService, friendService } from "../../model";
+import { userService, friendService, friendRequestsService } from "../../model";
 import type {
   FriendWithProfile,
-  PendingFriendRequestWithProfile,
 } from "../../model/service/FriendService";
+import type {
+  PendingFriendRequestWithProfile
+} from '../../model/service/FriendRequestService';
 import BottomNav from "../navigation/BottomNav";
 import "./profile.css";
 
@@ -135,7 +137,7 @@ const Profile = () => {
       setPracticeLoading(true);
       setErrorMessage("");
 
-      const logs = await practiceLogService.getUserPracticeLogs(
+      const logs = await userService.getUserPracticeLogs(
         userId,
         undefined,
         20,
@@ -156,7 +158,7 @@ const Profile = () => {
 
       const [friendsResult, pendingRequestsResult] = await Promise.all([
         friendService.getFriendsWithProfiles(100),
-        friendService.getIncomingFriendRequestsWithProfiles(25),
+        friendRequestsService.getIncomingFriendRequestsWithProfiles(25),
       ]);
 
       setFriends(friendsResult);
@@ -192,7 +194,7 @@ const Profile = () => {
     );
 
     try {
-      await friendService.cancelPendingFriendRequest(requestId);
+      await friendRequestsService.cancelFriendRequest(requestId);
     } catch (error) {
       console.error("Failed to cancel pending friend request:", error);
       setPendingFriendRequests(previous);

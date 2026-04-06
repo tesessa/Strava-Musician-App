@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./practiceLog.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
-import { practiceLogService, mediaUploadService } from "../../model";
+import { practiceLogService, mediaUploadService, mediaService } from "../../model";
 import type { Media } from "@strava-musician-app/shared";
 
 const PracticeLogEdit = () => {
@@ -50,7 +50,7 @@ const PracticeLogEdit = () => {
 
       // Load media
       const mediaList =
-        await practiceLogService.getPracticeLogMedia(practiceLogId);
+        await mediaService.getPracticeLogMedia(practiceLogId); // used to call practiceLogService
       setMedia(mediaList);
     } catch (error) {
       console.error("Failed to load practice log:", error);
@@ -91,7 +91,7 @@ const PracticeLogEdit = () => {
     if (!window.confirm("Delete this recording?")) return;
 
     try {
-      await practiceLogService.deleteMedia(mediaId);
+      await mediaService.deleteMedia(mediaId); // used to call PracticelogService
       setMedia((prev) => prev.filter((m) => m.mediaId !== mediaId));
     } catch (error) {
       console.error("Failed to delete media:", error);

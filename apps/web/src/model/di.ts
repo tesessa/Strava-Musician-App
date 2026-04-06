@@ -6,7 +6,7 @@ import { MediaService } from "./media/MediaService";
 import { FakeMediaService } from "./media/FakeMediaService";
 import { UserService } from "./service/UserService";
 import { PracticeLogService } from "./service/PracticeLogService";
-import { LikesService, NotificationService } from "./service";
+import { ChallengesService, EventsService, FriendRequestsService, LikesService, MediaServiceDB, NotificationService } from "./service";
 import { CommentsService } from "./service";
 import { MediaUploadService } from "./service";
 import { FriendService } from "./service";
@@ -43,5 +43,12 @@ export const commentsService = new CommentsService(server);
 export const mediaUploadService = new MediaUploadService(mediaApi, server);
 export const notificationService = new NotificationService(server);
 export const friendService = new FriendService(server);
+export const friendRequestsService = new FriendRequestsService(server);
+export const challengesService = new ChallengesService(server);
+export const eventsService = new EventsService(server);
+export const mediaService = new MediaServiceDB(server);
+// export const mediaService = new MediaService(server); we need to fix this/rename the mediaService in the media folder so we can have a media service to the database
+
+
 
 export { mediaApi };

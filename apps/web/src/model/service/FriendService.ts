@@ -1,4 +1,4 @@
-import type { Friend, FriendRequest, User } from "@strava-musician-app/shared";
+import type { Friend, FriendRequest, User, FriendsListResponse } from "@strava-musician-app/shared";
 import type { KodaServerApi } from "../network/KodaServerApi";
 
 export interface FriendWithProfile {
@@ -6,10 +6,10 @@ export interface FriendWithProfile {
   user: User | null;
 }
 
-export interface PendingFriendRequestWithProfile {
-  request: FriendRequest;
-  user: User | null;
-}
+// export interface PendingFriendRequestWithProfile {
+//   request: FriendRequest;
+//   user: User | null;
+// }
 
 /**
  * Friend-related business logic and data shaping.
@@ -18,6 +18,9 @@ export interface PendingFriendRequestWithProfile {
 export class FriendService {
   constructor(private readonly server: KodaServerApi) {}
 
+  /** GET /friends (keyset pagination) 
+   * do we need to make this separate getFriendsWtihProfiles
+  */
   async getFriendsWithProfiles(pageSize = 100): Promise<FriendWithProfile[]> {
     const friends = await this.server.getFriends({ pageSize });
     const usersById = await this.loadUsersById(friends.map((friend) => friend.friendId));
@@ -28,26 +31,13 @@ export class FriendService {
     }));
   }
 
-  async getIncomingFriendRequestsWithProfiles(
-    pageSize = 25,
-  ): Promise<PendingFriendRequestWithProfile[]> {
-    const requests = await this.server.getIncomingFriendRequests({ pageSize });
-    const usersById = await this.loadUsersById(
-      requests.map((request) => request.senderId),
-    );
-
-    return requests.map((request) => ({
-      request,
-      user: usersById.get(request.senderId) ?? null,
-    }));
+  async getFriends(lastFriendId?: string, pageSize?: number): Promise<FriendsListResponse> {
+    return this.server.getFriends({ lastFriendId, pageSize });
   }
 
-  /**
-   * Removes a pending incoming request from the current user's queue.
-   * Backend operation is reject, while UI language uses cancel.
-   */
-  async cancelPendingFriendRequest(requestId: string): Promise<void> {
-    await this.server.rejectFriendRequest(requestId);
+  /** DELETE /friends/:friendId */
+  async unfriendSomeone(friendId: string): Promise<void> {
+    await this.server.deleteFriend(friendId);
   }
 
   private async loadUsersById(userIds: string[]): Promise<Map<string, User>> {

@@ -6,7 +6,7 @@ import { INSTRUMENTS } from "@strava-musician-app/shared";
 import "./index.css";
 import FeedPracticeLogCard from "./FeedPracticeLogCard";
 import BottomNav from "../navigation/BottomNav";
-import { practiceLogService, userService, notificationService } from "../../model";
+import { practiceLogService, userService, friendService, friendRequestsService, likesService, commentsService } from "../../model";
 type InstrumentFilter = "All" | Instrument;
 
 const Home = () => {
@@ -43,7 +43,7 @@ const Home = () => {
           setUserInitial(user.username[0]?.toUpperCase() || "👤");
           
           // Load friends list
-          const friends = await practiceLogService.getFriends(undefined, 100);
+          const friends = await friendService.getFriends(undefined, 100);
           const friendIds = new Set(friends.map((f) => f.friendId));
           setFollowedUsers(friendIds);
         }
@@ -90,7 +90,7 @@ const Home = () => {
 
   const loadNotifications = async () => {
     try {
-      const requests = await notificationService.getIncomingFriendRequests(undefined, 20);
+      const requests = await friendRequestsService.getIncomingFriendRequests(undefined, 20);
       setFriendRequests(requests);
       setUnreadCount(requests.length);
 
@@ -111,12 +111,12 @@ const Home = () => {
 
     const handleAcceptFriendRequest = async (requestId: string) => {
     try {
-      await notificationService.acceptFriendRequest(requestId);
+      await friendRequestsService.acceptFriendRequest(requestId);
       await loadNotifications();
       await loadFeed();
       
       // Reload friends list
-      const friends = await practiceLogService.getFriends(undefined, 100);
+      const friends = await friendService.getFriends(undefined, 100);
       const friendIds = new Set(friends.map((f) => f.friendId));
       setFollowedUsers(friendIds);
     } catch (error) {
@@ -126,7 +126,7 @@ const Home = () => {
  
   const handleRejectFriendRequest = async (requestId: string) => {
     try {
-      await notificationService.rejectFriendRequest(requestId);
+      await friendRequestsService.rejectFriendRequest(requestId);
       await loadNotifications();
     } catch (error) {
       console.error("Failed to reject friend request:", error);
@@ -172,7 +172,7 @@ const Home = () => {
 
     try {
       setSearchLoading(true);
-      const results = await practiceLogService.searchUsers(query);
+      const results = await userService.searchUsers(query);
       setSearchResults(results);
     } catch (error) {
       console.error("Failed to search users:", error);
@@ -190,7 +190,7 @@ const Home = () => {
   const handleLike = async (practiceLogId: string) => {
     try {
       // Find if already liked (would need to track this in the UI state or fetch from server)
-      await practiceLogService.likePracticeLog(practiceLogId);
+      await likesService.likePracticeLog(practiceLogId);
       await loadFeed();
     } catch (error) {
       console.error("Failed to like:", error);
@@ -199,7 +199,7 @@ const Home = () => {
 
   const handleUnlike = async (practiceLogId: string) => {
     try {
-      await practiceLogService.unlikePracticeLog(practiceLogId);
+      await likesService.unlikePracticeLog(practiceLogId);
       await loadFeed();
     } catch (error) {
       console.error("Failed to unlike:", error);
@@ -208,7 +208,7 @@ const Home = () => {
 
   const handleComment = async (practiceLogId: string, text: string) => {
     try {
-      await practiceLogService.commentOnPracticeLog(practiceLogId, text);
+      await commentsService.commentOnPracticeLog(practiceLogId, text);
       await loadFeed();
     } catch (error) {
       console.error("Failed to comment on practice log:", error);
@@ -252,7 +252,7 @@ const Home = () => {
 
   const handleDelete = async (practiceLogId: string) => {
     try {
-      await practiceLogService.deletePracticeLog(practiceLogId);
+      await practiceLogService.discardPracticeLog(practiceLogId);
       setPracticeLogs((prev) => prev.filter((log) => log.practiceLogId !== practiceLogId));
     } catch (error) {
       console.error("Failed to delete practice log:", error);
@@ -271,7 +271,7 @@ const Home = () => {
 
   const handleFollowUser = async (userId: string) => {
     try {
-      await practiceLogService.sendFriendRequest(userId);
+      await friendRequestsService.sendFriendRequest(userId);
       alert("Friend request sent!");
       // setFollowedUsers((prev) => new Set([...prev, userId]));
       closeSearch();

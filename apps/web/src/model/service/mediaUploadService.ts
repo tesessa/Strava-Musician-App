@@ -2,6 +2,7 @@ import type { KodaMediaApi } from "../media/KodaMediaApi";
 import type { KodaServerApi } from "../network/KodaServerApi";
 import type { CreateMediaRequest } from "@strava-musician-app/shared";
 
+// claude generated this in regards to KodaMediaApi
 type MediaEntry = {
   id: string;
   blob: Blob;

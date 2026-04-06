@@ -1,5 +1,10 @@
 import type { KodaServerApi } from "../network/KodaServerApi";
-import type { User, Visibility } from "@strava-musician-app/shared";
+import type { 
+  User, 
+  Visibility,
+  UserPracticeLogsResponse,
+  UserSearchResult
+ } from "@strava-musician-app/shared";
 
 /**
  * User/auth-related business logic. Receives KodaServerApi via dependency injection.
@@ -9,25 +14,7 @@ export class UserService {
   private currentUser: User | null = null;
   constructor(private readonly server: KodaServerApi) {}
 
-  /** Get the currently authenticated user (delegates to server). */
-  async getCurrentUser(): Promise<User | null> {
-    if (this.currentUser) return this.currentUser;
-    const user = await this.server.getMe();
-    this.currentUser = user;
-    return user;
-  }
-
-  async getUser(userId: string): Promise<User> {
-    return this.server.getUser(userId);
-  }
-
-  async login(email: string, password: string): Promise<User | null> {
-    const auth = await this.server.login({ email, password });
-    const user = auth.user ?? null;
-    this.currentUser = user;
-    return user;
-  }
-
+  /** POST /auth/register */
   async register(
     username: string,
     email: string,
@@ -39,10 +26,33 @@ export class UserService {
     return user;
   }
 
+  /** POST /auth/login */
+  async login(email: string, password: string): Promise<User | null> {
+    const auth = await this.server.login({ email, password });
+    const user = auth.user ?? null;
+    this.currentUser = user;
+    return user;
+  }
+
+  /** POST /auth/logout */
   async logout(): Promise<void> {
     await this.server.logout();
     this.currentUser = null;
   }
+
+  /** GET /auth/me */
+  async getCurrentUser(): Promise<User | null> {
+    if (this.currentUser) return this.currentUser;
+    const user = await this.server.getMe();
+    this.currentUser = user;
+    return user;
+  }
+
+   /** GET /users/:userId */
+  async getUser(userId: string): Promise<User> {
+    return this.server.getUser(userId);
+  }
+
 
   //   username?: string;
   // bio?: string;
@@ -50,6 +60,7 @@ export class UserService {
   // instruments?: string[];
   // postVisibility?: Visibility;
 
+  /** PATCH /users/:userId */
   async updateUser(
     userId: string,
     username?: string,
@@ -67,6 +78,20 @@ export class UserService {
     });
   }
 
+  /** GET /users/:userId/practice-logs (keyset pagination) */
+  async getUserPracticeLogs(
+    userId: string,
+    lastItemId?: string,
+    pageSize?: number
+  ): Promise<UserPracticeLogsResponse> {
+    return this.server.getUserPracticeLogs(userId, {lastItemId, pageSize })
+  }
+
+  async searchUsers(query: string): Promise<UserSearchResult[]> {
+    return this.server.searchUsers(query);
+  }
+
+  /** GET /users/search?query=... */
   async refreshCurrentUser(): Promise<User | null> {
     const user = await this.server.getMe();
     this.currentUser = user;

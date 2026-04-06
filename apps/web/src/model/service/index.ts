@@ -5,3 +5,7 @@ export { CommentsService } from './CommentsService';
 export { MediaUploadService } from './mediaUploadService';
 export { NotificationService } from './notificationService';
 export { FriendService } from "./FriendService";
+export { EventsService } from './EventsService';
+export { FriendRequestsService } from './FriendRequestService';
+export { ChallengesService } from './ChallengesService';
+export { MediaServiceDB } from './MediaServiceDB';

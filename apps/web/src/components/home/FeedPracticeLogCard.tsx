@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { PracticeLog, Media } from "@strava-musician-app/shared";
 import "./index.css";
-import { userService, practiceLogService } from "../../model";
+import { userService, likesService, commentsService, mediaService } from "../../model";
 
 type FeedPracticeLogCardProps = {
   practiceLog: PracticeLog;
@@ -57,7 +57,7 @@ const FeedPracticeLogCard = ({
   useEffect(() => {
     const fetchMedia = async () => {
         try {
-            const mediaList = await practiceLogService.getPracticeLogMedia(
+            const mediaList = await mediaService.getPracticeLogMedia(
                 practiceLog.practiceLogId
             );
             setMedia(mediaList);
@@ -71,7 +71,7 @@ const FeedPracticeLogCard = ({
   useEffect(() => {
     const fetchLikesAndComments = async () => {
         try {
-            const likes = await practiceLogService.getPracticeLogLikes(
+            const likes = await likesService.getPracticeLogLikes(
                 practiceLog.practiceLogId
             );
             setLikeCount(likes.length);
@@ -80,7 +80,7 @@ const FeedPracticeLogCard = ({
                 setIsLiked(likes.some((like) => like.userId === currentUserId));
             }
 
-            const commentsData = await practiceLogService.getPracticeLogComments(
+            const commentsData = await commentsService.getPracticeLogComments(
                 practiceLog.practiceLogId
             );
 

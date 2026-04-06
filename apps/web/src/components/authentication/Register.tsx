@@ -28,7 +28,11 @@ const Register = () => {
     if (!formData.email || !formData.username || !formData.password) {
       return;
     }
-    await userService.register(formData.username, formData.email,formData.password);
+    try {
+      await userService.register(formData.username, formData.email,formData.password);
+    } catch (error) {
+      setError(`Register failed: ${error || "unknown error"}`);
+    }
     navigate("/home");
   };
 
@@ -50,6 +54,7 @@ const Register = () => {
         onSubmit={handleSubmit}
         submitLabel="Sign Up"
       />
+       <p className="error">{error}</p>
 
       <div className="divider" />
 
