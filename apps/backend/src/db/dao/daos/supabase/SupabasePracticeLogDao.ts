@@ -3,11 +3,12 @@ import { PracticeLogDAO } from "../practiceLogDao";
 import db from "./config/SupabaseKnexConnection";
 import { SupabaseAuthDao } from "./SupabaseAuthDao";
 import { SupabaseUserDao } from "./SupabaseUserDao";
-import { get } from "http";
+import { SupabaseFriendsDao } from "./SupabaseFriendsDao";
 
 export class SupabaseSessionDAO implements PracticeLogDAO {
   authDao = new SupabaseAuthDao(); // replace with factories
   userDao = new SupabaseUserDao(); // replace with factories
+  friendDao = new SupabaseFriendsDao(); // replace with factories
 
   async getUserPracticeLogs(
     userId: string,
@@ -15,7 +16,7 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
     pageSize: number,
   ): Promise<PracticeLog[]> {
     type Cursor = { uuid: string; createdAt: string };
-    const user = this.userDao.findUserById(userId);
+    const user = await this.userDao.findUserById(userId);
     if (!user) {
       throw new Error("Invalid user ID");
     }
@@ -35,16 +36,16 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
     let query = db<PracticeLog>("PracticeLog")
       .select("*")
       .where({ userId: userId })
-      .orderBy("createdAt", "asc")
-      .orderBy("practiceLogId", "asc")
+      .orderBy("createdAt", "desc")
+      .orderBy("practiceLogId", "desc")
       .limit(pageSize);
 
     if (cursor) {
       query = query.where(function () {
-        this.where("createdAt", ">", cursor.createdAt).orWhere(function () {
+        this.where("createdAt", "<", cursor.createdAt).orWhere(function () {
           this.where("created_at", "=", cursor.createdAt).andWhere(
-            "id",
-            ">",
+            "practiceLogId",
+            "<",
             cursor.uuid,
           );
         });
@@ -85,7 +86,7 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
     if (!token) {
       throw new Error("Authentication token is required to access the feed");
     }
-    const user = this.authDao.getUserByToken(token);
+    const user = await this.authDao.getUserByToken(token);
     if (!user) {
       throw new Error("Invalid authentication token");
     }
@@ -100,18 +101,25 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
       cursor = { uuid: lastLog.practiceLogId, createdAt: lastLog.createdAt };
     }
 
+    // join with friend table to get friend's posts
     let query = db<PracticeLog>("PracticeLog")
+      .join("Friend", function () {
+        this.on("PracticeLog.userId", "Friend.friendId").andOn(
+          "Friend.userId",
+          user.userId,
+        );
+      })
       .select("*")
-      .orderBy("createdAt", "asc")
-      .orderBy("practiceLogId", "asc")
+      .orderBy("createdAt", "desc")
+      .orderBy("practiceLogId", "desc")
       .limit(pageSize);
 
     if (cursor) {
       query = query.where(function () {
-        this.where("createdAt", ">", cursor.createdAt).orWhere(function () {
+        this.where("createdAt", "<", cursor.createdAt).orWhere(function () {
           this.where("created_at", "=", cursor.createdAt).andWhere(
-            "id",
-            ">",
+            "practiceLogId",
+            "<",
             cursor.uuid,
           );
         });
