@@ -4,21 +4,65 @@ import {
   MediaListResponse,
 } from "@strava-musician-app/shared";
 import { MediaDAO } from "../mediaDao";
+import db from "./config/SupabaseKnexConnection";
 
 export class SupabaseMediaDao implements MediaDAO {
-  createMedia(practiceLogId: string, data: CreateMediaRequest): Promise<Media> {
-    throw new Error("Method not implemented.");
+  async createMedia(
+    practiceLogId: string,
+    data: CreateMediaRequest,
+  ): Promise<Media> {
+    const mediaId = crypto.randomUUID();
+    const dateNow = new Date();
+    const newMedia: Media = {
+      mediaId: mediaId,
+      practiceLogId,
+      type: data.type,
+      url: data.url,
+      createdAt: dateNow.toISOString(),
+    };
+    await db("Media").insert({
+      mediaId: mediaId,
+      practiceLogId,
+      type: data.type,
+      url: data.url,
+      createdAt: dateNow,
+    });
+    return newMedia;
   }
 
-  listMedia(practiceLogId: string): Promise<MediaListResponse> {
-    throw new Error("Method not implemented.");
+  async listMedia(practiceLogId: string): Promise<MediaListResponse> {
+    const mediaItems = await db("Media").where({ practiceLogId });
+    const mediaList: Media[] = mediaItems.map((m) => ({
+      mediaId: m.mediaId,
+      practiceLogId: m.practiceLogId,
+      type: m.type,
+      url: m.url,
+      createdAt:
+        m.createdAt instanceof Date
+          ? m.createdAt.toISOString()
+          : new Date(m.createdAt).toISOString(),
+    }));
+    return mediaList;
   }
 
-  getMedia(mediaId: string): Promise<Media | null> {
-    throw new Error("Method not implemented.");
+  async getMedia(mediaId: string): Promise<Media | null> {
+    const mediaItem = await db("Media").where({ mediaId }).first();
+    if (!mediaItem) {
+      return null;
+    }
+    return {
+      mediaId: mediaItem.mediaId,
+      practiceLogId: mediaItem.practiceLogId,
+      type: mediaItem.type,
+      url: mediaItem.url,
+      createdAt:
+        mediaItem.createdAt instanceof Date
+          ? mediaItem.createdAt.toISOString()
+          : new Date(mediaItem.createdAt).toISOString(),
+    };
   }
 
-  deleteMedia(mediaId: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async deleteMedia(mediaId: string): Promise<void> {
+    await db("Media").where({ mediaId }).del();
   }
 }
