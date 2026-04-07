@@ -37,46 +37,46 @@ export default function Home() {
       exampleCurl: `curl -X DELETE http://localhost:3001/comments/<commentId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
     },
     // --- Challenges ---
-    {
-      path: "/challenges",
-      method: "GET",
-      purpose: "List all challenges.",
-      requestBody: "none",
-      responseBody: "Challenge[] (200) or { error } (401)",
-      exampleCurl: `curl -X GET http://localhost:3001/challenges \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
-    },
-    {
-      path: "/challenges",
-      method: "POST",
-      purpose: "Create a challenge (admin only; may be done manually in DB).",
-      requestBody: "{ description, task, targetNumber, instrument? }",
-      responseBody: "Challenge (201) or { error } (400/401/403)",
-      exampleCurl: `curl -X POST http://localhost:3001/challenges \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{\"description\":\"30 days of practice\",\"task\":\"Practice every day\",\"targetNumber\":30}'`,
-    },
-    {
-      path: "/challenges/:challengeId",
-      method: "GET",
-      purpose: "Fetch a challenge.",
-      requestBody: "none",
-      responseBody: "Challenge (200) or { error } (404/401)",
-      exampleCurl: `curl -X GET http://localhost:3001/challenges/<challengeId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
-    },
-    {
-      path: "/challenges/:challengeId/complete",
-      method: "POST",
-      purpose: "Mark challenge as completed for the user.",
-      requestBody: "none",
-      responseBody: "{ success: true } (200) or { error } (404/401/403)",
-      exampleCurl: `curl -X POST http://localhost:3001/challenges/<challengeId>/complete \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
-    },
-    {
-      path: "/users/:userId/completed-challenges",
-      method: "GET",
-      purpose: "List completed challenges for a user.",
-      requestBody: "none",
-      responseBody: "Challenge[] (200) or { error } (401/404)",
-      exampleCurl: `curl -X GET http://localhost:3001/users/<userId>/completed-challenges \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
-    },
+    // {
+    //   path: "/challenges",
+    //   method: "GET",
+    //   purpose: "List all challenges.",
+    //   requestBody: "none",
+    //   responseBody: "Challenge[] (200) or { error } (401)",
+    //   exampleCurl: `curl -X GET http://localhost:3001/challenges \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // {
+    //   path: "/challenges",
+    //   method: "POST",
+    //   purpose: "Create a challenge (admin only; may be done manually in DB).",
+    //   requestBody: "{ description, task, targetNumber, instrument? }",
+    //   responseBody: "Challenge (201) or { error } (400/401/403)",
+    //   exampleCurl: `curl -X POST http://localhost:3001/challenges \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{\"description\":\"30 days of practice\",\"task\":\"Practice every day\",\"targetNumber\":30}'`,
+    // },
+    // {
+    //   path: "/challenges/:challengeId",
+    //   method: "GET",
+    //   purpose: "Fetch a challenge.",
+    //   requestBody: "none",
+    //   responseBody: "Challenge (200) or { error } (404/401)",
+    //   exampleCurl: `curl -X GET http://localhost:3001/challenges/<challengeId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // {
+    //   path: "/challenges/:challengeId/complete",
+    //   method: "POST",
+    //   purpose: "Mark challenge as completed for the user.",
+    //   requestBody: "none",
+    //   responseBody: "{ success: true } (200) or { error } (404/401/403)",
+    //   exampleCurl: `curl -X POST http://localhost:3001/challenges/<challengeId>/complete \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // {
+    //   path: "/users/:userId/completed-challenges",
+    //   method: "GET",
+    //   purpose: "List completed challenges for a user.",
+    //   requestBody: "none",
+    //   responseBody: "Challenge[] (200) or { error } (401/404)",
+    //   exampleCurl: `curl -X GET http://localhost:3001/users/<userId>/completed-challenges \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
     // --- Notifications ---
     {
       path: "/notifications",
@@ -193,12 +193,12 @@ export default function Home() {
       method: "POST",
       purpose: "Create a new practice log",
       requestBody:
-        "{ title: string, durationMinutes: number, visibility: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
+        "{ title: string, durationMinutes: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
       responseBody: "{ practiceLog: PracticeLog } (201) or { error } (400/401)",
       exampleCurl: `curl -X POST http://localhost:3001/practice-logs \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer <TOKEN>" \\
-  -d '{"title":"Practice Piano","durationMinutes":60,"visibility":"public"}'`,
+  -d '{"title":"Practice Piano","durationMinutes":60}'`,
     },
     {
       path: "/practice-logs/feed",
@@ -222,7 +222,7 @@ export default function Home() {
       method: "PATCH",
       purpose: "Update a practice log by ID",
       requestBody:
-        "{ title?: string, durationMinutes?: number, visibility?: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
+        "{ title?: string, durationMinutes?: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
       responseBody: "{ practiceLog: PracticeLog } (200) or { error } (404/401)",
       exampleCurl: `curl -X PATCH http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Content-Type: application/json" \\
@@ -392,16 +392,14 @@ export default function Home() {
       ),
     },
     {
-      title: "Comments",
-      routes: routes.filter(r =>
-        r.path.includes("/comments") || r.path.startsWith("/comments")
-      ),
-    },
-    {
       title: "Media",
       routes: routes.filter(r =>
         r.path.includes("/media") || r.path.startsWith("/media")
       ),
+    },
+    {
+      title: "Friends & Friend Requests",
+      routes: routes.filter(r => r.path.startsWith("/friends") || r.path.startsWith("/friend-requests")),
     },
     {
       title: "Likes",
@@ -410,20 +408,22 @@ export default function Home() {
       ),
     },
     {
-      title: "Challenges",
+      title: "Comments",
       routes: routes.filter(r =>
-        r.path.startsWith("/challenges") || r.path.includes("/completed-challenges")
+        r.path.includes("/comments") || r.path.startsWith("/comments")
       ),
     },
+    // {
+    //   title: "Challenges",
+    //   routes: routes.filter(r =>
+    //     r.path.startsWith("/challenges") || r.path.includes("/completed-challenges")
+    //   ),
+    // },
     {
       title: "Notifications",
       routes: routes.filter(r =>
         r.path.startsWith("/notifications")
       ),
-    },
-    {
-      title: "Friends & Friend Requests",
-      routes: routes.filter(r => r.path.startsWith("/friends") || r.path.startsWith("/friend-requests")),
     },
   ];
 

@@ -37,6 +37,7 @@ export class PracticeLogService {
   }
 
   async getPracticeLog(practiceLogId: string): Promise<PracticeLog | null> {
+    
     return this.practiceLogDao.getPracticeLog(practiceLogId);
   }
 
