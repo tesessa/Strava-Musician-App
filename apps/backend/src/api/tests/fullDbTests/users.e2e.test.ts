@@ -4,6 +4,19 @@ import { testContext } from './testContext';
 const api = request('http://localhost:3001');
 
 describe('User Management Routes', () => {
+  beforeAll(async () => {
+    // Register a public user for testing
+    const res = await api.post('/auth/register').send({
+        email: 'public_user@example.com',
+        username: 'public_user',
+        password: 'password123',
+        visibility: 'public'
+    });
+    expect([201]).toContain(res.status);
+    testContext.users.public_user = res.body.user;
+    testContext.tokens.public_user = res.body.authToken.token;
+  });
+
   it('gets a user profile by ID', async () => {
     const res = await api.get(`/users/${testContext.users.public_user.userId}`)
       .set('Authorization', `Bearer ${testContext.tokens.public_user}`);
@@ -40,5 +53,15 @@ describe('User Management Routes', () => {
   it('should not search users without token', async () => {
     const res = await api.get('/users/search?query=public_user');
     expect(res.status).toBe(401);
+  });
+
+  afterAll(async () => {
+    // delete the test user
+    const res = await api.delete(`/users/${testContext.users.public_user.userId}`)
+      .set('Authorization', `Bearer ${testContext.tokens.public_user}`);
+    //must make sure user is deleted
+    expect(res.status).toBe(204);
+    delete testContext.users.public_user;
+    delete testContext.tokens.public_user;
   });
 });

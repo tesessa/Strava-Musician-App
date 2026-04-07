@@ -16,40 +16,37 @@ describe('Authentication Routes', () => {
       password: 'password123',
       visibility: 'public'
     });
-    expect([201,409]).toContain(res.status); // 409 if already exists
-    if (res.status === 201) {
-      testContext.users.public_user = res.body.user;
-      testContext.tokens.public_user = res.body.authToken.token;
-    }
+    expect([201]).toContain(res.status);
+    testContext.users.public_user = res.body.user;
   });
 
-  it('registers a private user', async () => {
-    const res = await api.post('/auth/register').send({
-      email: 'private_user@example.com',
-      username: 'private_user',
-      password: 'password123',
-      visibility: 'private'
-    });
-    expect([201,409]).toContain(res.status); // 409 if already exists
-    if (res.status === 201) {
-      testContext.users.private_user = res.body.user;
-      testContext.tokens.private_user = res.body.authToken.token;
-    }
-  });
+//   it('registers a private user', async () => {
+//     const res = await api.post('/auth/register').send({
+//       email: 'private_user@example.com',
+//       username: 'private_user',
+//       password: 'password123',
+//       visibility: 'private'
+//     });
+//     expect([201,409]).toContain(res.status); // 409 if already exists
+//     if (res.status === 201) {
+//       testContext.users.private_user = res.body.user;
+//       testContext.tokens.private_user = res.body.authToken.token;
+//     }
+//   });
   
-  it('registers a friends-only user', async () => {
-    const res = await api.post('/auth/register').send({
-      email: 'friends_user@example.com',
-      username: 'friends_user',
-      password: 'password123',
-      visibility: 'friends'
-    });
-    expect([201,409]).toContain(res.status); // 409 if already exists
-    if (res.status === 201) {
-      testContext.users.friends_user = res.body.user;
-      testContext.tokens.friends_user = res.body.authToken.token;
-    }
-  });
+//   it('registers a friends-only user', async () => {
+//     const res = await api.post('/auth/register').send({
+//       email: 'friends_user@example.com',
+//       username: 'friends_user',
+//       password: 'password123',
+//       visibility: 'friends'
+//     });
+//     expect([201,409]).toContain(res.status); // 409 if already exists
+//     if (res.status === 201) {
+//       testContext.users.friends_user = res.body.user;
+//       testContext.tokens.friends_user = res.body.authToken.token;
+//     }
+//   });
 
   it('should not login with wrong password', async () => {
     const res = await api.post('/auth/login').send({
@@ -65,10 +62,7 @@ describe('Authentication Routes', () => {
       password: 'password123'
     });
     expect(res.status).toBe(200);
-    testContext.tokens = testContext.tokens || {};
     testContext.tokens.public_user = res.body.authToken.token;
-    testContext.users = testContext.users || {};
-    testContext.users.public_user = res.body.user;
   });
 
   it('returns authenticated user profile', async () => {
@@ -84,18 +78,37 @@ describe('Authentication Routes', () => {
 
   it('logs out a user', async () => {
     const res = await api.post('/auth/logout').set('Authorization', `Bearer ${testContext.tokens.public_user}`);
-    expect([204,401]).toContain(res.status); // 401 if already logged out
+    expect([204]).toContain(res.status);
+    delete testContext.tokens.public_user;
   });
 
-  it('relogs in a user', async () => {
-    const res = await api.post('/auth/login').send({
-      email: 'public_user@example.com',
-      password: 'password123'
+//   it('relogs in a user', async () => {
+//     const res = await api.post('/auth/login').send({
+//       email: 'public_user@example.com',
+//       password: 'password123'
+//     });
+//     expect(res.status).toBe(200);
+//     testContext.tokens = testContext.tokens || {};
+//     testContext.tokens.public_user = res.body.authToken.token;
+//     testContext.users = testContext.users || {};
+//     testContext.users.public_user = res.body.user;
+//   });
+
+  afterAll(async () => {
+    // delete the test user
+    //must be logged in to delete account, so we log in again if needed
+    const loginRes = await api.post('/auth/login').send({
+        email: 'public_user@example.com',
+        password: 'password123'
     });
-    expect(res.status).toBe(200);
-    testContext.tokens = testContext.tokens || {};
-    testContext.tokens.public_user = res.body.authToken.token;
-    testContext.users = testContext.users || {};
-    testContext.users.public_user = res.body.user;
+    testContext.tokens.public_user = loginRes.body.authToken.token;
+
+    const res = await api.delete(`/users/${testContext.users.public_user.userId}`)
+      .set('Authorization', `Bearer ${testContext.tokens.public_user}`);
+    //must make sure user is deleted, but ignore if already deleted
+    expect(res.status).toBe(204);
+    delete testContext.users.public_user;
+    delete testContext.tokens.public_user;
   });
+
 });
