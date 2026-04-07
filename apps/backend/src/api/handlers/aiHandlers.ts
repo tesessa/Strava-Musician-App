@@ -2,21 +2,45 @@ import { NextResponse } from "next/server";
 
 export async function analyzeAudio(req: Request) {
   try {
-    const body = await req.json();
-    const { fileUrl } = body ?? {};
-    if (!fileUrl) {
-      return NextResponse.json({ error: "fileUrl is required" }, { status: 400 });
+    const aiServiceUrl = process.env.AI_SERVICE_URL ?? "http://localhost:8000";
+    const contentType = req.headers.get("content-type") ?? "";
+
+    let aiResponse: Response;
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const file = formData.get("file");
+
+      if (!(file instanceof File)) {
+        return NextResponse.json({ error: "file is required" }, { status: 400 });
+      }
+
+      const outboundForm = new FormData();
+      outboundForm.append("file", file, file.name);
+
+      aiResponse = await fetch(`${aiServiceUrl}/analyze-file`, {
+        method: "POST",
+        body: outboundForm,
+      });
+    } else {
+      const body = await req.json();
+      const { fileUrl } = body ?? {};
+      if (!fileUrl) {
+        return NextResponse.json({ error: "fileUrl is required" }, { status: 400 });
+      }
+
+      aiResponse = await fetch(`${aiServiceUrl}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file_url: fileUrl }),
+      });
     }
 
-    // Call the AI service
-    const aiResponse = await fetch("http://localhost:8000/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ file_url: fileUrl }),
-    });
-
     if (!aiResponse.ok) {
-      return NextResponse.json({ error: "AI service error" }, { status: 502 });
+      const details = await aiResponse.text();
+      return NextResponse.json(
+        { error: "AI service error", details },
+        { status: 502 },
+      );
     }
 
     const aiResult = await aiResponse.json();

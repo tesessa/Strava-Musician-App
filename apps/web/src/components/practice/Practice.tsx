@@ -29,6 +29,9 @@ export default function Practice() {
     audioRecordTime,
     videoRecording,
     videoRecordTime,
+    aiFeedbackById,
+    aiErrorById,
+    aiLoadingById,
     videoPreviewRef,
     uploadRef,
     startAudio,
@@ -442,9 +445,10 @@ export default function Practice() {
                       <div className="media-card-actions">
                         <button
                           className={`media-action-btn ai-btn ${r.aiRequested ? "ai-active" : ""}`}
+                          disabled={Boolean(aiLoadingById[r.id])}
                           onClick={() => toggleAI(r.id)}
                         >
-                          ✦ AI Feedback
+                          {aiLoadingById[r.id] ? "Analyzing..." : "✦ AI Feedback"}
                         </button>
                         <button
                           className={`media-action-btn save-btn ${r.savedForPracticeLog ? "save-active" : ""}`}
@@ -459,6 +463,12 @@ export default function Practice() {
                           🗑
                         </button>
                       </div>
+                      {aiFeedbackById[r.id] && (
+                        <p className="ai-feedback-text">{aiFeedbackById[r.id]}</p>
+                      )}
+                      {aiErrorById[r.id] && (
+                        <p className="ai-feedback-error">{aiErrorById[r.id]}</p>
+                      )}
                     </div>
                   ))}
                 </div>

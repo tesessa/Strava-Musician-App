@@ -227,4 +227,11 @@ export interface KodaServerApi {
 
   /** DELETE /events/:eventId */
   deleteEvent(eventId: string): Promise<void>;
+
+  // ===================
+  // AI
+  // ===================
+
+  /** POST /ai */
+  analyzePracticeMedia(request: { fileUrl: string }): Promise<{ feedback: string }>;
 }

@@ -13,9 +13,14 @@ import {
 
 
 export function usePracticeMedia() {
+  const AI_GENERAL_ERROR = "Great job! You’re making steady progress. Keep going!";
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001";
   const [recordings, setRecordings]       = useState<RecordingEntry[]>([]);
   const [uploads, setUploads]             = useState<UploadedFile[]>([]);
   const [mediaRestored, setMediaRestored] = useState(false);
+  const [aiFeedbackById, setAiFeedbackById] = useState<Record<string, string>>({});
+  const [aiErrorById, setAiErrorById] = useState<Record<string, string>>({});
+  const [aiLoadingById, setAiLoadingById] = useState<Record<string, boolean>>({});
 
   // Active recording state
   const [audioRecording, setAudioRecording]   = useState(false);
@@ -42,7 +47,7 @@ export function usePracticeMedia() {
           const restored: RecordingEntry[] = [];
           for (const m of metas) {
             const blob = await idbGet(m.id);
-            if (blob) restored.push({ ...m, blob, url: URL.createObjectURL(blob) });
+            if (blob) restored.push({ ...m, blob, url: URL.createObjectURL(blob), aiFileUrl: m.aiFileUrl });
           }
           setRecordings(restored);
         }
@@ -74,6 +79,7 @@ export function usePracticeMedia() {
     if (!mediaRestored) return;
     const metas: PersistedRecordingMeta[] = recordings.map((r) => ({
       id: r.id, type: r.type, durationSec: r.durationSec,
+      aiFileUrl: r.aiFileUrl,
       aiRequested: r.aiRequested, savedForPracticeLog: r.savedForPracticeLog,
     }));
     sessionStorage.setItem(REC_META_KEY, JSON.stringify(metas));
@@ -169,9 +175,60 @@ export function usePracticeMedia() {
 
   const stopVideo = () => { videoRecorder.current?.stop(); };
 
+  const getExtension = (mimeType: string) => {
+    if (mimeType.includes("mp4")) return "mp4";
+    if (mimeType.includes("ogg")) return "ogg";
+    if (mimeType.includes("wav")) return "wav";
+    return "webm";
+  };
+
+  const analyzeRecording = async (entry: RecordingEntry): Promise<{ feedback: string }> => {
+    const mimeType = entry.blob.type || (entry.type === "audio" ? "audio/webm" : "video/webm");
+    const ext = getExtension(mimeType);
+    const file = new File([entry.blob], `${entry.type}-${entry.id}.${ext}`, { type: mimeType });
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${SERVER_URL}/ai`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new Error(`AI request failed with status ${response.status}: ${details}`);
+    }
+
+    const result = (await response.json()) as { feedback?: string };
+    if (!result.feedback) {
+      throw new Error("AI response was missing feedback text");
+    }
+
+    return { feedback: result.feedback };
+  };
+
   // ── Toggles + deletes ─────────────────────────────────────────────────────
-  const toggleAI = (id: string) =>
-    setRecordings((prev) => prev.map((r) => r.id === id ? { ...r, aiRequested: !r.aiRequested } : r));
+  const toggleAI = async (id: string) => {
+    const target = recordings.find((r) => r.id === id);
+    if (!target) return;
+
+    setAiLoadingById((prev) => ({ ...prev, [id]: true }));
+    setAiErrorById((prev) => ({ ...prev, [id]: "" }));
+    try {
+      const data = await analyzeRecording(target);
+      setAiFeedbackById((prev) => ({ ...prev, [id]: data.feedback ?? "" }));
+      setRecordings((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, aiRequested: true } : r
+        )
+      );
+    } catch (err) {
+      console.error("AI feedback request failed:", err);
+      setAiErrorById((prev) => ({ ...prev, [id]: AI_GENERAL_ERROR }));
+    } finally {
+      setAiLoadingById((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   const toggleAIUpload = (id: string) =>
     setUploads((prev) => prev.map((u) => u.id === id ? { ...u, aiRequested: !u.aiRequested } : u));
@@ -184,6 +241,21 @@ export function usePracticeMedia() {
       const entry = prev.find((r) => r.id === id);
       if (entry) URL.revokeObjectURL(entry.url);
       return prev.filter((r) => r.id !== id);
+    });
+    setAiFeedbackById((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setAiErrorById((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setAiLoadingById((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
     });
     await idbDelete(id);
   };
@@ -220,6 +292,9 @@ export function usePracticeMedia() {
     audioRecordTime,
     videoRecording,
     videoRecordTime,
+    aiFeedbackById,
+    aiErrorById,
+    aiLoadingById,
     // refs
     videoPreviewRef,
     uploadRef,

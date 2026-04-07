@@ -13,6 +13,7 @@ import requests
 from openai import OpenAI
 
 from fastapi import FastAPI, UploadFile, File
+from pydantic import BaseModel
 import numpy as np
 import tempfile
 import shutil
@@ -50,22 +51,16 @@ def send_prompt(client, prompt: str, model: str = "gpt-4o-mini") -> str:
 
 app = FastAPI()
 
-@app.post("/analyze")
-async def analyze_audio(file_url: str):
-    # the file is in oracle cloud.
 
-    response = requests.get(file_url)
+class AnalyzeRequest(BaseModel):
+    file_url: str
 
-    if response.status_code != 200:
-        return {"error": "Failed to download file"}
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-        tmp.write(response.content)
-        tmp_path = tmp.name
-
-    bpm, beats, beats_confidence = beat_analysis(tmp_path)
+def analyze_local_audio_file(audio_path: str):
+    bpm, beats, beats_confidence = beat_analysis(audio_path)
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    # client = OpenAI(api_key="")
     prompt = f"""
     You are a guide for practicing guitarists. You give brief helpful feedback based on the data you are given.
     It should consist of the BPM from the data, and if their rhythm was good or bad. 
@@ -86,6 +81,41 @@ async def analyze_audio(file_url: str):
     return {
         "feedback": response
     }
+
+@app.post("/analyze")
+async def analyze_audio(payload: AnalyzeRequest):
+    # the file is in oracle cloud.
+
+    file_url = payload.file_url
+
+    response = requests.get(file_url)
+
+    if response.status_code != 200:
+        return {"error": "Failed to download file"}
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        tmp.write(response.content)
+        tmp_path = tmp.name
+
+    try:
+        return analyze_local_audio_file(tmp_path)
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
+@app.post("/analyze-file")
+async def analyze_uploaded_audio(file: UploadFile = File(...)):
+    file_ext = os.path.splitext(file.filename or "")[1] or ".webm"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp:
+        shutil.copyfileobj(file.file, tmp)
+        tmp_path = tmp.name
+
+    try:
+        return analyze_local_audio_file(tmp_path)
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 if __name__ == "__main__":
     uvicorn.run("ai_service:app", host="0.0.0.0", port=8000, reload=True)
