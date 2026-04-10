@@ -95,14 +95,13 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
   }
 
   async acceptRequest(requestId: string): Promise<void> {
-    const request = await db<FriendRequest>("FriendRequest")
+    const [request] = await db<FriendRequest>("FriendRequest")
       .where({ requestId: requestId })
       .update({
         status: "accepted",
         respondedAt: new Date().toISOString(),
       })
-      .returning("*")
-      .first();
+      .returning("*");
     if (!request) {
       throw new Error("Friend request not found");
     }
@@ -122,15 +121,15 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
   }
 
   async rejectRequest(requestId: string): Promise<void> {
-    await db("FriendRequest").where({ id: requestId }).update({
+    await db("FriendRequest").where({ requestId }).update({
       status: "rejected",
       respondedAt: new Date().toISOString(),
     });
   }
 
   async cancelRequest(requestId: string): Promise<void> {
-    await db("FriendRequest").where({ id: requestId }).update({
-      status: "cancelled",
+    await db("FriendRequest").where({ requestId }).update({
+      status: "canceled",
       respondedAt: new Date().toISOString(),
     });
   }

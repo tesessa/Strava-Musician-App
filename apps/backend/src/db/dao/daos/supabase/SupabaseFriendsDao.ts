@@ -62,7 +62,7 @@ export class SupabaseFriendsDao implements FriendsDAO {
     if (incomingRequest) {
       // Accept the incoming request
       await db("FriendRequest")
-        .where({ requestId: incomingRequest.id })
+        .where({ requestId: incomingRequest.requestId })
         .update({
           status: "accepted",
           respondedAt: new Date().toISOString(),
@@ -96,7 +96,12 @@ export class SupabaseFriendsDao implements FriendsDAO {
         requested: true,
       };
     }
-    return { userId, friendId, requestId: existingRequest.id, requested: true };
+    return {
+      userId,
+      friendId,
+      requestId: existingRequest.requestId,
+      requested: true,
+    };
   }
 
   async removeFriend(userId: string, friendId: string): Promise<void> {
