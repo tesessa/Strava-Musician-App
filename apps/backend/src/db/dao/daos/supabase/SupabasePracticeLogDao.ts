@@ -5,7 +5,7 @@ import { SupabaseAuthDao } from "./SupabaseAuthDao";
 import { SupabaseUserDao } from "./SupabaseUserDao";
 import { SupabaseFriendsDao } from "./SupabaseFriendsDao";
 
-export class SupabaseSessionDAO implements PracticeLogDAO {
+export class SupabasePracticeLogDAO implements PracticeLogDAO {
   authDao = new SupabaseAuthDao(); // replace with factories
   userDao = new SupabaseUserDao(); // replace with factories
   friendDao = new SupabaseFriendsDao(); // replace with factories
@@ -43,7 +43,7 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
     if (cursor) {
       query = query.where(function () {
         this.where("createdAt", "<", cursor.createdAt).orWhere(function () {
-          this.where("created_at", "=", cursor.createdAt).andWhere(
+          this.where("createdAt", "=", cursor.createdAt).andWhere(
             "practiceLogId",
             "<",
             cursor.uuid,
@@ -104,12 +104,13 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
     // join with friend table to get friend's posts
     let query = db<PracticeLog>("PracticeLog")
       .join("Friend", function () {
-        this.on("PracticeLog.userId", "Friend.friendId").andOn(
+        this.on("PracticeLog.userId", "=", "Friend.friendId").andOnVal(
           "Friend.userId",
+          "=",
           user.userId,
         );
       })
-      .select("*")
+      .select("PracticeLog.*")
       .orderBy("createdAt", "desc")
       .orderBy("practiceLogId", "desc")
       .limit(pageSize);
@@ -117,7 +118,7 @@ export class SupabaseSessionDAO implements PracticeLogDAO {
     if (cursor) {
       query = query.where(function () {
         this.where("createdAt", "<", cursor.createdAt).orWhere(function () {
-          this.where("created_at", "=", cursor.createdAt).andWhere(
+          this.where("createdAt", "=", cursor.createdAt).andWhere(
             "practiceLogId",
             "<",
             cursor.uuid,
