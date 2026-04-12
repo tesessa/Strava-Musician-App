@@ -2,6 +2,14 @@ import { SupabasePracticeLogDAO } from "../SupabasePracticeLogDao";
 import db from "../config/SupabaseKnexConnection";
 import { PracticeLog } from "@strava-musician-app/shared";
 import { randomUUID } from "crypto";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "@jest/globals";
 
 const dao = new SupabasePracticeLogDAO();
 

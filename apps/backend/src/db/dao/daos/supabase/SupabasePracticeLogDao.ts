@@ -10,6 +10,12 @@ export class SupabasePracticeLogDAO implements PracticeLogDAO {
   userDao = new SupabaseUserDao(); // replace with factories
   friendDao = new SupabaseFriendsDao(); // replace with factories
 
+  constructor() {
+    db.raw("SELECT 1")
+      .then(() => console.log("Database connection established"))
+      .catch((err) => console.error("Database connection error:", err));
+  }
+
   async getUserPracticeLogs(
     userId: string,
     lastItem: string | null,

@@ -1,6 +1,6 @@
 import type { AuthDAO } from "../daos/authDao";
-import { AuthDao } from "../inMemoryDaos/inMemoryAuthDao";
+import { SupabaseAuthDao } from "../daos/supabase/SupabaseAuthDao";
 
 export function createAuthDAO(): AuthDAO {
-  return AuthDao;
+  return new SupabaseAuthDao();
 }

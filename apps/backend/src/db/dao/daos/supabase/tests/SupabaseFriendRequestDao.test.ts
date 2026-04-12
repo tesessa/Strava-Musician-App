@@ -1,6 +1,14 @@
 import { SupabaseFriendRequestsDao } from "../SupabaseFriendRequestsDao";
 import db from "../config/SupabaseKnexConnection";
 import { randomUUID } from "crypto";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "@jest/globals";
 
 const dao = new SupabaseFriendRequestsDao();
 

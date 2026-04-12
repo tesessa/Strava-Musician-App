@@ -15,7 +15,6 @@
     "database_test": "NODE_ENV=test jest --runInBand"
   },
   "devDependencies": {
-    "@esbuild/win32-x64": "^0.27.4",
     "@types/bcrypt": "^6.0.0",
     "@types/jest": "^30.0.0",
     "@types/supertest": "^7.2.0",

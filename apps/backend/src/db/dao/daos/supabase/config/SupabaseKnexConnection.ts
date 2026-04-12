@@ -1,14 +1,45 @@
 import knex from "knex";
 import * as dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 
-dotenv.config();
+function findEnvFile(startDir: string): string | null {
+  let currentDir = startDir;
+
+  while (true) {
+    const candidate = path.join(currentDir, ".env");
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      return null;
+    }
+
+    currentDir = parentDir;
+  }
+}
+
+const envFilePath = findEnvFile(process.cwd());
+if (envFilePath) {
+  dotenv.config({ path: envFilePath });
+} else {
+  dotenv.config();
+}
+
 const isTest = process.env.NODE_ENV === "test";
 
 const connectionString = isTest
   ? process.env.SUPABASE_CONNECTION_TEST
   : process.env.SUPABASE_CONNECTION;
+
+console.log(
+  "Using connection string:",
+  connectionString ? connectionString.substring(0, 35) + "..." : "None",
+);
 if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
+  throw new Error("SUPABASE_CONNECTION environment variable is not set");
 }
 
 export const db = knex({
