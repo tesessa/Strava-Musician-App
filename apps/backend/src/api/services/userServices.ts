@@ -56,21 +56,11 @@ export class UserService {
       await this.friendsDao.removeFriend(id, friend.friendId);
     }
 
-    // Delete friend requests
-    const incoming = await this.friendRequestsDao.listIncoming(id, { lastRequestId: undefined, pageSize: 1000 });
-    for (const req of incoming) {
-      await this.friendRequestsDao.cancelRequest(req.requestId);
-    }
-    const outgoing = await this.friendRequestsDao.listOutgoing(id, { lastRequestId: undefined, pageSize: 1000 });
-    for (const req of outgoing) {
-      await this.friendRequestsDao.cancelRequest(req.requestId);
-    }
+    // Delete all friend requests where user is sender or receiver
+    await this.friendRequestsDao.deleteAllForUser(id);
 
-    // Delete notifications
-    const notifications = await this.notificationsDao.listNotifications(id);
-    for (const n of notifications) {
-      await this.notificationsDao.deleteNotification(n.notificationId);
-    }
+    // Delete all notifications where user is userId or actorId
+    await this.notificationsDao.deleteAllForUser(id);
 
     // Finally, delete the user
     return await this.dao.deleteUser(id);

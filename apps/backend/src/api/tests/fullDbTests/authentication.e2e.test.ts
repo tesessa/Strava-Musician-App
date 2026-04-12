@@ -82,18 +82,6 @@ describe('Authentication Routes', () => {
     delete testContext.tokens.public_user;
   });
 
-//   it('relogs in a user', async () => {
-//     const res = await api.post('/auth/login').send({
-//       email: 'public_user@example.com',
-//       password: 'password123'
-//     });
-//     expect(res.status).toBe(200);
-//     testContext.tokens = testContext.tokens || {};
-//     testContext.tokens.public_user = res.body.authToken.token;
-//     testContext.users = testContext.users || {};
-//     testContext.users.public_user = res.body.user;
-//   });
-
   afterAll(async () => {
     // delete the test user
     //must be logged in to delete account, so we log in again if needed

@@ -33,6 +33,9 @@ describe('Media Routes', () => {
     const res = await api.post(`/practice-logs/${testContext.practiceLogs.public.practiceLogId}/media`)
       .set('Authorization', `Bearer ${testContext.tokens.public_user}`)
       .send({ type: 'image', url: 'http://example.com/img.png' });
+    if (res.status !== 201) {
+      console.log('Media creation error:', res.body);
+    }
     expect(res.status).toBe(201);
     testContext.media = { image: res.body.media };
   });

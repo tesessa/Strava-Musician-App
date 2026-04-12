@@ -46,6 +46,15 @@ class InMemoryNotificationsDao implements NotificationsDAO {
     }
     return null;
   }
+
+  async deleteAllForUser(userId: string): Promise<void> {
+    // Remove notifications where user is userId or actorId
+    for (const uid in notificationsByUser) {
+      notificationsByUser[uid] = notificationsByUser[uid].filter(
+        n => n.userId !== userId && n.actorId !== userId
+      );
+    }
+  }
   
   reset() {
     Object.keys(notificationsByUser).forEach(key => delete notificationsByUser[key]);

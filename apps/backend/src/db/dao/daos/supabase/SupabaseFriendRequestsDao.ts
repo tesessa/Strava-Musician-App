@@ -134,6 +134,10 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
     });
   }
 
+  async deleteAllForUser(userId: string): Promise<void> {
+    await db("FriendRequest").where("senderId", userId).orWhere("receiverId", userId).del();
+  }
+
   async clearAll(): Promise<void> {
     await db("FriendRequest").del();
   }

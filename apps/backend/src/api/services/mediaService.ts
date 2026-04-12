@@ -5,6 +5,7 @@ export class MediaService {
   constructor(private dao: MediaDAO) {}
 
   async createMedia(practiceLogId: string, data: CreateMediaRequest): Promise<Media> {
+    console.log(`Creating media for practice log ${practiceLogId} with data:`, data);
     return this.dao.createMedia(practiceLogId, data);
   }
 

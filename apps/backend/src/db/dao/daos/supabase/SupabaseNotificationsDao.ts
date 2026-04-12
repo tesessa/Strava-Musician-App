@@ -4,7 +4,7 @@ import db from "./config/SupabaseKnexConnection";
 
 export class SupabaseNotificationsDao implements NotificationsDAO {
   async listNotifications(userId: string): Promise<Notification[]> {
-    const notifications = await db("Notifications")
+    const notifications = await db("Notification")
       .select("*")
       .where({ userId })
       .orderBy("createdAt", "desc");
@@ -24,14 +24,14 @@ export class SupabaseNotificationsDao implements NotificationsDAO {
   }
 
   async markNotificationRead(notificationId: string): Promise<boolean> {
-    const updatedRows = await db("Notifications")
+    const updatedRows = await db("Notification")
       .where({ notificationId })
       .update({ isRead: true });
     return updatedRows > 0;
   }
 
   async deleteNotification(notificationId: string): Promise<boolean> {
-    const deletedRows = await db("Notifications")
+    const deletedRows = await db("Notification")
       .where({ notificationId })
       .del();
     return deletedRows > 0;
@@ -45,7 +45,7 @@ export class SupabaseNotificationsDao implements NotificationsDAO {
       notificationId,
       ...notification,
     };
-    await db("Notifications").insert({
+    await db("Notification").insert({
       notificationId,
       userId: notification.userId,
       actorId: notification.actorId,
@@ -61,7 +61,7 @@ export class SupabaseNotificationsDao implements NotificationsDAO {
   async getNotificationById(
     notificationId: string,
   ): Promise<Notification | null> {
-    const notification = await db("Notifications")
+    const notification = await db("Notification")
       .select("*")
       .where({ notificationId })
       .first();
@@ -83,7 +83,11 @@ export class SupabaseNotificationsDao implements NotificationsDAO {
     };
   }
 
+  async deleteAllForUser(userId: string): Promise<void> {
+    await db("Notification").where("userId", userId).orWhere("actorId", userId).del();
+  }
+
   async clearAll(): Promise<void> {
-    await db("Notifications").del();
+    await db("Notification").del();
   }
 }

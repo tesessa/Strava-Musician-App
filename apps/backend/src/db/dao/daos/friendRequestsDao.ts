@@ -8,4 +8,6 @@ export interface FriendRequestsDAO {
   acceptRequest(requestId: string): Promise<void>;
   rejectRequest(requestId: string): Promise<void>;
   cancelRequest(requestId: string): Promise<void>;
+  /** Delete all friend requests where user is sender or receiver */
+  deleteAllForUser(userId: string): Promise<void>;
 }
