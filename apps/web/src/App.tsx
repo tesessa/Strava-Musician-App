@@ -8,6 +8,7 @@ import CalendarPage from "./pages/calendar";
 import Practice from "./components/practice/Practice";
 import Profile from "./components/profile/Profile";
 import PracticeLogEdit from "./components/practice/PracticeLogEdit";
+import ChallengesPage from "./components/challenges/ChallengesPage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/practice-log/edit/:practiceLogId" element={<PracticeLogEdit />} />
+        <Route path="/challenges" element={<ChallengesPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
-import type { PracticeLog, User } from "@strava-musician-app/shared";
-import { userService, practiceLogService, friendService } from "../../model";
+import type { PracticeLog, User, Challenge } from "@strava-musician-app/shared";
+import type { CompletedChallengeWithDetails } from "../../model/service/ChallengeService";
+import { userService, practiceLogService, friendService, challengeService, } from "../../model";
 import type {
   FriendWithProfile,
   PendingFriendRequestWithProfile,
@@ -68,6 +69,12 @@ const Profile = () => {
     "public" | "friends" | "private"
   >("friends");
 
+const [challengesLoading, setChallengesLoading] = useState(false);
+const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
+const [completedChallenges, setCompletedChallenges] = useState<
+  CompletedChallengeWithDetails[]
+>([]);
+
   const isOwnProfile = useMemo(() => {
     if (!currentUser || !profileUser) return false;
     return currentUser.userId === profileUser.userId;
@@ -76,6 +83,12 @@ const Profile = () => {
   useEffect(() => {
     void loadProfile();
   }, [routeUserId]);
+
+  useEffect(() => {
+    if (routeTab === "challenges" && profileUser && isOwnProfile) {
+      void loadCompletedChallenges(profileUser.userId);
+    }
+  }, [routeTab, profileUser, isOwnProfile]);
 
   useEffect(() => {
     if (routeTab === "practice" && profileUser) {
@@ -149,6 +162,26 @@ const Profile = () => {
     }
   };
 
+  const loadCompletedChallenges = async (userId: string) => {
+    try {
+      setChallengesLoading(true);
+      setErrorMessage("");
+
+      const [completedResults, allResults] = await Promise.all([
+        challengeService.getCompletedChallengesWithDetails(userId),
+        challengeService.getChallenges(),
+      ]);
+
+      setCompletedChallenges(completedResults);
+      setAllChallenges(allResults);
+    } catch (error) {
+      console.error("Failed to load completed challenges:", error);
+      setErrorMessage("Failed to load completed challenges.");
+    } finally {
+      setChallengesLoading(false);
+    }
+  };
+
   const loadFriends = async () => {
     try {
       setFriendsLoading(true);
@@ -168,6 +201,16 @@ const Profile = () => {
       setFriendsLoading(false);
     }
   };
+
+  const inProgressChallenges = useMemo(() => {
+    const completedIds = new Set(
+      completedChallenges.map((item) => item.completion.challengeId)
+    );
+
+    return allChallenges.filter(
+      (challenge) => !completedIds.has(challenge.challengeId)
+    );
+  }, [allChallenges, completedChallenges]);
 
   const filteredFriends = useMemo(() => {
     const query = friendsSearchQuery.trim().toLowerCase();
@@ -362,6 +405,11 @@ const Profile = () => {
               <div className="profile-stat-label">Practice Sessions Loaded</div>
               <div className="profile-stat-value">{practiceLogs.length}</div>
             </div>
+
+            <div className="profile-stat">
+              <div className="profile-stat-label">Completed Challenges</div>
+              <div className="profile-stat-value">{completedChallenges.length}</div>
+            </div>
           </div>
         </div>
 
@@ -420,12 +468,102 @@ const Profile = () => {
   };
 
   const renderChallenges = () => {
+    if (!isOwnProfile) {
+      return (
+        <div className="profile-panel-empty">
+          Challenges are only fully visible on your own profile right now.
+        </div>
+      );
+    }
+
     return (
-      <div className="profile-panel-empty">
-        Challenges tab
-        <br />
-        🚧 Coming Soon 🚧
-      </div>
+      <>
+        <div className="profile-card">
+          <button
+            className="profile-primary-btn"
+            type="button"
+            onClick={() => navigate("/challenges")}
+          >
+            Open Challenge Page
+          </button>
+        </div>
+
+        {challengesLoading ? (
+          <div className="profile-panel-empty">
+            Loading challenges...
+          </div>
+        ) : (
+          <>
+            <div className="profile-card">
+              <div className="profile-section-title">In Progress Challenges</div>
+
+              {inProgressChallenges.length === 0 ? (
+                <div className="profile-panel-empty">
+                  No in-progress challenges right now.
+                </div>
+              ) : (
+                <div className="profile-list">
+                  {inProgressChallenges.map((challenge) => (
+                    <div
+                      key={challenge.challengeId}
+                      className="profile-list-card"
+                    >
+                      <div className="profile-list-card-title">
+                        {challenge.description}
+                      </div>
+
+                      <div className="profile-list-card-meta">
+                        {challenge.task} · Target: {challenge.targetNumber}
+                        {challenge.instrument ? ` · ${challenge.instrument}` : ""}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="profile-card">
+              <div className="profile-section-title">Completed Challenges</div>
+
+              {completedChallenges.length === 0 ? (
+                <div className="profile-panel-empty">
+                  No completed challenges yet.
+                </div>
+              ) : (
+                <div className="profile-list">
+                  {completedChallenges.map((item) => {
+                    const challenge = item.challenge;
+
+                    return (
+                      <div
+                        key={`${item.completion.challengeId}-${item.completion.completedAt}`}
+                        className="profile-list-card"
+                      >
+                        <div className="profile-list-card-title">
+                          {challenge?.description ?? "Unknown challenge"}
+                        </div>
+
+                        <div className="profile-list-card-meta">
+                          {challenge?.task ?? "Task unavailable"}
+                          {challenge?.targetNumber !== undefined
+                            ? ` · Target: ${challenge.targetNumber}`
+                            : ""}
+                          {challenge?.instrument ? ` · ${challenge.instrument}` : ""}
+                        </div>
+
+                        <div className="profile-list-card-body">
+                          Completed on{" "}
+                          {new Date(item.completion.completedAt).toLocaleString()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </>
     );
   };
 
