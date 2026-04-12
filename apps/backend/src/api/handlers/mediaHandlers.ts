@@ -11,7 +11,7 @@ import { createFriendsDAO } from "../../db/dao/factories/friendsDaoFactory";
 
 const mediaService = new MediaService(createMediaDAO());
 const practiceLogService = new PracticeLogService(createPracticeLogDAO());
-const userService = new UserService(createUserDAO());
+const userService = new UserService(createUserDAO(), createPracticeLogDAO(), createMediaDAO(), null as any, null as any, createFriendsDAO(), null as any, null as any, null as any);
 const friendsService = new FriendsService(createFriendsDAO());
 
 export async function createMedia(req: Request, practiceLogId: string) {
@@ -24,6 +24,7 @@ export async function createMedia(req: Request, practiceLogId: string) {
   }
   try {
     const body = await req.json();
+    console.log(`Creating media for practice log ${practiceLogId} with data:`, body);
     const media = await mediaService.createMedia(practiceLogId, body);
     return NextResponse.json({ media }, { status: 201 });
   } catch {

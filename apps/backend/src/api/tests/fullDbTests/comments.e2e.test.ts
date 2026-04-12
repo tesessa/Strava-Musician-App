@@ -61,7 +61,7 @@ describe('Comments Routes', () => {
       .set('Authorization', `Bearer ${testContext.tokens.friends_user}`)
       .send({ text: 'Nice work!' });
     expect(res.status).toBe(201);
-    testContext.comments = { commentId: res.body.commentId };
+    testContext.comments = { commentId: res.body.comment?.commentId };
   });
 
   it('lists comments for a practice log', async () => {
@@ -80,7 +80,7 @@ describe('Comments Routes', () => {
   it('deletes a comment', async () => {
     const res = await api.delete(`/comments/${testContext.comments.commentId}`)
       .set('Authorization', `Bearer ${testContext.tokens.friends_user}`);
-    expect([204,404]).toContain(res.status);
+    expect([204]).toContain(res.status);
     delete testContext.comments.commentId;
   });
 

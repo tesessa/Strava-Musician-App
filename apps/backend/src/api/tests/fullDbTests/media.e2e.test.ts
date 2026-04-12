@@ -25,19 +25,19 @@ describe('Media Routes', () => {
 
   it('should not add media without token', async () => {
     const res = await api.post(`/practice-logs/${testContext.practiceLogs.public.practiceLogId}/media`)
-      .send({ type: 'image', url: 'http://example.com/img.png' });
+      .send({ type: 'audio', url: 'http://example.com/audio.mp3' });
     expect(res.status).toBe(401);
   });
 
   it('adds media to a practice log', async () => {
     const res = await api.post(`/practice-logs/${testContext.practiceLogs.public.practiceLogId}/media`)
       .set('Authorization', `Bearer ${testContext.tokens.public_user}`)
-      .send({ type: 'image', url: 'http://example.com/img.png' });
+      .send({ type: 'audio', url: 'http://example.com/audio.mp3' });
     if (res.status !== 201) {
       console.log('Media creation error:', res.body);
     }
     expect(res.status).toBe(201);
-    testContext.media = { image: res.body.media };
+    testContext.media = { audio: res.body.media };
   });
 
   it('lists media for a practice log', async () => {
@@ -53,7 +53,7 @@ describe('Media Routes', () => {
   });
 
   it('deletes a media item', async () => {
-    const res = await api.delete(`/media/${testContext.media.image.mediaId}`)
+    const res = await api.delete(`/media/${testContext.media.audio.mediaId}`)
       .set('Authorization', `Bearer ${testContext.tokens.public_user}`);
     expect([204,404]).toContain(res.status);
   });
@@ -67,6 +67,6 @@ describe('Media Routes', () => {
     delete testContext.users.public_user;
     delete testContext.tokens.public_user;
     delete testContext.practiceLogs.public;
-    delete testContext.media.image;
+    delete testContext.media.audio;
   });
 });
