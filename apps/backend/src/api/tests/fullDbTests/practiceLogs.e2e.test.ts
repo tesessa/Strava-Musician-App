@@ -74,6 +74,19 @@ describe('Practice Logs Routes', () => {
     testContext.practiceLogs.private = res.body.practiceLog;
   });
 
+  it('lists the feed for a user', async () => {
+    const res = await api.get('/practice-logs/feed')
+      .set('Authorization', `Bearer ${testContext.tokens.public_user}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.practiceLogs)).toBe(true);
+    console.log('Feed practice logs:', res.body.practiceLogs);
+    // The public user's feed should include their own log and the friends-only log, but not the private log
+    const logIds = res.body.practiceLogs.map((log: any) => log.practiceLogId);
+    expect(logIds).toContain(testContext.practiceLogs.public.practiceLogId);
+    expect(logIds).toContain(testContext.practiceLogs.friends.practiceLogId);
+    expect(logIds).not.toContain(testContext.practiceLogs.private.practiceLogId);
+  });
+
   it('gets a practice log by ID', async () => {
     // Using public_user to get their own log, which should be accessible
     const res = await api.get(`/practice-logs/${testContext.practiceLogs.public.practiceLogId}`)
