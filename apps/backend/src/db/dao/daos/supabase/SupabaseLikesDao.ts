@@ -37,4 +37,8 @@ export class SupabaseLikesDao implements LikesDAO {
           : new Date(l.createdAt).toISOString(),
     }));
   }
+
+  async clearAll(): Promise<void> {
+    await db("Likes").del();
+  }
 }

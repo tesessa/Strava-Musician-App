@@ -1,6 +1,6 @@
 import { MediaDAO } from "../daos/mediaDao";
-import { MediaDao } from "../inMemoryDaos/inMemoryMediaDao";
+import { SupabaseMediaDao } from "../daos/supabase/SupabaseMediaDao";
 
 export function createMediaDAO(): MediaDAO {
-  return MediaDao;
+  return new SupabaseMediaDao();
 }

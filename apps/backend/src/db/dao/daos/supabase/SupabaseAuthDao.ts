@@ -118,4 +118,8 @@ export class SupabaseAuthDao implements AuthDAO {
       .where("expires_at", "<", new Date())
       .del();
   }
+
+  async clearAll(): Promise<void> {
+    await db<AuthSession>("AuthSession").del();
+  }
 }

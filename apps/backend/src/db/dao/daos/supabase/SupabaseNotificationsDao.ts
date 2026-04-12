@@ -82,4 +82,8 @@ export class SupabaseNotificationsDao implements NotificationsDAO {
           : new Date(notification.createdAt).toISOString(),
     };
   }
+
+  async clearAll(): Promise<void> {
+    await db("Notifications").del();
+  }
 }

@@ -124,4 +124,8 @@ export class SupabaseUserDao implements UserDAO {
 
     return users.map(mapSupabaseUserToUser);
   }
+
+  async clearAll(): Promise<void> {
+    await db("User").del();
+  }
 }

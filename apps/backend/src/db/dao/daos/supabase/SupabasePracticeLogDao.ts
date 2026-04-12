@@ -167,4 +167,8 @@ export class SupabasePracticeLogDAO implements PracticeLogDAO {
       .delete();
     return deletedCount > 0;
   }
+
+  async clearAll(): Promise<void> {
+    await db("PracticeLog").del();
+  }
 }

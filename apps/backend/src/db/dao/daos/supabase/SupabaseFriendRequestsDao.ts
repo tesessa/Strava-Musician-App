@@ -133,4 +133,8 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
       respondedAt: new Date().toISOString(),
     });
   }
+
+  async clearAll(): Promise<void> {
+    await db("FriendRequest").del();
+  }
 }

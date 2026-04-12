@@ -53,4 +53,8 @@ export class SupabaseCommentsDao implements CommentsDAO {
   async removeComment(commentId: string): Promise<void> {
     await db("Comments").where({ commentId }).del();
   }
+
+  async clearAll(): Promise<void> {
+    await db("Comments").del();
+  }
 }

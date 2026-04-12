@@ -131,4 +131,8 @@ export class SupabaseFriendsDao implements FriendsDAO {
       .first();
     return !!result;
   }
+
+  async clearAll(): Promise<void> {
+    await db("Friend").del();
+  }
 }

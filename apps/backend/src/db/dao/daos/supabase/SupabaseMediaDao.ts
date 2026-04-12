@@ -65,4 +65,8 @@ export class SupabaseMediaDao implements MediaDAO {
   async deleteMedia(mediaId: string): Promise<void> {
     await db("Media").where({ mediaId }).del();
   }
+
+  async clearAll(): Promise<void> {
+    await db("Media").del();
+  }
 }

@@ -1,6 +1,6 @@
-import { CommentsDao } from "../inMemoryDaos/inMemoryCommentsDao";
+import { SupabaseCommentsDao } from "../daos/supabase/SupabaseCommentsDao";
 import type { CommentsDAO } from "../daos/commentsDao";
 
 export function createCommentsDAO(): CommentsDAO {
-  return CommentsDao;
+  return new SupabaseCommentsDao();
 }

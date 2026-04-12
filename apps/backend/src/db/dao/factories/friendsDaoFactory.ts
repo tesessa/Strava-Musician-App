@@ -1,6 +1,6 @@
 import { FriendsDAO } from "../daos/friendsDao";
-import { FriendsDao } from "../inMemoryDaos/inMemoryFriendsDao";
+import { SupabaseFriendsDao } from "../daos/supabase/SupabaseFriendsDao";
 
 export function createFriendsDAO(): FriendsDAO {
-  return FriendsDao;
+  return new SupabaseFriendsDao();
 }
