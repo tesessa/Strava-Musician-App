@@ -2,8 +2,26 @@ import { NextResponse } from "next/server";
 import { UserService } from "../services/userServices";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 import { authenticateToken, authenticateTokenToUserId } from "../utils/authenticateToken";
+import { createPracticeLogDAO } from "@/db/dao/factories/practiceLogDaoFactory";
+import { createMediaDAO } from "@/db/dao/factories/mediaDaoFactory";
+import { createCommentsDAO } from "@/db/dao/factories/commentsDaoFactory";
+import { createLikesDAO } from "@/db/dao/factories/likesDaoFactory";
+import { createFriendsDAO } from "@/db/dao/factories/friendsDaoFactory";
+import { createFriendRequestsDAO } from "@/db/dao/factories/friendRequestsDaoFactory";
+import { createNotificationsDao } from "@/db/dao/factories/notificationsDaoFactory";
+import { createChallengesDao } from "@/db/dao/factories/challengesDaoFactory";
 
-const userService = new UserService(createUserDAO());
+const userService = new UserService(
+  createUserDAO(),
+  createPracticeLogDAO(),
+  createMediaDAO(),
+  createCommentsDAO(),
+  createLikesDAO(),
+  createFriendsDAO(),
+  createFriendRequestsDAO(),
+  createNotificationsDao(),
+  createChallengesDao()
+);
 
 export const getUser = async (req: Request, userId: string) => {
   const { error } = await authenticateTokenToUserId(req, userId);

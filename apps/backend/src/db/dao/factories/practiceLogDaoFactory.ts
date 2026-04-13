@@ -1,6 +1,6 @@
 import type { PracticeLogDAO } from "../daos/practiceLogDao";
-import { PracticeLogDao } from "../inMemoryDaos/inMemoryPracticeLogDao";
+import { SupabasePracticeLogDAO } from "../daos/supabase/SupabasePracticeLogDao";
 
 export function createPracticeLogDAO(): PracticeLogDAO {
-  return PracticeLogDao;
+  return new SupabasePracticeLogDAO();
 }

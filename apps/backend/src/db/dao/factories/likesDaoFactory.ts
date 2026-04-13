@@ -1,6 +1,6 @@
-import { LikesDao } from "../inMemoryDaos/inMemoryLikesDao";
+import { SupabaseLikesDao } from "../daos/supabase/SupabaseLikesDao";
 import type { LikesDAO } from "../daos/likesDao";
 
 export function createLikesDAO(): LikesDAO {
-  return LikesDao;
+  return new SupabaseLikesDao();
 }

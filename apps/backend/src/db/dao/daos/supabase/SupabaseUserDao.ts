@@ -25,17 +25,12 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
 }
 
 export class SupabaseUserDao implements UserDAO {
-  async createUser(
-    user: Omit<User, "userId" | "createdAt" | "updatedAt">,
-    passwordHash: string,
-  ) {
-    const id = randomUUID();
-    const now = new Date();
+  async createUser(user: User, passwordHash: string) {
     const [createdUser] = await db<SupabaseUser>("User")
       .insert({
-        id: id,
-        created_at: now,
-        updated_at: now,
+        id: user.userId,
+        created_at: new Date(user.createdAt),
+        updated_at: new Date(user.updatedAt),
         email: user.email,
         username: user.username,
         password: passwordHash,
@@ -128,5 +123,9 @@ export class SupabaseUserDao implements UserDAO {
       .orWhereILike("email", `%${query}%`);
 
     return users.map(mapSupabaseUserToUser);
+  }
+
+  async clearAll(): Promise<void> {
+    await db("User").del();
   }
 }

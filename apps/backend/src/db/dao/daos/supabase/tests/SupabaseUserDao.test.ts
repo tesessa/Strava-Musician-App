@@ -2,6 +2,15 @@ import db from "../config/SupabaseKnexConnection";
 import { SupabaseUserDao } from "../SupabaseUserDao";
 import { User } from "@strava-musician-app/shared";
 import { randomUUID } from "crypto";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  it,
+} from "@jest/globals";
 
 describe("SupabaseUserDao", () => {
   const userDao = new SupabaseUserDao();
