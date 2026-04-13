@@ -32,22 +32,36 @@ export class FriendService {
     pageSize = 25,
   ): Promise<PendingFriendRequestWithProfile[]> {
     const requests = await this.server.getIncomingFriendRequests({ pageSize });
+    console.log("Loaded incoming friend requests:", requests);
     const usersById = await this.loadUsersById(
       requests.map((request) => request.senderId),
     );
-
+    console.log("Loaded users for incoming friend requests:", usersById);
     return requests.map((request) => ({
       request,
       user: usersById.get(request.senderId) ?? null,
     }));
   }
 
+  async getOutgoingFriendRequestsWithProfiles(
+    pageSize = 25,
+  ): Promise<PendingFriendRequestWithProfile[]> {
+    const requests = await this.server.getOutgoingFriendRequests({ pageSize });
+    const usersById = await this.loadUsersById(
+      requests.map((request) => request.receiverId),
+    );
+    return requests.map((request) => ({
+      request,
+      user: usersById.get(request.receiverId) ?? null,
+    }));
+  }
+
   /**
    * Removes a pending incoming request from the current user's queue.
-   * Backend operation is reject, while UI language uses cancel.
+   * Backend operation is delete, while UI language uses cancel.
    */
   async cancelPendingFriendRequest(requestId: string): Promise<void> {
-    await this.server.rejectFriendRequest(requestId);
+    await this.server.cancelFriendRequest(requestId);
   }
 
   private async loadUsersById(userIds: string[]): Promise<Map<string, User>> {
@@ -66,5 +80,13 @@ export class FriendService {
     return new Map(
       resolved.filter((entry): entry is readonly [string, User] => entry !== null),
     );
+  }
+
+  async acceptFriendRequest(requestId: string): Promise<void> {
+    await this.server.acceptFriendRequest(requestId);
+  }
+
+  async rejectFriendRequest(requestId: string): Promise<void> {
+    await this.server.rejectFriendRequest(requestId);
   }
 }

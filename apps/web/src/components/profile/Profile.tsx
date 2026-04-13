@@ -52,7 +52,10 @@ const Profile = () => {
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [friendsSearchQuery, setFriendsSearchQuery] = useState("");
   const [friends, setFriends] = useState<FriendWithProfile[]>([]);
-  const [pendingFriendRequests, setPendingFriendRequests] = useState<
+  const [incomingFriendRequests, setIncomingFriendRequests] = useState<
+    PendingFriendRequestWithProfile[]
+  >([]);
+  const [outgoingFriendRequests, setOutgoingFriendRequests] = useState<
     PendingFriendRequestWithProfile[]
   >([]);
   const [cancellingPendingRequestIds, setCancellingPendingRequestIds] = useState<
@@ -154,13 +157,15 @@ const Profile = () => {
       setFriendsLoading(true);
       setErrorMessage("");
 
-      const [friendsResult, pendingRequestsResult] = await Promise.all([
+      const [friendsResult, incomingRequestsResult, outgoingRequestsResult] = await Promise.all([
         friendService.getFriendsWithProfiles(100),
         friendService.getIncomingFriendRequestsWithProfiles(25),
+        friendService.getOutgoingFriendRequestsWithProfiles(25),
       ]);
 
       setFriends(friendsResult);
-      setPendingFriendRequests(pendingRequestsResult);
+      setIncomingFriendRequests(incomingRequestsResult);
+      setOutgoingFriendRequests(outgoingRequestsResult);
     } catch (error) {
       console.error("Failed to load friends:", error);
       setErrorMessage("Failed to load friends.");
@@ -180,29 +185,64 @@ const Profile = () => {
     });
   }, [friends, friendsSearchQuery]);
 
-  const handleCancelPendingRequest = async (requestId: string) => {
+  // Cancel outgoing request
+  const handleCancelOutgoingRequest = async (requestId: string) => {
     if (!requestId || cancellingPendingRequestIds.has(requestId)) {
       return;
     }
 
-    const previous = pendingFriendRequests;
+    const previous = outgoingFriendRequests;
     setCancellingPendingRequestIds((prev) => new Set(prev).add(requestId));
-    setPendingFriendRequests((prev) =>
+    setOutgoingFriendRequests((prev) =>
       prev.filter((item) => item.request.requestId !== requestId),
     );
 
     try {
       await friendService.cancelPendingFriendRequest(requestId);
     } catch (error) {
-      console.error("Failed to cancel pending friend request:", error);
-      setPendingFriendRequests(previous);
-      setErrorMessage("Failed to cancel pending friend request.");
+      console.error("Failed to cancel outgoing friend request:", error);
+      setOutgoingFriendRequests(previous);
+      setErrorMessage("Failed to cancel outgoing friend request.");
     } finally {
       setCancellingPendingRequestIds((prev) => {
         const next = new Set(prev);
         next.delete(requestId);
         return next;
       });
+    }
+  };
+
+  // Accept incoming request
+  const handleAcceptIncomingRequest = async (requestId: string) => {
+    if (!requestId) return;
+    const previous = incomingFriendRequests;
+    setIncomingFriendRequests((prev) =>
+      prev.filter((item) => item.request.requestId !== requestId),
+    );
+    try {
+      await friendService.acceptFriendRequest(requestId);
+      // Optionally reload friends list
+      void loadFriends();
+    } catch (error) {
+      console.error("Failed to accept friend request:", error);
+      setIncomingFriendRequests(previous);
+      setErrorMessage("Failed to accept friend request.");
+    }
+  };
+
+  // Reject incoming request
+  const handleRejectIncomingRequest = async (requestId: string) => {
+    if (!requestId) return;
+    const previous = incomingFriendRequests;
+    setIncomingFriendRequests((prev) =>
+      prev.filter((item) => item.request.requestId !== requestId),
+    );
+    try {
+      await friendService.rejectFriendRequest(requestId);
+    } catch (error) {
+      console.error("Failed to reject friend request:", error);
+      setIncomingFriendRequests(previous);
+      setErrorMessage("Failed to reject friend request.");
     }
   };
 
@@ -458,15 +498,16 @@ const Profile = () => {
           />
         </div>
 
+        {/* Outgoing Friend Requests */}
         <div className="profile-friends-section">
-          <div className="profile-section-title">Pending Friend Requests</div>
-          {pendingFriendRequests.length === 0 ? (
+          <div className="profile-section-title">Outgoing Friend Requests</div>
+          {outgoingFriendRequests.length === 0 ? (
             <div className="profile-friends-empty">
-              No pending friend requests.
+              No outgoing friend requests.
             </div>
           ) : (
             <div className="profile-friends-list">
-              {pendingFriendRequests.map((item) => (
+              {outgoingFriendRequests.map((item) => (
                 <div
                   key={item.request.requestId}
                   className="profile-friends-item pending"
@@ -479,7 +520,7 @@ const Profile = () => {
                       className="profile-friends-item-action"
                       type="button"
                       onClick={() =>
-                        handleCancelPendingRequest(item.request.requestId)
+                        handleCancelOutgoingRequest(item.request.requestId)
                       }
                       disabled={cancellingPendingRequestIds.has(
                         item.request.requestId,
@@ -491,8 +532,7 @@ const Profile = () => {
                     </button>
                   </div>
                   <div className="profile-friends-item-meta">
-                    Requested{" "}
-                    {new Date(item.request.createdAt).toLocaleString()}
+                    Sent {new Date(item.request.createdAt).toLocaleString()}
                   </div>
                 </div>
               ))}
@@ -500,6 +540,53 @@ const Profile = () => {
           )}
         </div>
 
+        {/* Incoming Friend Requests */}
+        <div className="profile-friends-section">
+          <div className="profile-section-title">Incoming Friend Requests</div>
+          {incomingFriendRequests.length === 0 ? (
+            <div className="profile-friends-empty">
+              No incoming friend requests.
+            </div>
+          ) : (
+            <div className="profile-friends-list">
+              {incomingFriendRequests.map((item) => (
+                <div
+                  key={item.request.requestId}
+                  className="profile-friends-item pending"
+                >
+                  <div className="profile-friends-item-row">
+                    <div className="profile-friends-item-name">
+                      {item.user?.username ?? "Unknown user"}
+                    </div>
+                    <button
+                      className="profile-friends-item-action"
+                      type="button"
+                      onClick={() =>
+                        handleAcceptIncomingRequest(item.request.requestId)
+                      }
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="profile-friends-item-action"
+                      type="button"
+                      onClick={() =>
+                        handleRejectIncomingRequest(item.request.requestId)
+                      }
+                    >
+                      Reject
+                    </button>
+                  </div>
+                  <div className="profile-friends-item-meta">
+                    Received {new Date(item.request.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Current Friends */}
         <div className="profile-friends-section">
           <div className="profile-section-title">Current Friends</div>
           {filteredFriends.length === 0 ? (

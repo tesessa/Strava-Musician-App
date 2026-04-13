@@ -261,6 +261,7 @@ export class ServerFacade implements KodaServerApi {
   }
 
   async acceptFriendRequest(requestId: string): Promise<void> {
+    console.log("Accepting friend request with ID:", requestId);
     return this.post<undefined, void>(
       `/friend-requests/${requestId}/accept`,
       undefined,
@@ -268,6 +269,7 @@ export class ServerFacade implements KodaServerApi {
   }
 
   async rejectFriendRequest(requestId: string): Promise<void> {
+    console.log("Rejecting friend request with ID:", requestId);
     return this.post<undefined, void>(
       `/friend-requests/${requestId}/reject`,
       undefined,
@@ -275,6 +277,7 @@ export class ServerFacade implements KodaServerApi {
   }
 
   async cancelFriendRequest(requestId: string): Promise<void> {
+    console.log("Canceling friend request with ID:", requestId);
     return this.delete<void>(`/friend-requests/${requestId}`);
   }
 
