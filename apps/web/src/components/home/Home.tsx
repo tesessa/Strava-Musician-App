@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search } from "lucide-react";
 import type {
@@ -190,41 +190,37 @@ const Home = () => {
     }
   };
 
-  const closeSearch = () => {
+  const closeSearch = useCallback(() => {
     setSearchOpen(false);
     setSearchText("");
     setSearchResults([]);
-  };
+  }, []);
 
-  const handleLike = async (practiceLogId: string) => {
+  const handleLike = useCallback(async (practiceLogId: string) => {
     try {
-      // Find if already liked (would need to track this in the UI state or fetch from server)
       await practiceLogService.likePracticeLog(practiceLogId);
-      await loadFeed();
     } catch (error) {
       console.error("Failed to like:", error);
     }
-  };
+  }, []);
 
-  const handleUnlike = async (practiceLogId: string) => {
+  const handleUnlike = useCallback(async (practiceLogId: string) => {
     try {
       await practiceLogService.unlikePracticeLog(practiceLogId);
-      await loadFeed();
     } catch (error) {
       console.error("Failed to unlike:", error);
     }
-  };
+  }, []);
 
-  const handleComment = async (practiceLogId: string, text: string) => {
+  const handleComment = useCallback(async (practiceLogId: string, text: string) => {
     try {
       await practiceLogService.commentOnPracticeLog(practiceLogId, text);
-      await loadFeed();
     } catch (error) {
       console.error("Failed to comment on practice log:", error);
     }
-  };
+  }, []);
 
-  const handleShare = async (feedLog: PracticeLogWithAuthor) => {
+  const handleShare = useCallback(async (feedLog: PracticeLogWithAuthor) => {
     const title = feedLog.title?.trim() || "Practice log";
     const textParts = [feedLog.title, feedLog.postText].filter(
       (s) => typeof s === "string" && s.trim().length > 0,
@@ -257,9 +253,9 @@ const Home = () => {
       console.error("Share fallback failed:", error);
       alert("Sharing isn’t supported in this browser.");
     }
-  };
+  }, []);
 
-  const handleDelete = async (practiceLogId: string) => {
+  const handleDelete = useCallback(async (practiceLogId: string) => {
     try {
       await practiceLogService.deletePracticeLog(practiceLogId);
       setPracticeLogs((prev) => prev.filter((log) => log.practiceLogId !== practiceLogId));
@@ -267,16 +263,22 @@ const Home = () => {
       console.error("Failed to delete practice log:", error);
       alert("Failed to delete practice log");
     }
-  };
+  }, []);
 
-  const handleEdit = (practiceLogId: string) => {
-    navigate(`/practice-log/edit/${practiceLogId}`);
-  };
+  const handleEdit = useCallback(
+    (practiceLogId: string) => {
+      navigate(`/practice-log/edit/${practiceLogId}`);
+    },
+    [navigate],
+  );
 
-  const handleUserClick = (userId: string) => {
-    navigate(`/profile/${userId}`);
-    closeSearch();
-  };
+  const handleUserClick = useCallback(
+    (userId: string) => {
+      navigate(`/profile/${userId}`);
+      closeSearch();
+    },
+    [navigate, closeSearch],
+  );
 
   const handleFollowUser = async (userId: string) => {
     try {

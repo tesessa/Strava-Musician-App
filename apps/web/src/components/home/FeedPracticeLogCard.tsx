@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import type { PracticeLogWithAuthor, Media } from "@strava-musician-app/shared";
 import "./index.css";
 import { userService, practiceLogService } from "../../model";
@@ -15,7 +15,7 @@ type FeedPracticeLogCardProps = {
   onProfileClick?: (userId: string) => void;
 };
 
-const FeedPracticeLogCard = ({
+function FeedPracticeLogCard({
   practiceLog,
   currentUserId,
   onLike,
@@ -25,7 +25,7 @@ const FeedPracticeLogCard = ({
   onDelete,
   onEdit,
   onProfileClick,
-}: FeedPracticeLogCardProps) => {
+}: FeedPracticeLogCardProps) {
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [isLiked, setIsLiked] = useState(false); // This should come from server data eventually
@@ -378,6 +378,6 @@ const FeedPracticeLogCard = ({
       )}
     </article>
   );
-};
+}
 
-export default FeedPracticeLogCard;
+export default memo(FeedPracticeLogCard);
