@@ -1,6 +1,7 @@
-essentia
-IPython
-matplotlib
+librosa>=0.10.0
+soundfile
+numpy
+python-dotenv
 openai
 fastapi
 uvicorn

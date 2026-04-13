@@ -11,9 +11,29 @@ import {
   idbDelete,
 } from "./practiceStorage";
 
+/** Shown when AI feedback can’t be loaded; rotates so the copy stays fresh and actionable. */
+const AI_ERROR_FEEDBACK_MESSAGES: readonly string[] = [
+  "Try recording in a slightly quieter space next time so you can really hear how your note attacks line up with the pulse.",
+  "Slow the phrase down and aim for each note to land evenly on the beat; speed comes after the groove feels easy.",
+  "Try tapping your foot on beats 1 and 3 (or 2 and 4) while you play—it’s a simple way to feel where the pulse wants to sit.",
+  "Listen back once and hum the melody without playing; you’ll often notice small rushing or dragging before you fix it on the instrument.",
+  "Spend a minute on long, relaxed quarter notes or whole notes before a hard part—steady breath and motion help steady rhythm.",
+  "If a section feels rushed, break it into two-bar chunks and loop each until it breathes, then stitch them together.",
+  "Practice with a metronome on the off-beats only (clicks on “and”)—it forces you to own the downbeats yourself.",
+  "Accent the backbeat lightly in your strumming or picking; it can make your internal clock more obvious without playing louder overall.",
+  "Record a very short clip—just four bars—and listen for the first note of each bar; aligning those anchors cleans up everything between them.",
+  "When you try again, count a full measure out loud before you start; a clear “one” gives your hands and ears the same starting line.",
+];
+
+let aiErrorFeedbackRoundRobinIndex = 0;
+
+function getNextAiErrorFeedback(): string {
+  const i = aiErrorFeedbackRoundRobinIndex % AI_ERROR_FEEDBACK_MESSAGES.length;
+  aiErrorFeedbackRoundRobinIndex += 1;
+  return AI_ERROR_FEEDBACK_MESSAGES[i]!;
+}
 
 export function usePracticeMedia() {
-  const AI_GENERAL_ERROR = "Great job! You’re making steady progress. Keep going!";
   const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001";
   const [recordings, setRecordings]       = useState<RecordingEntry[]>([]);
   const [uploads, setUploads]             = useState<UploadedFile[]>([]);
@@ -224,7 +244,7 @@ export function usePracticeMedia() {
       );
     } catch (err) {
       console.error("AI feedback request failed:", err);
-      setAiErrorById((prev) => ({ ...prev, [id]: AI_GENERAL_ERROR }));
+      setAiErrorById((prev) => ({ ...prev, [id]: getNextAiErrorFeedback() }));
     } finally {
       setAiLoadingById((prev) => ({ ...prev, [id]: false }));
     }

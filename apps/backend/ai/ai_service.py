@@ -1,14 +1,10 @@
-import essentia
-import essentia.standard
-import essentia.streaming
-
-import IPython
-from pylab import plot, show, figure, imshow
-import matplotlib.pyplot as plt
-
 import os
-import sys
+from pathlib import Path
+
 import requests
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 from openai import OpenAI
 
@@ -20,13 +16,26 @@ import shutil
 
 import uvicorn
 
-def beat_analysis(audio_file):
-    loader = essentia.standard.MonoLoader(filename=audio_file)
-    audio = loader()
+import librosa
 
-    rhythm_extractor = essentia.standard.RhythmExtractor2013(method="multifeature")
-    bpm, beats, beats_confidence, _, beats_intervals = rhythm_extractor(audio)
 
+def beat_analysis(audio_file: str):
+    """
+    BPM and beat times using librosa (pure Python stack; works on Windows).
+    Essentia is not reliably installable via pip on Windows.
+    """
+    y, sr = librosa.load(audio_file, mono=True)
+    onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+    tempo, beat_frames = librosa.beat.beat_track(onset_envelope=onset_env, sr=sr)
+    beat_times = librosa.frames_to_time(beat_frames, sr=sr)
+    bpm = float(np.atleast_1d(tempo)[0])
+    beats = np.asarray(beat_times, dtype=float)
+    if beat_frames.size > 0:
+        strengths = onset_env[np.minimum(beat_frames, onset_env.shape[0] - 1)]
+        denom = float(np.max(onset_env)) + 1e-8
+        beats_confidence = float(np.clip(np.mean(strengths) / denom, 0.0, 1.0))
+    else:
+        beats_confidence = 0.0
     return bpm, beats, beats_confidence
 
 def send_prompt(client, prompt: str, model: str = "gpt-4o-mini") -> str:
