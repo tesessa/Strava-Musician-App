@@ -36,6 +36,8 @@ export function usePracticeMedia() {
   const videoChunks      = useRef<Blob[]>([]);
   const videoPreviewRef  = useRef<HTMLVideoElement>(null);
   const uploadRef        = useRef<HTMLInputElement>(null);
+  const mediaUploadRef = useRef<HTMLInputElement>(null);
+
 
   // restores data from indexDB on rerender
   useEffect(() => {
@@ -275,6 +277,34 @@ export function usePracticeMedia() {
     e.target.value = "";
   };
 
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);                                                                                                                                                                  
+    for (const file of files) {
+      const isAudio = file.type.startsWith("audio/");                                                                                                                                                                
+      const isVideo = file.type.startsWith("video/");
+      if (!isAudio && !isVideo) continue;                                                                                                                                                                            
+                  
+      const kind: "audio" | "video" = isAudio ? "audio" : "video";                                                                                                                                                   
+      const id = `up-${crypto.randomUUID()}`;
+      const blob = new Blob([await file.arrayBuffer()], { type: file.type });                                                                                                                                        
+      const url = URL.createObjectURL(blob);                                                                                                                                                                         
+      await idbPut(id, blob);
+      setRecordings((prev) => [                                                                                                                                                                                      
+        ...prev,  
+        {
+          id,
+          type: kind,
+          blob,                                                                                                                                                                                                      
+          url,
+          durationSec: 0,                                                                                                                                                                                            
+          aiRequested: false,
+          savedForPracticeLog: false,
+        },
+      ]);
+    }
+    e.target.value = "";
+  }; 
+
   const deleteUpload = async (id: string) => {
     setUploads((prev) => {
       const entry = prev.find((u) => u.id === id);
@@ -298,10 +328,12 @@ export function usePracticeMedia() {
     // refs
     videoPreviewRef,
     uploadRef,
+    mediaUploadRef,
     // actions
     startAudio,  stopAudio,
     startVideo,  stopVideo,
     handleUpload,
+    handleMediaUpload,
     toggleAI,    toggleAIUpload,  toggleSaveForPracticeLog,
     deleteRecording, deleteUpload,
   };

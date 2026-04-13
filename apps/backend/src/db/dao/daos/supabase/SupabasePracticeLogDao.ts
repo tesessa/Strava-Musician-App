@@ -107,19 +107,35 @@ export class SupabasePracticeLogDAO implements PracticeLogDAO {
       cursor = { uuid: lastLog.practiceLogId, createdAt: lastLog.createdAt };
     }
 
+    const friendRows = await db("Friend")                                                                                                                                                                              
+      .select("friendId")
+      .where("userId", user.userId);                                                                                                                                                                                   
+    const friendIds = friendRows.map((f: any) => f.friendId);
     // join with friend table to get friend's posts
     let query = db<PracticeLog>("PracticeLog")
-      .join("Friend", function () {
-        this.on("PracticeLog.userId", "=", "Friend.friendId").andOnVal(
-          "Friend.userId",
-          "=",
-          user.userId,
-        );
-      })
-      .select("PracticeLog.*")
-      .orderBy("createdAt", "desc")
-      .orderBy("practiceLogId", "desc")
-      .limit(pageSize);
+         .select("*")                                                                                                                                                                                                     
+    .whereIn("userId", [user.userId, ...friendIds])
+    .orderBy("createdAt", "desc")                                                                                                                                                                                    
+    .orderBy("practiceLogId", "desc")
+    .limit(pageSize);                                                                                                                                                                                                 
+      // .where("PraticeLog.userId", user.userId)
+      // .orWhereExists(function () {
+      //   this.select("*")
+      //     .from("Friend")
+      //     .where("Friend.userId", user.userId)
+      //     .whereRaw('"Friend"."friendId" = "PracticeLog"."userId"')
+      // })
+      // .join("Friend", function () {
+      //   this.on("PracticeLog.userId", "=", "Friend.friendId").andOnVal(
+      //     "Friend.userId",
+      //     "=",
+      //     user.userId,
+      //   );
+      // })
+      // .select("PracticeLog.*")
+      // .orderBy("createdAt", "desc")
+      // .orderBy("practiceLogId", "desc")
+      // .limit(pageSize);
 
     if (cursor) {
       query = query.where(function () {
@@ -161,12 +177,22 @@ export class SupabasePracticeLogDAO implements PracticeLogDAO {
     return updatedLog;
   }
 
-  async deletePracticeLog(practiceLogId: string): Promise<boolean> {
-    const deletedCount = await db("PracticeLog")
-      .where({ practiceLogId: practiceLogId })
-      .delete();
+  async deletePracticeLog(practiceLogId: string): Promise<boolean> {                                                                                                                                                 
+    await db("Media").where({ practiceLogId }).del();                                                                                                                                                                
+    await db("Likes").where({ practiceLogId }).del();                                                                                                                                                                
+    await db("Comments").where({ practiceLogId }).del();                                                                                                                                                             
+    const deletedCount = await db("PracticeLog")                                                                                                                                                                     
+      .where({ practiceLogId })
+      .delete();                                                                                                                                                                                                     
     return deletedCount > 0;
   }
+
+  // async deletePracticeLog(practiceLogId: string): Promise<boolean> {
+  //   const deletedCount = await db("PracticeLog")
+  //     .where({ practiceLogId: practiceLogId })
+  //     .delete();
+  //   return deletedCount > 0;
+  // }
 
   async clearAll(): Promise<void> {
     await db("PracticeLog").del();

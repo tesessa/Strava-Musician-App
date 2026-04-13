@@ -435,7 +435,15 @@ const Home = () => {
                       type="button"
                     >
                       <div className="user-result-avatar">
-                        {user.username[0].toUpperCase()}
+                        {user.profilePhoto ? (
+                          <img
+                            src={user.profilePhoto}
+                            alt={user.username}
+                            className="user-result-avatar-img"
+                          />
+                        ) : (
+                          user.username[0].toUpperCase()
+                        )}
                       </div>
                       <div className="user-result-info">
                         <div className="user-result-name">{user.username}</div>

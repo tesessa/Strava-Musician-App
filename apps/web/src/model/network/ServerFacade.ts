@@ -61,7 +61,7 @@ export class ServerFacade implements KodaServerApi {
   private setAuthToken(token: string): void {
     this.authToken = token;
     if (typeof window !== "undefined") {
-      localStorage.setItem("authToken", token);
+      sessionStorage.setItem("authToken", token);
     }
   }
 
@@ -70,7 +70,7 @@ export class ServerFacade implements KodaServerApi {
       return;
     }
 
-    const token = localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("authToken");
     if (token) {
       this.authToken = token;
     }
@@ -79,7 +79,7 @@ export class ServerFacade implements KodaServerApi {
   private clearAuthToken(): void {
     this.authToken = null;
     if (typeof window !== "undefined") {
-      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken");
     }
   }
 

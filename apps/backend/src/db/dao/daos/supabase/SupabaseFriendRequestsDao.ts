@@ -31,6 +31,7 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
     let query = db("FriendRequest")
       .select("*")
       .where("receiverId", userId)
+      .where("status", "pending")
       .orderBy("createdAt", "desc")
       .orderBy("requestId", "desc")
       .limit(pageSize);
@@ -118,6 +119,10 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
         friendsSince: now,
       },
     ]);
+    // Cancel any reverse pending request so the other user's notification clears
+    await db("FriendRequest")
+      .where({ senderId: request.receiverId, receiverId: request.senderId, status: "pending" })
+      .update({ status: "canceled", respondedAt: now });
   }
 
   async rejectRequest(requestId: string): Promise<void> {

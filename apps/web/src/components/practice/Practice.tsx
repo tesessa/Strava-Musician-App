@@ -34,11 +34,13 @@ export default function Practice() {
     aiLoadingById,
     videoPreviewRef,
     uploadRef,
+    mediaUploadRef,
     startAudio,
     stopAudio,
     startVideo,
     stopVideo,
     handleUpload,
+    handleMediaUpload,
     toggleAI,
     toggleAIUpload,
     toggleSaveForPracticeLog,
@@ -358,6 +360,22 @@ export default function Practice() {
               <span className="rec-icon"></span>
               <span>Upload Sheet Music</span>
             </button>
+              <button                                                                                                                                                                                                            
+                className="rec-btn upload-btn"
+                onClick={() => mediaUploadRef.current?.click()}                                                                                                                                                                  
+              >                                                                                                                                                                                                                  
+                <span className="rec-icon"></span>
+                <span>Upload Audio/Video</span>                                                                                                                                                                                  
+              </button>                                                                                                                                                                                                          
+              <input   
+                ref={mediaUploadRef}                                                                                                                                                                                             
+                type="file"         
+                accept="audio/*,video/*"
+                multiple                
+                className="visually-hidden-upload-input"                                                                                                                                                                         
+                title="Upload audio or video"           
+                onChange={handleMediaUpload}                                                                                                                                                                                     
+              /> 
             <input
               ref={uploadRef}
               type="file"

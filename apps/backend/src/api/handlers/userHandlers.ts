@@ -24,7 +24,8 @@ const userService = new UserService(
 );
 
 export const getUser = async (req: Request, userId: string) => {
-  const { error } = await authenticateTokenToUserId(req, userId);
+  // const { error } = await authenticateTokenToUserId(req, userId);
+  const { error } = await authenticateToken(req);
   if (error) return error;
 
   try {

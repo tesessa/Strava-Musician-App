@@ -61,17 +61,18 @@ export class MediaUploadService {
       { type: entry.blob.type }
     );
 
-    console.log(`[MediaUploadService] Uploading ${entry.kind} file:`, file.name);
+    const mediaUrl = await this.blobToDateUrl(entry.blob);
+    // console.log(`[MediaUploadService] Uploading ${entry.kind} file:`, file.name);
 
-    // Upload to storage (fake or real based on DI)
-    let mediaUrl: string;
-    if (entry.kind === "audio") {
-      mediaUrl = await this.mediaApi.uploadPracticeLogAudio(practiceLogId, file);
-    } else {
-      mediaUrl = await this.mediaApi.uploadPracticeLogVideo(practiceLogId, file);
-    }
+    // // Upload to storage (fake or real based on DI)
+    // let mediaUrl: string;
+    // if (entry.kind === "audio") {
+    //   mediaUrl = await this.mediaApi.uploadPracticeLogAudio(practiceLogId, file);
+    // } else {
+    //   mediaUrl = await this.mediaApi.uploadPracticeLogVideo(practiceLogId, file);
+    // }
 
-    console.log(`[MediaUploadService] Upload successful: ${mediaUrl}`);
+    // console.log(`[MediaUploadService] Upload successful: ${mediaUrl}`);
 
     // Create media record in database
     const mediaRequest: CreateMediaRequest = {
@@ -120,5 +121,14 @@ export class MediaUploadService {
    */
   getProfileImageUrl(userId: string, keyOrFilename: string): string {
     return this.mediaApi.getProfileImageUrl(userId, keyOrFilename);
+  }
+
+  private blobToDateUrl(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error("Failed to read media blob"));
+      reader.readAsDataURL(blob);
+    });
   }
 }

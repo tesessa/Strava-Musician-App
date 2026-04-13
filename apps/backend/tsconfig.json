@@ -5,7 +5,10 @@
       "dom.iterable",
       "esnext"
     ],
-    "types": ["node", "jest"],
+    "types": [
+      "node",
+      "jest"
+    ],
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,

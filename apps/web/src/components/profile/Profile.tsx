@@ -9,6 +9,7 @@ import type {
   PendingFriendRequestWithProfile,
 } from "../../model/service/FriendService";
 import BottomNav from "../navigation/BottomNav";
+import ImageCropper from "./ImageCropper";
 import "./profile.css";
 
 type ProfileTab =
@@ -68,6 +69,7 @@ const Profile = () => {
   const [editVisibility, setEditVisibility] = useState<
     "public" | "friends" | "private"
   >("friends");
+  const [cropperImageUrl, setCropperImageUrl] = useState<string | null>(null);
 
 const [challengesLoading, setChallengesLoading] = useState(false);
 const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
@@ -316,7 +318,7 @@ const [completedChallenges, setCompletedChallenges] = useState<
     );
   };
 
-  const handleProfilePhotoFileChange = async (
+  const handleProfilePhotoFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
@@ -328,20 +330,28 @@ const [completedChallenges, setCompletedChallenges] = useState<
     }
 
     const reader = new FileReader();
-
     reader.onload = () => {
       const result = reader.result;
       if (typeof result === "string") {
-        setEditProfilePhoto(result);
+        setCropperImageUrl(result);
         setErrorMessage("");
       }
     };
-
-    reader.onerror = () => {
-      setErrorMessage("Failed to read image file.");
-    };
-
+    reader.onerror = () => setErrorMessage("Failed to read image file.");
     reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected after cancel
+    event.target.value = "";
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setEditProfilePhoto(reader.result);
+      }
+    };
+    reader.readAsDataURL(croppedBlob);
+    setCropperImageUrl(null);
   };
 
   const handleLogout = async () => {
@@ -833,6 +843,13 @@ const [completedChallenges, setCompletedChallenges] = useState<
 
   return (
     <div className="profile-container">
+      {cropperImageUrl && (
+        <ImageCropper
+          imageUrl={cropperImageUrl}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCropperImageUrl(null)}
+        />
+      )}
       <header className="profile-header">
         <button
           className="profile-back-btn"

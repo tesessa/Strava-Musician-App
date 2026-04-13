@@ -32,6 +32,7 @@ const FeedPracticeLogCard = ({
   const [likeCount, setLikeCount] = useState(0); // This should come from server data eventually
   const [username, setUsername] = useState<string>("User");
   const [userInitial, setUserInitial] = useState<string>("U");
+  const [profilePhoto, setProfilePhoto] = useState<string | undefined>(undefined);
   const [media, setMedia] = useState<Media[]>([]);
   // temporary for now
   const [showMenu, setShowMenu] = useState(false);
@@ -46,6 +47,7 @@ const FeedPracticeLogCard = ({
             if (user) {
                 setUsername(user.username || "User");
                 setUserInitial(user.username?.[0]?.toUpperCase() || "U");
+                setProfilePhoto(user.profilePhoto ?? undefined);
             }
         } catch (error) {
             console.error("Failed to fetch user:", error);
@@ -196,11 +198,17 @@ const FeedPracticeLogCard = ({
           onClick={() => onProfileClick?.(practiceLog.userId)}
           aria-label="View profile"
         >
-          <div className="feed-avatar-circle">
-            {userInitial}
-          </div>
-          {/* Avatar placeholder - would use username from User entity
-          👤 */}
+          {profilePhoto ? (
+            <img
+              src={profilePhoto}
+              alt={username}
+              className="feed-avatar-image"
+            />
+          ) : (
+            <div className="feed-avatar-circle">
+              {userInitial}
+            </div>
+          )}
         </button>
 
         <div className="feed-meta">
