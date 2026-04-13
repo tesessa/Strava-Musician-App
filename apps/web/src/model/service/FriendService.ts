@@ -67,4 +67,8 @@ export class FriendService {
       resolved.filter((entry): entry is readonly [string, User] => entry !== null),
     );
   }
+
+   async acceptIncomingFriendRequest(requestId: string): Promise<void> {                                                                                                                                              
+    await this.server.acceptFriendRequest(requestId);                                                                                                                                                              
+  } 
 }

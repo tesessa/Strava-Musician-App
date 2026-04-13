@@ -10,6 +10,7 @@ import type {
 } from "../../model/service/FriendService";
 import BottomNav from "../navigation/BottomNav";
 import ImageCropper from "./ImageCropper";
+import FeedPracticeLogCard from "../home/FeedPracticeLogCard";
 import "./profile.css";
 
 type ProfileTab =
@@ -71,11 +72,11 @@ const Profile = () => {
   >("friends");
   const [cropperImageUrl, setCropperImageUrl] = useState<string | null>(null);
 
-const [challengesLoading, setChallengesLoading] = useState(false);
-const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
-const [completedChallenges, setCompletedChallenges] = useState<
-  CompletedChallengeWithDetails[]
->([]);
+  const [challengesLoading, setChallengesLoading] = useState(false);
+  const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
+  const [completedChallenges, setCompletedChallenges] = useState<
+    CompletedChallengeWithDetails[]
+  >([]);
 
   const isOwnProfile = useMemo(() => {
     if (!currentUser || !profileUser) return false;
@@ -208,7 +209,6 @@ const [completedChallenges, setCompletedChallenges] = useState<
     const completedIds = new Set(
       completedChallenges.map((item) => item.completion.challengeId)
     );
-
     return allChallenges.filter(
       (challenge) => !completedIds.has(challenge.challengeId)
     );
@@ -217,13 +217,22 @@ const [completedChallenges, setCompletedChallenges] = useState<
   const filteredFriends = useMemo(() => {
     const query = friendsSearchQuery.trim().toLowerCase();
     if (!query) return friends;
-
     return friends.filter((friend) => {
       const username = friend.user?.username?.toLowerCase() ?? "";
       const bio = friend.user?.bio?.toLowerCase() ?? "";
       return username.includes(query) || bio.includes(query);
     });
   }, [friends, friendsSearchQuery]);
+
+  const handleAcceptIncomingRequest = async (requestId: string) => {
+    try {
+      await friendService.acceptIncomingFriendRequest(requestId);
+      await loadFriends();
+    } catch (error) {
+      console.error("Failed to accept friend request:", error);
+      setErrorMessage("Failed to accept friend request.");
+    }
+  };
 
   const handleCancelPendingRequest = async (requestId: string) => {
     if (!requestId || cancellingPendingRequestIds.has(requestId)) {
@@ -239,9 +248,9 @@ const [completedChallenges, setCompletedChallenges] = useState<
     try {
       await friendService.cancelPendingFriendRequest(requestId);
     } catch (error) {
-      console.error("Failed to cancel pending friend request:", error);
+      console.error("Failed to reject friend request:", error);
       setPendingFriendRequests(previous);
-      setErrorMessage("Failed to cancel pending friend request.");
+      setErrorMessage("Failed to reject friend request.");
     } finally {
       setCancellingPendingRequestIds((prev) => {
         const next = new Set(prev);
@@ -339,7 +348,6 @@ const [completedChallenges, setCompletedChallenges] = useState<
     };
     reader.onerror = () => setErrorMessage("Failed to read image file.");
     reader.readAsDataURL(file);
-    // Reset input so the same file can be re-selected after cancel
     event.target.value = "";
   };
 
@@ -440,38 +448,53 @@ const [completedChallenges, setCompletedChallenges] = useState<
 
   const renderPractice = () => {
     if (practiceLoading) {
-      return (
-        <div className="profile-panel-empty">Loading practice sessions...</div>
-      );
+      return <div className="profile-panel-empty">Loading practice sessions...</div>;
     }
 
     if (!practiceLogs.length) {
-      return (
-        <div className="profile-panel-empty">No practice sessions yet.</div>
-      );
+      return <div className="profile-panel-empty">No practice sessions yet.</div>;
     }
 
     return (
       <div className="profile-list">
         {practiceLogs.map((log) => (
-          <div key={log.practiceLogId} className="profile-list-card">
-            <div className="profile-list-card-title">{log.title}</div>
-            <div className="profile-list-card-meta">
-              {log.instrument || "No instrument"} · {log.durationMinutes} min
-            </div>
-            {log.pieceTitle && (
-              <div className="profile-list-card-body">
-                Piece: {log.pieceTitle}
-                {log.composer ? ` — ${log.composer}` : ""}
-              </div>
-            )}
-            {log.postText && (
-              <div className="profile-list-card-body">{log.postText}</div>
-            )}
-            <div className="profile-list-card-date">
-              {new Date(log.createdAt).toLocaleString()}
-            </div>
-          </div>
+          <FeedPracticeLogCard
+            key={log.practiceLogId}
+            practiceLog={log}
+            currentUserId={currentUser?.userId}
+            onLike={async (id) => {
+              await practiceLogService.likePracticeLog(id);
+              void loadPracticeLogs(profileUser!.userId);
+            }}
+            onUnlike={async (id) => {
+              await practiceLogService.unlikePracticeLog(id);
+              void loadPracticeLogs(profileUser!.userId);
+            }}
+            onComment={async (id, text) => {
+              await practiceLogService.commentOnPracticeLog(id, text);
+            }}
+            onShare={async (feedLog) => {
+              try {
+                await navigator.share({ title: feedLog.title });
+              } catch {}
+            }}
+            onDelete={
+              isOwnProfile
+                ? async (id) => {
+                    await practiceLogService.deletePracticeLog(id);
+                    setPracticeLogs((prev) =>
+                      prev.filter((l) => l.practiceLogId !== id)
+                    );
+                  }
+                : undefined
+            }
+            onEdit={
+              isOwnProfile
+                ? (id) => navigate(`/practice-log/edit/${id}`)
+                : undefined
+            }
+            onProfileClick={(userId) => navigate(`/profile/${userId}`)}
+          />
         ))}
       </div>
     );
@@ -499,9 +522,7 @@ const [completedChallenges, setCompletedChallenges] = useState<
         </div>
 
         {challengesLoading ? (
-          <div className="profile-panel-empty">
-            Loading challenges...
-          </div>
+          <div className="profile-panel-empty">Loading challenges...</div>
         ) : (
           <>
             <div className="profile-card">
@@ -514,14 +535,10 @@ const [completedChallenges, setCompletedChallenges] = useState<
               ) : (
                 <div className="profile-list">
                   {inProgressChallenges.map((challenge) => (
-                    <div
-                      key={challenge.challengeId}
-                      className="profile-list-card"
-                    >
+                    <div key={challenge.challengeId} className="profile-list-card">
                       <div className="profile-list-card-title">
                         {challenge.description}
                       </div>
-
                       <div className="profile-list-card-meta">
                         {challenge.task} · Target: {challenge.targetNumber}
                         {challenge.instrument ? ` · ${challenge.instrument}` : ""}
@@ -543,7 +560,6 @@ const [completedChallenges, setCompletedChallenges] = useState<
                 <div className="profile-list">
                   {completedChallenges.map((item) => {
                     const challenge = item.challenge;
-
                     return (
                       <div
                         key={`${item.completion.challengeId}-${item.completion.completedAt}`}
@@ -552,7 +568,6 @@ const [completedChallenges, setCompletedChallenges] = useState<
                         <div className="profile-list-card-title">
                           {challenge?.description ?? "Unknown challenge"}
                         </div>
-
                         <div className="profile-list-card-meta">
                           {challenge?.task ?? "Task unavailable"}
                           {challenge?.targetNumber !== undefined
@@ -560,7 +575,6 @@ const [completedChallenges, setCompletedChallenges] = useState<
                             : ""}
                           {challenge?.instrument ? ` · ${challenge.instrument}` : ""}
                         </div>
-
                         <div className="profile-list-card-body">
                           Completed on{" "}
                           {new Date(item.completion.completedAt).toLocaleString()}
@@ -607,7 +621,7 @@ const [completedChallenges, setCompletedChallenges] = useState<
         </div>
 
         <div className="profile-friends-section">
-          <div className="profile-section-title">Pending Friend Requests</div>
+          <div className="profile-section-title">Incoming Friend Requests</div>
           {pendingFriendRequests.length === 0 ? (
             <div className="profile-friends-empty">
               No pending friend requests.
@@ -623,24 +637,28 @@ const [completedChallenges, setCompletedChallenges] = useState<
                     <div className="profile-friends-item-name">
                       {item.user?.username ?? "Unknown user"}
                     </div>
-                    <button
-                      className="profile-friends-item-action"
-                      type="button"
-                      onClick={() =>
-                        handleCancelPendingRequest(item.request.requestId)
-                      }
-                      disabled={cancellingPendingRequestIds.has(
-                        item.request.requestId,
-                      )}
-                    >
-                      {cancellingPendingRequestIds.has(item.request.requestId)
-                        ? "Canceling..."
-                        : "Cancel"}
-                    </button>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button
+                        className="profile-friends-item-action"
+                        type="button"
+                        onClick={() => handleAcceptIncomingRequest(item.request.requestId)}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="profile-friends-item-action"
+                        type="button"
+                        onClick={() => handleCancelPendingRequest(item.request.requestId)}
+                        disabled={cancellingPendingRequestIds.has(item.request.requestId)}
+                      >
+                        {cancellingPendingRequestIds.has(item.request.requestId)
+                          ? "Rejecting..."
+                          : "Reject"}
+                      </button>
+                    </div>
                   </div>
                   <div className="profile-friends-item-meta">
-                    Requested{" "}
-                    {new Date(item.request.createdAt).toLocaleString()}
+                    Requested {new Date(item.request.createdAt).toLocaleString()}
                   </div>
                 </div>
               ))}
@@ -669,9 +687,7 @@ const [completedChallenges, setCompletedChallenges] = useState<
                   <div className="profile-friends-item-meta">
                     Friends since{" "}
                     {item.friendship.friendsSince
-                      ? new Date(
-                          item.friendship.friendsSince,
-                        ).toLocaleDateString()
+                      ? new Date(item.friendship.friendsSince).toLocaleDateString()
                       : "Unknown"}
                   </div>
                   {item.user?.bio && (

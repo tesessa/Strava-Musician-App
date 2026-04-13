@@ -111,10 +111,17 @@ export class SupabasePracticeLogDAO implements PracticeLogDAO {
       .select("friendId")
       .where("userId", user.userId);                                                                                                                                                                                   
     const friendIds = friendRows.map((f: any) => f.friendId);
+
+    const publicUserRows = await db("User")
+      .select("id")
+      .where("post_visibility", "public")
+    const publicUserIds = publicUserRows.map((u: any) => u.id);
+
+    const allowedUserIds = Array.from(new Set([user.userId, ...friendIds, ...publicUserIds]));
     // join with friend table to get friend's posts
     let query = db<PracticeLog>("PracticeLog")
          .select("*")                                                                                                                                                                                                     
-    .whereIn("userId", [user.userId, ...friendIds])
+    .whereIn("userId", allowedUserIds)
     .orderBy("createdAt", "desc")                                                                                                                                                                                    
     .orderBy("practiceLogId", "desc")
     .limit(pageSize);                                                                                                                                                                                                 
