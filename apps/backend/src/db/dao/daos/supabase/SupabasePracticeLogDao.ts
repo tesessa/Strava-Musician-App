@@ -107,16 +107,17 @@ export class SupabasePracticeLogDAO implements PracticeLogDAO {
       cursor = { uuid: lastLog.practiceLogId, createdAt: lastLog.createdAt };
     }
 
-    // join with friend table to get friend's posts
+    // Include both the user's own logs and their friends' logs
     let query = db<PracticeLog>("PracticeLog")
-      .join("Friend", function () {
-        this.on("PracticeLog.userId", "=", "Friend.friendId").andOnVal(
-          "Friend.userId",
-          "=",
-          user.userId,
-        );
-      })
       .select("PracticeLog.*")
+      .where(function () {
+        this.where("PracticeLog.userId", user.userId)
+          .orWhereExists(function () {
+            this.select("*")
+              .from("Friend")
+              .whereRaw('"PracticeLog"."userId" = "Friend"."friendId" AND "Friend"."userId" = ?', [user.userId]);
+          });
+      })
       .orderBy("createdAt", "desc")
       .orderBy("practiceLogId", "desc")
       .limit(pageSize);
