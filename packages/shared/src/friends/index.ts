@@ -1,3 +1,5 @@
+import type { PublicUserProfile } from "../users";
+
 /**
  * Single friendship row. Store two rows per friendship (A→B and B→A).
  */
@@ -5,6 +7,13 @@ export interface Friend {
   userId: string;
   friendId: string;
   friendsSince: string;
+}
+
+/**
+ * GET /friends — friendship row plus the other user's public profile.
+ */
+export interface FriendWithUser extends Friend {
+  friend: PublicUserProfile;
 }
 
 /**
@@ -19,4 +28,4 @@ export interface FriendsListRequest {
 /**
  * GET /friends response
  */
-export type FriendsListResponse = Friend[];
+export type FriendsListResponse = FriendWithUser[];

@@ -6,6 +6,7 @@ export interface UserDAO {
   validateCredentials(email: string, passwordHash: string): Promise<User | null>;
   findUserByEmail(email: string): Promise<User | null>;
   findUserById(id: string): Promise<User | null>;
+  findUsersByIds(ids: string[]): Promise<User[]>;
   findUserByUsername(username: string): Promise<User | null>;
   updateUser(id: string, patch: Partial<User>): Promise<User | null>;
   deleteUser(userId: string): Promise<boolean>;

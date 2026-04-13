@@ -1,3 +1,5 @@
+import type { PublicUserProfile } from "../users";
+
 /**
  * Comment on a practice log
  */
@@ -17,6 +19,13 @@ export interface CreateCommentRequest {
 }
 
 /**
+ * Comment with author profile (list and create responses)
+ */
+export interface CommentWithAuthor extends Comment {
+  author: PublicUserProfile;
+}
+
+/**
  * GET /practice-logs/:practiceLogId/comments response
  */
-export type CommentsListResponse = Comment[];
+export type CommentsListResponse = CommentWithAuthor[];

@@ -42,6 +42,18 @@ class InMemoryUserDao implements UserDAO {
     return user as User;
   }
 
+  async findUsersByIds(ids: string[]): Promise<User[]> {
+    const out: User[] = [];
+    for (const id of ids) {
+      const rec = usersById.get(id);
+      if (rec) {
+        const { passwordHashPerm, ...user } = rec;
+        out.push(user as User);
+      }
+    }
+    return out;
+  }
+
   async findUserByUsername(username: string): Promise<User | null> {
     const rec = usersByUsername.get(username);
     if (!rec) return null;

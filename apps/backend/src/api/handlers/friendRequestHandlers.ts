@@ -3,10 +3,12 @@ import { FriendRequestsService } from "../services/friendRequestsService";
 import { authenticateToken } from "../utils/authenticateToken";
 import { createFriendRequestsDAO } from "../../db/dao/factories/friendRequestsDaoFactory";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
+import { batchPublicProfiles } from "../utils/userEnrichment";
 
 const friendRequestsService = new FriendRequestsService(
   createFriendRequestsDAO(),
 );
+const userDao = createUserDAO();
 
 export async function createFriendRequest(req: Request, receiverId: string) {
   const auth = await authenticateToken(req);
@@ -60,7 +62,16 @@ export async function listIncoming(req: Request) {
     lastRequestId: lastRequestId ?? undefined,
     pageSize,
   });
-  return NextResponse.json(requests);
+  const map = await batchPublicProfiles(
+    userDao,
+    requests.map((r) => r.senderId),
+  );
+  const withSenders = requests.map((r) => {
+    const sender = map.get(r.senderId);
+    if (!sender) throw new Error(`Missing profile for sender ${r.senderId}`);
+    return { ...r, sender };
+  });
+  return NextResponse.json(withSenders);
 }
 
 export async function listOutgoing(req: Request) {
@@ -88,7 +99,16 @@ export async function listOutgoing(req: Request) {
     lastRequestId: lastRequestId ?? undefined,
     pageSize,
   });
-  return NextResponse.json(requests);
+  const map = await batchPublicProfiles(
+    userDao,
+    requests.map((r) => r.receiverId),
+  );
+  const withReceivers = requests.map((r) => {
+    const receiver = map.get(r.receiverId);
+    if (!receiver) throw new Error(`Missing profile for receiver ${r.receiverId}`);
+    return { ...r, receiver };
+  });
+  return NextResponse.json(withReceivers);
 }
 
 export async function acceptRequest(req: Request, requestId: string) {

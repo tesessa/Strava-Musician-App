@@ -75,6 +75,12 @@ export class SupabaseUserDao implements UserDAO {
     return mapSupabaseUserToUser(user);
   }
 
+  async findUsersByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    const rows = await db<SupabaseUser>("User").whereIn("id", ids);
+    return rows.map(mapSupabaseUserToUser);
+  }
+
   async findUserByUsername(username: string) {
     const user = await db<SupabaseUser>("User")
       .where({ username: username })

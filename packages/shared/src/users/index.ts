@@ -1,13 +1,11 @@
 import type { Visibility } from "../enums";
-import type { PracticeLog } from "../practiceLogs";
 
 /**
- * User profile (no password). postVisibility applies to all of this user's practice logs.
- * createdAt/updatedAt are ISO date strings (server-managed).
+ * Public profile fields returned for any user (e.g. friends, feed authors).
+ * Email is never included — use {@link User} for the authenticated account with email.
  */
-export interface User {
+export interface PublicUserProfile {
   userId: string;
-  email: string;
   username: string;
   profilePhoto?: string;
   bio?: string;
@@ -15,6 +13,14 @@ export interface User {
   instruments: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Full account profile (no password). Includes email for the signed-in user only.
+ * postVisibility applies to all of this user's practice logs.
+ */
+export interface User extends PublicUserProfile {
+  email: string;
 }
 
 /**
@@ -38,16 +44,3 @@ export interface UserSearchResult {
   bio?: string;
 }
 
-/**
- * GET /users/:userId/practice-logs query (keyset pagination)
- */
-export interface UserPracticeLogsRequest {
-  /** practiceLogId cursor from the previous page */
-  lastItemId?: string;
-  pageSize?: number;
-}
-
-/**
- * GET /users/:userId/practice-logs — list of practice logs for a user
- */
-export type UserPracticeLogsResponse = PracticeLog[];

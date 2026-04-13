@@ -3,7 +3,7 @@ import type { KodaServerApi } from "./KodaServerApi";
 import type {
   AuthResponse,
   Challenge,
-  Comment,
+  CommentWithAuthor,
   CommentsListResponse,
   CompletedChallengesResponse,
   CreateChallengeRequest,
@@ -25,7 +25,8 @@ import type {
   MediaListResponse,
   NotificationsListResponse,
   OutgoingFriendRequestsResponse,
-  PracticeLog,
+  PracticeLogWithAuthor,
+  PublicUserProfile,
   RegisterRequest,
   UpdateEventRequest,
   UpdatePracticeLogRequest,
@@ -193,8 +194,8 @@ export class ServerFacade implements KodaServerApi {
     return this.get<User>("/auth/me", true);
   }
 
-  async getUser(userId: string): Promise<User> {
-    return this.get<User>(`/users/${userId}`);
+  async getUser(userId: string): Promise<User | PublicUserProfile> {
+    return this.get<User | PublicUserProfile>(`/users/${userId}`);
   }
 
   async updateUser(userId: string, request: UserUpdateRequest): Promise<User> {
@@ -283,8 +284,8 @@ export class ServerFacade implements KodaServerApi {
 
   async createPracticeLog(
     request: CreatePracticeLogRequest,
-  ): Promise<PracticeLog> {
-    return this.post<CreatePracticeLogRequest, PracticeLog>(
+  ): Promise<PracticeLogWithAuthor> {
+    return this.post<CreatePracticeLogRequest, PracticeLogWithAuthor>(
       "/practice-logs",
       request,
     );
@@ -298,15 +299,15 @@ export class ServerFacade implements KodaServerApi {
     return this.get<FeedResponse>(`/practice-logs/feed${query}`);
   }
 
-  async getPracticeLog(practiceLogId: string): Promise<PracticeLog> {
-    return this.get<PracticeLog>(`/practice-logs/${practiceLogId}`);
+  async getPracticeLog(practiceLogId: string): Promise<PracticeLogWithAuthor> {
+    return this.get<PracticeLogWithAuthor>(`/practice-logs/${practiceLogId}`);
   }
 
   async updatePracticeLog(
     practiceLogId: string,
     request: UpdatePracticeLogRequest,
-  ): Promise<PracticeLog> {
-    return this.patch<UpdatePracticeLogRequest, PracticeLog>(
+  ): Promise<PracticeLogWithAuthor> {
+    return this.patch<UpdatePracticeLogRequest, PracticeLogWithAuthor>(
       `/practice-logs/${practiceLogId}`,
       request,
     );
@@ -352,8 +353,8 @@ export class ServerFacade implements KodaServerApi {
   async createPracticeLogComment(
     practiceLogId: string,
     request: CreateCommentRequest,
-  ): Promise<Comment> {
-    return this.post<CreateCommentRequest, Comment>(
+  ): Promise<CommentWithAuthor> {
+    return this.post<CreateCommentRequest, CommentWithAuthor>(
       `/practice-logs/${practiceLogId}/comments`,
       request,
     );

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
-import type { PracticeLog, User } from "@strava-musician-app/shared";
+import type { PracticeLogWithAuthor, PublicUserProfile, User } from "@strava-musician-app/shared";
 import { userService, practiceLogService, friendService } from "../../model";
 import type {
   FriendWithProfile,
@@ -41,14 +41,14 @@ const Profile = () => {
       : "overview";
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [profileUser, setProfileUser] = useState<User | null>(null);
+  const [profileUser, setProfileUser] = useState<User | PublicUserProfile | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [practiceLoading, setPracticeLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
+  const [practiceLogs, setPracticeLogs] = useState<PracticeLogWithAuthor[]>([]);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [friendsSearchQuery, setFriendsSearchQuery] = useState("");
   const [friends, setFriends] = useState<FriendWithProfile[]>([]);
@@ -359,7 +359,7 @@ const Profile = () => {
         <div className="profile-card">
           <div className="profile-username">{profileUser.username}</div>
 
-          {isOwnProfile && (
+          {isOwnProfile && "email" in profileUser && (
             <div className="profile-email">{profileUser.email}</div>
           )}
 
@@ -655,7 +655,9 @@ const Profile = () => {
 
             <div className="profile-field">
               <label className="profile-label">Email</label>
-              <div className="profile-value-readonly">{profileUser.email}</div>
+              <div className="profile-value-readonly">
+                {"email" in profileUser ? profileUser.email : "—"}
+              </div>
             </div>
 
             <div className="profile-field">

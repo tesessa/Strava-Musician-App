@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { FriendsService } from "../services/friendsService";
 import { authenticateToken } from "../utils/authenticateToken";
 import { createFriendsDAO } from "@/db/dao/factories/friendsDaoFactory";
+import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
+import { batchPublicProfiles } from "../utils/userEnrichment";
 
 const friendsService = new FriendsService(createFriendsDAO());
+const userDao = createUserDAO();
 
 export async function listFriends(req: Request) {
   const auth = await authenticateToken(req);
@@ -27,7 +30,18 @@ export async function listFriends(req: Request) {
     }
   }
   const friends = await friendsService.listFriends(auth.user.userId, { lastFriendId, pageSize });
-  return NextResponse.json(friends);
+  const map = await batchPublicProfiles(
+    userDao,
+    friends.map((f) => f.friendId),
+  );
+  const withProfiles = friends.map((f) => {
+    const friend = map.get(f.friendId);
+    if (!friend) {
+      throw new Error(`Missing profile for friendId ${f.friendId}`);
+    }
+    return { ...f, friend };
+  });
+  return NextResponse.json(withProfiles);
 }
 
 export async function removeFriend(req: Request, friendId: string) {

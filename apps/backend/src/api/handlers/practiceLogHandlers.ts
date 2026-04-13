@@ -5,10 +5,29 @@ import { createFriendsDAO } from "../../db/dao/factories/friendsDaoFactory";
 import { NextResponse } from "next/server";
 import { PracticeLogService } from "../services/practiceLogServices";
 import { createPracticeLogDAO } from "../../db/dao/factories/practiceLogDaoFactory";
+import { createMediaDAO } from "../../db/dao/factories/mediaDaoFactory";
+import { createCommentsDAO } from "../../db/dao/factories/commentsDaoFactory";
+import { createLikesDAO } from "../../db/dao/factories/likesDaoFactory";
+import { createFriendRequestsDAO } from "../../db/dao/factories/friendRequestsDaoFactory";
+import { createNotificationsDao } from "../../db/dao/factories/notificationsDaoFactory";
+import { createChallengesDao } from "../../db/dao/factories/challengesDaoFactory";
 import { authenticateToken, authenticateTokenToUserId } from "../utils/authenticateToken";
+import { enrichPracticeLogsWithAuthors } from "../utils/userEnrichment";
 
-const practiceLogService = new PracticeLogService(createPracticeLogDAO());
-const userService = new UserService(createUserDAO());
+const practiceLogDao = createPracticeLogDAO();
+const practiceLogService = new PracticeLogService(practiceLogDao);
+const userDao = createUserDAO();
+const userService = new UserService(
+  userDao,
+  practiceLogDao,
+  createMediaDAO(),
+  createCommentsDAO(),
+  createLikesDAO(),
+  createFriendsDAO(),
+  createFriendRequestsDAO(),
+  createNotificationsDao(),
+  createChallengesDao(),
+);
 const friendsService = new FriendsService(createFriendsDAO());
 
 
@@ -49,7 +68,8 @@ export const getUserPracticeLogs = async (req: Request, userId: string) => {
 
   try {
     const logs = await practiceLogService.getUserPracticeLogs({ userId, lastItem: lastItemId, pageSize });
-    return NextResponse.json(logs, { status: 200 });
+    const enriched = await enrichPracticeLogsWithAuthors(userDao, logs);
+    return NextResponse.json(enriched, { status: 200 });
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
@@ -87,7 +107,8 @@ export const createPracticeLog = async (req: Request) => {
     };
 
     const practiceLog = await practiceLogService.createPracticeLog(practiceLogData, token);
-    return NextResponse.json(practiceLog, { status: 201 });
+    const [enriched] = await enrichPracticeLogsWithAuthors(userDao, [practiceLog]);
+    return NextResponse.json(enriched, { status: 201 });
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
@@ -105,7 +126,8 @@ export const getFeed = async (req: Request) => {
       { lastItem: lastItemId, pageSize },
       token
     );
-    return NextResponse.json(feed, { status: 200 });
+    const enriched = await enrichPracticeLogsWithAuthors(userDao, feed);
+    return NextResponse.json(enriched, { status: 200 });
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
@@ -119,7 +141,8 @@ export const getPracticeLog = async (req: Request, practiceLogId: string) => {
     const practiceLog = await practiceLogService.getPracticeLog(practiceLogId);
     if (!practiceLog)
       return NextResponse.json({ error: "practice_log_not_found" }, { status: 404 });
-    return NextResponse.json(practiceLog, { status: 200 });
+    const [enriched] = await enrichPracticeLogsWithAuthors(userDao, [practiceLog]);
+    return NextResponse.json(enriched, { status: 200 });
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
@@ -140,7 +163,8 @@ export const updatePracticeLog = async (req: Request, practiceLogId: string) => 
     const updated = await practiceLogService.updatePracticeLog(practiceLogId, body);
     if (!updated)
       return NextResponse.json({ error: "practice_log_not_found" }, { status: 404 });
-    return NextResponse.json(updated, { status: 200 });
+    const [enriched] = await enrichPracticeLogsWithAuthors(userDao, [updated]);
+    return NextResponse.json(enriched, { status: 200 });
   } catch (err) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/navigation/BottomNav"
 import "./calendar.css";
 
@@ -95,7 +94,6 @@ export default function CalendarPage() {
 // };
 //----------------
 
-  const navigate = useNavigate();
   const today = new Date();
 
   const [currentMonth, setCurrentMonth] = useState(

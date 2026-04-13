@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search } from "lucide-react";
-import type { PracticeLog, Instrument, UserSearchResult, User, FriendRequest } from "@strava-musician-app/shared";
+import type {
+  PracticeLogWithAuthor,
+  Instrument,
+  UserSearchResult,
+  User,
+  FriendRequest,
+  PublicUserProfile,
+} from "@strava-musician-app/shared";
 import { APP_CONFIG, INSTRUMENTS } from "@strava-musician-app/shared";
 import "./index.css";
 import FeedPracticeLogCard from "./FeedPracticeLogCard";
@@ -17,7 +24,7 @@ const Home = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
  
-  const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
+  const [practiceLogs, setPracticeLogs] = useState<PracticeLogWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userInitial, setUserInitial] = useState<string>("👤");
@@ -31,7 +38,9 @@ const Home = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-  const [requestSenders, setRequestSenders] = useState<Map<string, User>>(new Map());
+  const [requestSenders, setRequestSenders] = useState<
+    Map<string, User | PublicUserProfile>
+  >(new Map());
 
     // Load current user and initial feed
   useEffect(() => {
@@ -94,7 +103,7 @@ const Home = () => {
       setFriendRequests(requests);
       setUnreadCount(requests.length);
 
-      const senderMap = new Map<string, User>();
+      const senderMap = new Map<string, User | PublicUserProfile>();
       for (const req of requests) {
         try {
           const sender = await userService.getUser(req.senderId);
@@ -215,7 +224,7 @@ const Home = () => {
     }
   };
 
-  const handleShare = async (feedLog: PracticeLog) => {
+  const handleShare = async (feedLog: PracticeLogWithAuthor) => {
     const title = feedLog.title?.trim() || "Practice log";
     const textParts = [feedLog.title, feedLog.postText].filter(
       (s) => typeof s === "string" && s.trim().length > 0,

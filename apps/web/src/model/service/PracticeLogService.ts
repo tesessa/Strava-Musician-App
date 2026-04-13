@@ -3,7 +3,7 @@ import type {
   CreateCommentRequest,
   CreatePracticeLogRequest,
   FeedRequest,
-  PracticeLog,
+  PracticeLogWithAuthor,
   Visibility,
   UserSearchResult,
   MediaListResponse,
@@ -48,7 +48,7 @@ export class PracticeLogService {
     return created.practiceLogId;
   }
 
-  async getPracticeLog(practiceLogId: string): Promise<PracticeLog> {
+  async getPracticeLog(practiceLogId: string): Promise<PracticeLogWithAuthor> {
     return this.server.getPracticeLog(practiceLogId);
   }
  
@@ -56,7 +56,7 @@ export class PracticeLogService {
   async updatePracticeLog(
     practiceLogId: string,
     updates: UpdatePracticeLogRequest
-  ): Promise<PracticeLog> {
+  ): Promise<PracticeLogWithAuthor> {
     return this.server.updatePracticeLog(practiceLogId, updates);
   }
 
@@ -65,7 +65,7 @@ export class PracticeLogService {
   }
 
   // Home-feed methods
-  async getFeed(): Promise<PracticeLog[]> {
+  async getFeed(): Promise<PracticeLogWithAuthor[]> {
     const request: FeedRequest = { pageSize: 15 };
     return this.server.getPracticeLogsFeed(request);
   }
@@ -128,7 +128,7 @@ export class PracticeLogService {
     userId: string,
     lastItemId?: string,
     pageSize = 20
-  ): Promise<PracticeLog[]> {
+  ): Promise<PracticeLogWithAuthor[]> {
     return this.server.getUserPracticeLogs(userId, { lastItemId, pageSize });
   }
 }

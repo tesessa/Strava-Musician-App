@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { UserService } from "../services/userServices";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 import { authenticateToken, authenticateTokenToUserId } from "../utils/authenticateToken";
+import { toPublicUserProfile } from "../utils/publicProfile";
+import type { PublicUserProfile } from "@strava-musician-app/shared";
 import { createPracticeLogDAO } from "@/db/dao/factories/practiceLogDaoFactory";
 import { createMediaDAO } from "@/db/dao/factories/mediaDaoFactory";
 import { createCommentsDAO } from "@/db/dao/factories/commentsDaoFactory";
@@ -24,13 +26,17 @@ const userService = new UserService(
 );
 
 export const getUser = async (req: Request, userId: string) => {
-  const { error } = await authenticateTokenToUserId(req, userId);
+  const { user: requester, error } = await authenticateToken(req);
   if (error) return error;
 
   try {
     const userData = await userService.getUser(userId);
     if (!userData) return NextResponse.json({ error: "user_not_found" }, { status: 404 });
-    return NextResponse.json(userData, { status: 200 });
+    if (requester.userId === userId) {
+      return NextResponse.json(userData, { status: 200 });
+    }
+    const publicProfile: PublicUserProfile = toPublicUserProfile(userData);
+    return NextResponse.json(publicProfile, { status: 200 });
   } catch {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }

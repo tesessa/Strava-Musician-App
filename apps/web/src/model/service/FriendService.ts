@@ -1,14 +1,21 @@
-import type { Friend, FriendRequest, User } from "@strava-musician-app/shared";
+import type {
+  Friend,
+  FriendRequest,
+  FriendRequestWithReceiver,
+  FriendRequestWithSender,
+  FriendWithUser,
+  PublicUserProfile,
+} from "@strava-musician-app/shared";
 import type { KodaServerApi } from "../network/KodaServerApi";
 
 export interface FriendWithProfile {
   friendship: Friend;
-  user: User | null;
+  user: PublicUserProfile | null;
 }
 
 export interface PendingFriendRequestWithProfile {
   request: FriendRequest;
-  user: User | null;
+  user: PublicUserProfile | null;
 }
 
 /**
@@ -20,40 +27,40 @@ export class FriendService {
 
   async getFriendsWithProfiles(pageSize = 100): Promise<FriendWithProfile[]> {
     const friends = await this.server.getFriends({ pageSize });
-    const usersById = await this.loadUsersById(friends.map((friend) => friend.friendId));
-
-    return friends.map((friendship) => ({
-      friendship,
-      user: usersById.get(friendship.friendId) ?? null,
+    return (friends as FriendWithUser[]).map((row) => ({
+      friendship: {
+        userId: row.userId,
+        friendId: row.friendId,
+        friendsSince: row.friendsSince,
+      },
+      user: row.friend,
     }));
   }
 
   async getIncomingFriendRequestsWithProfiles(
     pageSize = 25,
   ): Promise<PendingFriendRequestWithProfile[]> {
-    const requests = await this.server.getIncomingFriendRequests({ pageSize });
-    console.log("Loaded incoming friend requests:", requests);
-    const usersById = await this.loadUsersById(
-      requests.map((request) => request.senderId),
-    );
-    console.log("Loaded users for incoming friend requests:", usersById);
-    return requests.map((request) => ({
-      request,
-      user: usersById.get(request.senderId) ?? null,
-    }));
+    const rows = await this.server.getIncomingFriendRequests({ pageSize });
+    return (rows as FriendRequestWithSender[]).map((row) => {
+      const { sender: _s, ...request } = row;
+      return {
+        request,
+        user: row.sender,
+      };
+    });
   }
 
   async getOutgoingFriendRequestsWithProfiles(
     pageSize = 25,
   ): Promise<PendingFriendRequestWithProfile[]> {
-    const requests = await this.server.getOutgoingFriendRequests({ pageSize });
-    const usersById = await this.loadUsersById(
-      requests.map((request) => request.receiverId),
-    );
-    return requests.map((request) => ({
-      request,
-      user: usersById.get(request.receiverId) ?? null,
-    }));
+    const rows = await this.server.getOutgoingFriendRequests({ pageSize });
+    return (rows as FriendRequestWithReceiver[]).map((row) => {
+      const { receiver: _r, ...request } = row;
+      return {
+        request,
+        user: row.receiver,
+      };
+    });
   }
 
   /**
@@ -62,24 +69,6 @@ export class FriendService {
    */
   async cancelPendingFriendRequest(requestId: string): Promise<void> {
     await this.server.cancelFriendRequest(requestId);
-  }
-
-  private async loadUsersById(userIds: string[]): Promise<Map<string, User>> {
-    const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
-    const resolved = await Promise.all(
-      uniqueUserIds.map(async (userId) => {
-        try {
-          const user = await this.server.getUser(userId);
-          return [userId, user] as const;
-        } catch {
-          return null;
-        }
-      }),
-    );
-
-    return new Map(
-      resolved.filter((entry): entry is readonly [string, User] => entry !== null),
-    );
   }
 
   async acceptFriendRequest(requestId: string): Promise<void> {

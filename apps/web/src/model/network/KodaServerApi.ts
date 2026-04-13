@@ -1,7 +1,7 @@
 import type {
   AuthResponse,
   Challenge,
-  Comment,
+  CommentWithAuthor,
   CommentsListResponse,
   CompletedChallengesResponse,
   CreateChallengeRequest,
@@ -23,7 +23,8 @@ import type {
   MediaListResponse,
   NotificationsListResponse,
   OutgoingFriendRequestsResponse,
-  PracticeLog,
+  PracticeLogWithAuthor,
+  PublicUserProfile,
   RegisterRequest,
   UpdateEventRequest,
   UpdatePracticeLogRequest,
@@ -56,8 +57,8 @@ export interface KodaServerApi {
   /** GET /auth/me */
   getMe(): Promise<User>;
 
-  /** GET /users/:userId */
-  getUser(userId: string): Promise<User>;
+  /** GET /users/:userId — full {@link User} (incl. email) for self; {@link PublicUserProfile} for others */
+  getUser(userId: string): Promise<User | PublicUserProfile>;
 
   /** PATCH /users/:userId */
   updateUser(userId: string, request: UserUpdateRequest): Promise<User>;
@@ -112,7 +113,7 @@ export interface KodaServerApi {
   // ===================
 
   /** POST /practice-logs */
-  createPracticeLog(request: CreatePracticeLogRequest): Promise<PracticeLog>;
+  createPracticeLog(request: CreatePracticeLogRequest): Promise<PracticeLogWithAuthor>;
   // used to be: savePracticeLog(userId, title, visibility, duration, ...): Promise<string>
 
   /** GET /practice-logs/feed (keyset pagination) */
@@ -120,13 +121,13 @@ export interface KodaServerApi {
   // used to be: getFeed(): Promise<PracticeLog[]>
 
   /** GET /practice-logs/:practiceLogId */
-  getPracticeLog(practiceLogId: string): Promise<PracticeLog>;
+  getPracticeLog(practiceLogId: string): Promise<PracticeLogWithAuthor>;
 
   /** PATCH /practice-logs/:practiceLogId */
   updatePracticeLog(
     practiceLogId: string,
     request: UpdatePracticeLogRequest,
-  ): Promise<PracticeLog>;
+  ): Promise<PracticeLogWithAuthor>;
 
   /** DELETE /practice-logs/:practiceLogId */
   deletePracticeLog(practiceLogId: string): Promise<void>;
@@ -169,7 +170,7 @@ export interface KodaServerApi {
   createPracticeLogComment(
     practiceLogId: string,
     request: CreateCommentRequest,
-  ): Promise<Comment>;
+  ): Promise<CommentWithAuthor>;
   // used to be: commentOnPracticeLog(practiceLogId, text): Promise<void>
 
   /** GET /practice-logs/:practiceLogId/comments */

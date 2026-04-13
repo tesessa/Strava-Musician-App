@@ -1,4 +1,5 @@
 import type { FriendRequestStatus } from "../enums";
+import type { PublicUserProfile } from "../users";
 
 /**
  * Friend request record
@@ -22,11 +23,25 @@ export interface FriendRequestsPageRequest {
 }
 
 /**
+ * Incoming request with sender profile
+ */
+export interface FriendRequestWithSender extends FriendRequest {
+  sender: PublicUserProfile;
+}
+
+/**
+ * Outgoing request with receiver profile
+ */
+export interface FriendRequestWithReceiver extends FriendRequest {
+  receiver: PublicUserProfile;
+}
+
+/**
  * GET /friend-requests/incoming response
  */
-export type IncomingFriendRequestsResponse = FriendRequest[];
+export type IncomingFriendRequestsResponse = FriendRequestWithSender[];
 
 /**
  * GET /friend-requests/outgoing response
  */
-export type OutgoingFriendRequestsResponse = FriendRequest[];
+export type OutgoingFriendRequestsResponse = FriendRequestWithReceiver[];

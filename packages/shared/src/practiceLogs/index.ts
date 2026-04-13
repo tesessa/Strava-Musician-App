@@ -1,3 +1,5 @@
+import type { PublicUserProfile } from "../users";
+
 /**
  * Practice log. Visibility is determined by the log owner's User.postVisibility only.
  */
@@ -43,6 +45,27 @@ export interface FeedRequest {
 }
 
 /**
+ * Practice log with author profile (feed, user timeline, single log GET).
+ */
+export interface PracticeLogWithAuthor extends PracticeLog {
+  author: PublicUserProfile;
+}
+
+/**
  * GET /practice-logs/feed response
  */
-export type FeedResponse = PracticeLog[];
+export type FeedResponse = PracticeLogWithAuthor[];
+
+/**
+ * GET /users/:userId/practice-logs query (keyset pagination)
+ */
+export interface UserPracticeLogsRequest {
+  /** practiceLogId cursor from the previous page */
+  lastItemId?: string;
+  pageSize?: number;
+}
+
+/**
+ * GET /users/:userId/practice-logs — practice logs with author (same shape as feed)
+ */
+export type UserPracticeLogsResponse = PracticeLogWithAuthor[];

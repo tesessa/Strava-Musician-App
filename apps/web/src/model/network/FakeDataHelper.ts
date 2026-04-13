@@ -2,6 +2,7 @@ import type {
   AuthResponse,
   Challenge,
   Comment,
+  CommentWithAuthor,
   CommentsListResponse,
   CompletedChallenge,
   CompletedChallengesResponse,
@@ -30,6 +31,8 @@ import type {
   NotificationType,
   OutgoingFriendRequestsResponse,
   PracticeLog,
+  PracticeLogWithAuthor,
+  PublicUserProfile,
   RegisterRequest,
   UpdateEventRequest,
   UpdatePracticeLogRequest,
@@ -124,8 +127,12 @@ export class FakeDataHelper {
     return this.publicUser(this.requireAuthUser());
   }
 
-  getUser(userId: string): User {
-    return this.publicUser(this.requireUser(userId));
+  getUser(userId: string): User | PublicUserProfile {
+    const me = this.requireAuthUser();
+    const u = this.requireUser(userId);
+    const full = this.publicUser(u);
+    if (me.userId === userId) return full;
+    return this.toPublicProfile(u);
   }
 
   updateUser(userId: string, request: UserUpdateRequest): User {
@@ -156,7 +163,8 @@ export class FakeDataHelper {
       .filter((log) => this.canViewPracticeLog(me.userId, log))
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(logs, "practiceLogId", request.lastItemId, request.pageSize);
+    const page = this.paginate(logs, "practiceLogId", request.lastItemId, request.pageSize);
+    return page.map((log) => this.withAuthor(log));
   }
 
   searchUsers(query: string): UserSearchResult[] {
@@ -199,7 +207,11 @@ export class FakeDataHelper {
       .filter((f) => f.userId === me.userId)
       .sort((a, b) => b.friendsSince.localeCompare(a.friendsSince));
 
-    return this.paginate(myFriends, "friendId", request.lastFriendId, request.pageSize);
+    const page = this.paginate(myFriends, "friendId", request.lastFriendId, request.pageSize);
+    return page.map((f) => ({
+      ...f,
+      friend: this.toPublicProfile(this.requireUser(f.friendId)),
+    }));
   }
 
   // ===================
@@ -251,7 +263,11 @@ export class FakeDataHelper {
       .filter((r) => r.receiverId === me.userId && r.status === "pending")
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(incoming, "requestId", request.lastRequestId, request.pageSize);
+    const page = this.paginate(incoming, "requestId", request.lastRequestId, request.pageSize);
+    return page.map((r) => ({
+      ...r,
+      sender: this.toPublicProfile(this.requireUser(r.senderId)),
+    }));
   }
 
   getOutgoingFriendRequests(
@@ -262,7 +278,11 @@ export class FakeDataHelper {
       .filter((r) => r.senderId === me.userId && r.status === "pending")
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(outgoing, "requestId", request.lastRequestId, request.pageSize);
+    const page = this.paginate(outgoing, "requestId", request.lastRequestId, request.pageSize);
+    return page.map((r) => ({
+      ...r,
+      receiver: this.toPublicProfile(this.requireUser(r.receiverId)),
+    }));
   }
 
   acceptFriendRequest(requestId: string): void {
@@ -310,7 +330,7 @@ export class FakeDataHelper {
   // Practice Logs
   // ===================
 
-  createPracticeLog(request: CreatePracticeLogRequest): PracticeLog {
+  createPracticeLog(request: CreatePracticeLogRequest): PracticeLogWithAuthor {
     const me = this.requireAuthUser();
     const log: PracticeLog = {
       practiceLogId: this.newId("practiceLog"),
@@ -327,7 +347,7 @@ export class FakeDataHelper {
     };
 
     this.practiceLogs.push(log);
-    return { ...log };
+    return this.withAuthor(log);
   }
 
   getPracticeLogsFeed(request: FeedRequest): FeedResponse {
@@ -336,22 +356,23 @@ export class FakeDataHelper {
       .filter((log) => this.canViewPracticeLog(me.userId, log))
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(visible, "practiceLogId", request.lastItemId, request.pageSize);
+    const page = this.paginate(visible, "practiceLogId", request.lastItemId, request.pageSize);
+    return page.map((log) => this.withAuthor(log));
   }
 
-  getPracticeLog(practiceLogId: string): PracticeLog {
+  getPracticeLog(practiceLogId: string): PracticeLogWithAuthor {
     const me = this.requireAuthUser();
     const log = this.requirePracticeLog(practiceLogId);
     if (!this.canViewPracticeLog(me.userId, log)) {
       throw new Error("Not authorized to view this practice log.");
     }
-    return { ...log };
+    return this.withAuthor(log);
   }
 
   updatePracticeLog(
     practiceLogId: string,
     request: UpdatePracticeLogRequest,
-  ): PracticeLog {
+  ): PracticeLogWithAuthor {
     const me = this.requireAuthUser();
     const log = this.requirePracticeLog(practiceLogId);
     if (log.userId !== me.userId) {
@@ -369,7 +390,7 @@ export class FakeDataHelper {
       composer: request.composer ?? log.composer,
     });
 
-    return { ...log };
+    return this.withAuthor(log);
   }
 
   deletePracticeLog(practiceLogId: string): void {
@@ -505,7 +526,7 @@ export class FakeDataHelper {
   createPracticeLogComment(
     practiceLogId: string,
     request: CreateCommentRequest,
-  ): Comment {
+  ): CommentWithAuthor {
     const me = this.requireAuthUser();
     const log = this.requirePracticeLog(practiceLogId);
     if (!this.canViewPracticeLog(me.userId, log)) {
@@ -531,7 +552,7 @@ export class FakeDataHelper {
       });
     }
 
-    return { ...comment };
+    return this.commentWithAuthor(comment);
   }
 
   getPracticeLogComments(practiceLogId: string): CommentsListResponse {
@@ -543,7 +564,7 @@ export class FakeDataHelper {
     return this.comments
       .filter((c) => c.practiceLogId === practiceLogId)
       .sort(this.byCreatedAtDesc)
-      .map((c) => ({ ...c }));
+      .map((c) => this.commentWithAuthor(c));
   }
 
   deleteComment(commentId: string): void {
@@ -734,6 +755,13 @@ export class FakeDataHelper {
     this.events = this.events.filter((e) => e.eventId !== eventId);
   }
 
+  analyzePracticeMedia(_request: { fileUrl: string }): { feedback: string } {
+    this.requireAuthUser();
+    return {
+      feedback: "Demo: connect to the real AI server for analysis.",
+    };
+  }
+
   // ===================
   // Shared helpers
   // ===================
@@ -765,6 +793,22 @@ export class FakeDataHelper {
   private publicUser(user: StoredUser): User {
     const { password: _password, ...publicUser } = user;
     return { ...publicUser };
+  }
+
+  private toPublicProfile(user: StoredUser): PublicUserProfile {
+    const u = this.publicUser(user);
+    const { email: _email, ...pub } = u;
+    return pub;
+  }
+
+  private withAuthor(log: PracticeLog): PracticeLogWithAuthor {
+    const owner = this.requireUser(log.userId);
+    return { ...log, author: this.toPublicProfile(owner) };
+  }
+
+  private commentWithAuthor(c: Comment): CommentWithAuthor {
+    const u = this.requireUser(c.userId);
+    return { ...c, author: this.toPublicProfile(u) };
   }
 
   private canViewPracticeLog(viewerId: string, log: PracticeLog): boolean {

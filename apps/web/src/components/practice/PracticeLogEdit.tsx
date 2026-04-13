@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./practiceLog.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { INSTRUMENTS } from "@strava-musician-app/shared";
-import { practiceLogService, mediaUploadService } from "../../model";
+import { practiceLogService } from "../../model";
 import type { Media } from "@strava-musician-app/shared";
 
 const PracticeLogEdit = () => {

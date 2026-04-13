@@ -3,7 +3,7 @@ import { FakeDataHelper } from "./FakeDataHelper";
 import type {
   AuthResponse,
   Challenge,
-  Comment,
+  CommentWithAuthor,
   CommentsListResponse,
   CompletedChallengesResponse,
   CreateChallengeRequest,
@@ -25,7 +25,8 @@ import type {
   MediaListResponse,
   NotificationsListResponse,
   OutgoingFriendRequestsResponse,
-  PracticeLog,
+  PracticeLogWithAuthor,
+  PublicUserProfile,
   RegisterRequest,
   UpdateEventRequest,
   UpdatePracticeLogRequest,
@@ -58,7 +59,7 @@ export class FakeDataServer implements KodaServerApi {
     return this.helper.getMe();
   }
 
-  async getUser(userId: string): Promise<User> {
+  async getUser(userId: string): Promise<User | PublicUserProfile> {
     return this.helper.getUser(userId);
   }
 
@@ -113,7 +114,7 @@ export class FakeDataServer implements KodaServerApi {
     this.helper.cancelFriendRequest(requestId);
   }
 
-  async createPracticeLog(request: CreatePracticeLogRequest): Promise<PracticeLog> {
+  async createPracticeLog(request: CreatePracticeLogRequest): Promise<PracticeLogWithAuthor> {
     return this.helper.createPracticeLog(request);
   }
 
@@ -121,14 +122,14 @@ export class FakeDataServer implements KodaServerApi {
     return this.helper.getPracticeLogsFeed(request);
   }
 
-  async getPracticeLog(practiceLogId: string): Promise<PracticeLog> {
+  async getPracticeLog(practiceLogId: string): Promise<PracticeLogWithAuthor> {
     return this.helper.getPracticeLog(practiceLogId);
   }
 
   async updatePracticeLog(
     practiceLogId: string,
     request: UpdatePracticeLogRequest,
-  ): Promise<PracticeLog> {
+  ): Promise<PracticeLogWithAuthor> {
     return this.helper.updatePracticeLog(practiceLogId, request);
   }
 
@@ -166,7 +167,7 @@ export class FakeDataServer implements KodaServerApi {
   async createPracticeLogComment(
     practiceLogId: string,
     request: CreateCommentRequest,
-  ): Promise<Comment> {
+  ): Promise<CommentWithAuthor> {
     return this.helper.createPracticeLogComment(practiceLogId, request);
   }
 
@@ -228,5 +229,11 @@ export class FakeDataServer implements KodaServerApi {
 
   async deleteEvent(eventId: string): Promise<void> {
     this.helper.deleteEvent(eventId);
+  }
+
+  async analyzePracticeMedia(request: {
+    fileUrl: string;
+  }): Promise<{ feedback: string }> {
+    return Promise.resolve(this.helper.analyzePracticeMedia(request));
   }
 }

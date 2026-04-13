@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import type { PracticeLog, Media } from "@strava-musician-app/shared";
+import type { PracticeLogWithAuthor, Media } from "@strava-musician-app/shared";
 import "./index.css";
 import { userService, practiceLogService } from "../../model";
 
 type FeedPracticeLogCardProps = {
-  practiceLog: PracticeLog;
+  practiceLog: PracticeLogWithAuthor;
   currentUserId?: string;
   onLike: (practiceLogId: string) => Promise<void> | void;
   onUnlike: (practiceLogId: string) => Promise<void> | void;
   onComment: (practiceLogId: string, text: string) => Promise<void> | void;
-  onShare: (practiceLog: PracticeLog) => Promise<void> | void;
+  onShare: (practiceLog: PracticeLogWithAuthor) => Promise<void> | void;
   onDelete?: (PracticeLogId: string) => Promise<void> | void;
   onEdit?: (PracticeLogId: string) => void;
   onProfileClick?: (userId: string) => void;
@@ -30,29 +30,14 @@ const FeedPracticeLogCard = ({
   const [commentText, setCommentText] = useState("");
   const [isLiked, setIsLiked] = useState(false); // This should come from server data eventually
   const [likeCount, setLikeCount] = useState(0); // This should come from server data eventually
-  const [username, setUsername] = useState<string>("User");
-  const [userInitial, setUserInitial] = useState<string>("U");
+  const displayName = practiceLog.author?.username ?? "User";
+  const userInitial = displayName[0]?.toUpperCase() ?? "U";
   const [media, setMedia] = useState<Media[]>([]);
   // temporary for now
   const [showMenu, setShowMenu] = useState(false);
-  const [comments, setComments] = useState<Array<{text: String; username: string }>>([]);
+  const [comments, setComments] = useState<Array<{ text: string; username: string }>>([]);
 
   const isOwnPost = currentUserId === practiceLog.userId;
-    
-  useEffect(() => {
-    const fetchUser = async () => {
-        try {
-            const user = await userService.getUser(practiceLog.userId);
-            if (user) {
-                setUsername(user.username || "User");
-                setUserInitial(user.username?.[0]?.toUpperCase() || "U");
-            }
-        } catch (error) {
-            console.error("Failed to fetch user:", error);
-        }
-    };
-    fetchUser();
-  }, [practiceLog.userId]);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -84,17 +69,12 @@ const FeedPracticeLogCard = ({
                 practiceLog.practiceLogId
             );
 
-            const commentsWithUsernames = await Promise.all(
-                commentsData.map(async (comment) => {
-                    try {
-                        const user = await userService.getUser(comment.userId);
-                        return { text: comment.text, username: user.username }
-                    } catch {
-                        return { text: comment.text, username: "User" }
-                    }
-                })
+            setComments(
+              commentsData.map((comment) => ({
+                text: comment.text,
+                username: comment.author.username,
+              })),
             );
-            setComments(commentsWithUsernames);
         } catch (error) {
             console.error("Failed to fetch likes/comments:", error);
         }
@@ -204,10 +184,7 @@ const FeedPracticeLogCard = ({
         </button>
 
         <div className="feed-meta">
-          <div className="feed-name">
-            {/* Username would come from User entity - for now use userId */}
-            {username}
-          </div>
+          <div className="feed-name">{displayName}</div>
           <div className="feed-subtitle">
             {formatDate(practiceLog.createdAt)}
           </div>
