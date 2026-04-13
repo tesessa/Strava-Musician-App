@@ -13,7 +13,7 @@
     "start:backend": "npm run dev -w apps/backend",
     "build": "npm run build -w packages/shared && npm run build -w apps/web && npm run build -w apps/backend",
     "database_test": "NODE_ENV=test jest --runInBand",
-    "start:ai": "venv/bin/python -m uvicorn apps.backend.ai.ai_service:app --host 0.0.0.0 --port 8000"
+    "start:ai": "node scripts/run-ai-server.js"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
