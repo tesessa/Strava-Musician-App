@@ -1,69 +1,54 @@
 import type { KodaMediaApi } from "./KodaMediaApi";
 
-type OracleMediaConfig = {
-  namespace: string;
-  region: string;
-  profileImagesBucket: string;
-  practiceLogAudioBucket: string;
-  practiceLogVideoBucket: string;
+/** Default PAR bases (bucket scope); override per env in production. Each must end with `/o/`. */
+const DEFAULT_PAR_AUDIO_BASE =
+  "https://objectstorage.us-phoenix-1.oraclecloud.com/p/tLgViBcQ0HTfy4EeNMsaSsJNTGuh9c8ReQyciVvhPhTb7cIrqwpScvn1ZvJVp9iG/n/axlshhpuhun7/b/koda-practice-session-audio/o/";
+const DEFAULT_PAR_VIDEO_BASE =
+  "https://objectstorage.us-phoenix-1.oraclecloud.com/p/V4dx7GnkuoMEPXXCnJuz4pjZXMSV2qfre_0Hl_uls8HgotEL25ZMGVRqeIAFhh8l/n/axlshhpuhun7/b/koda-practice-session-video/o/";
+const DEFAULT_PAR_PROFILE_IMAGES_BASE =
+  "https://objectstorage.us-phoenix-1.oraclecloud.com/p/QThiKGHQjwmsb-eHC7KISJTKIZfkQRoIq1l_XLebUACLeFE6ZUyHGaieeb6vY9S7/n/axlshhpuhun7/b/koda-profile-images/o/";
+
+type OracleParMediaConfig = {
+  practiceLogAudioParBaseUrl: string;
+  practiceLogVideoParBaseUrl: string;
+  profileImagesParBaseUrl: string;
 };
 
 /**
- * Real media service that uploads directly to Oracle Object Storage public buckets.
- * Note: direct browser uploads are acceptable for local/dev scaffolding but production
- * should move to pre-signed URLs or backend-mediated upload authorization.
+ * Uploads and resolves URLs via Oracle Object Storage pre-authenticated requests (PAR).
+ * Reads and writes use the same object URL returned after PUT.
  */
 export class MediaService implements KodaMediaApi {
-  private readonly config: OracleMediaConfig = {
-    namespace: import.meta.env.VITE_ORACLE_NAMESPACE ?? "axlshhpuhun7",
-    region: import.meta.env.VITE_ORACLE_REGION ?? "us-phoenix-1",
-    profileImagesBucket:
-      import.meta.env.VITE_BUCKET_PROFILE_IMAGES ?? "koda-profile-images",
-    practiceLogAudioBucket:
-      import.meta.env.VITE_BUCKET_PRACTICE_LOG_AUDIO ?? "koda-practice-session-audio",
-    practiceLogVideoBucket:
-      import.meta.env.VITE_BUCKET_PRACTICE_LOG_VIDEO ?? "koda-practice-session-video",
+  private readonly config: OracleParMediaConfig = {
+    practiceLogAudioParBaseUrl:
+      import.meta.env.VITE_ORACLE_PAR_AUDIO_BASE_URL ?? DEFAULT_PAR_AUDIO_BASE,
+    practiceLogVideoParBaseUrl:
+      import.meta.env.VITE_ORACLE_PAR_VIDEO_BASE_URL ?? DEFAULT_PAR_VIDEO_BASE,
+    profileImagesParBaseUrl:
+      import.meta.env.VITE_ORACLE_PAR_PROFILE_IMAGES_BASE_URL ?? DEFAULT_PAR_PROFILE_IMAGES_BASE,
   };
 
   async uploadProfileImage(userId: string, file: File): Promise<string> {
     const objectKey = this.buildProfileImageKey(userId, file.name);
-    return this.uploadFile(this.config.profileImagesBucket, objectKey, file);
+    return this.uploadFile(this.config.profileImagesParBaseUrl, objectKey, file);
   }
 
   getProfileImageUrl(_userId: string, keyOrFilename: string): string {
-    return this.buildObjectUrl(this.config.profileImagesBucket, keyOrFilename);
+    return this.buildParObjectUrl(this.config.profileImagesParBaseUrl, keyOrFilename);
   }
 
   async uploadPracticeLogAudio(practiceLogId: string, file: File): Promise<string> {
-    return this.uploadPracticeLogMedia(
-      practiceLogId,
-      file,
-      this.config.practiceLogAudioBucket,
-      "audio",
-    );
+    const objectKey = this.buildPracticeLogMediaKey(practiceLogId, file.name, "audio");
+    return this.uploadFile(this.config.practiceLogAudioParBaseUrl, objectKey, file);
   }
 
   async uploadPracticeLogVideo(practiceLogId: string, file: File): Promise<string> {
-    return this.uploadPracticeLogMedia(
-      practiceLogId,
-      file,
-      this.config.practiceLogVideoBucket,
-      "video",
-    );
+    const objectKey = this.buildPracticeLogMediaKey(practiceLogId, file.name, "video");
+    return this.uploadFile(this.config.practiceLogVideoParBaseUrl, objectKey, file);
   }
 
-  private async uploadPracticeLogMedia(
-    practiceLogId: string,
-    file: File,
-    bucketName: string,
-    mediaKind: "audio" | "video",
-  ): Promise<string> {
-    const objectKey = this.buildPracticeLogMediaKey(practiceLogId, file.name, mediaKind);
-    return this.uploadFile(bucketName, objectKey, file);
-  }
-
-  private async uploadFile(bucketName: string, objectKey: string, file: File): Promise<string> {
-    const uploadUrl = this.buildObjectUrl(bucketName, objectKey);
+  private async uploadFile(parBaseUrl: string, objectKey: string, file: File): Promise<string> {
+    const uploadUrl = this.buildParObjectUrl(parBaseUrl, objectKey);
     const response = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
@@ -101,12 +86,12 @@ export class MediaService implements KodaMediaApi {
     return value.trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._/-]/g, "");
   }
 
-  private buildObjectUrl(bucketName: string, objectKey: string): string {
+  private buildParObjectUrl(parBaseUrl: string, objectKey: string): string {
+    const base = parBaseUrl.endsWith("/") ? parBaseUrl : `${parBaseUrl}/`;
     const encodedObjectKey = objectKey
       .split("/")
       .map((segment) => encodeURIComponent(segment))
       .join("/");
-
-    return `https://objectstorage.${this.config.region}.oraclecloud.com/n/${this.config.namespace}/b/${bucketName}/o/${encodedObjectKey}`;
+    return `${base}${encodedObjectKey}`;
   }
 }
