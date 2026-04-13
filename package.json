@@ -8,11 +8,12 @@
   ],
   "scripts": {
     "prestart": "npm run build -w packages/shared",
-    "start": "concurrently --names \"web,backend\" --kill-others \"npm run start:web\" \"npm run start:backend\"",
+    "start": "concurrently --names \"web,backend,ai\" --kill-others \"npm run start:web\" \"npm run start:backend\" \"npm run start:ai\"",
     "start:web": "npm run dev -w apps/web",
     "start:backend": "npm run dev -w apps/backend",
     "build": "npm run build -w packages/shared && npm run build -w apps/web && npm run build -w apps/backend",
-    "database_test": "NODE_ENV=test jest --runInBand"
+    "database_test": "NODE_ENV=test jest --runInBand",
+    "start:ai": "venv/bin/python -m uvicorn apps.backend.ai.ai_service:app --host 0.0.0.0 --port 8000"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

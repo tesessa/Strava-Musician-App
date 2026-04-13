@@ -1,0 +1,8 @@
+essentia
+IPython
+matplotlib
+openai
+fastapi
+uvicorn
+python-multipart
+requests

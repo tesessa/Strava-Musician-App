@@ -25,6 +25,7 @@ export type RecordingEntry = {
   type:        "audio" | "video";
   blob:        Blob;
   url:         string;
+  aiFileUrl?:  string;
   durationSec: number;
   aiRequested: boolean;
   savedForPracticeLog: boolean;
@@ -43,6 +44,7 @@ export type UploadedFile = {
 export type PersistedRecordingMeta = {
   id:          string;
   type:        "audio" | "video";
+  aiFileUrl?:  string;
   durationSec: number;
   aiRequested: boolean;
   savedForPracticeLog: boolean;

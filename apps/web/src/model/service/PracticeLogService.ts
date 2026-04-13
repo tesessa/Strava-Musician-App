@@ -120,6 +120,10 @@ export class PracticeLogService {
     return this.server.deleteMedia(mediaId);
   }
 
+  async analyzePracticeMedia(fileUrl: string): Promise<{ feedback: string }> {
+    return this.server.analyzePracticeMedia({ fileUrl });
+  }
+
   async getUserPracticeLogs(
     userId: string,
     lastItemId?: string,

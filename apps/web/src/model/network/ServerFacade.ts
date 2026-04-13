@@ -427,4 +427,13 @@ export class ServerFacade implements KodaServerApi {
   async deleteEvent(eventId: string): Promise<void> {
     return this.delete<void>(`/events/${eventId}`);
   }
+
+  async analyzePracticeMedia(
+    request: { fileUrl: string },
+  ): Promise<{ feedback: string }> {
+    return this.post<{ fileUrl: string }, { feedback: string }>(
+      "/ai",
+      request,
+    );
+  }
 }

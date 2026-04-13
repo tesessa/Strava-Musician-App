@@ -504,6 +504,20 @@
 }
 .delete-btn:hover { background: #1e1010; }
 
+.ai-feedback-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #cfc8ff;
+}
+
+.ai-feedback-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #cfc8ff;
+}
+
 /* (review button replaces old collapsed hint) */
 
 /* ============================= */
