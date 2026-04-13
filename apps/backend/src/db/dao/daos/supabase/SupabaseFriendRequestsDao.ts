@@ -31,6 +31,7 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
     let query = db("FriendRequest")
       .select("*")
       .where("receiverId", userId)
+      .where("status", "pending")
       .orderBy("createdAt", "desc")
       .orderBy("requestId", "desc")
       .limit(pageSize);
@@ -67,6 +68,7 @@ export class SupabaseFriendRequestsDao implements FriendRequestsDAO {
     let query = db("FriendRequest")
       .select("*")
       .where("senderId", userId)
+      .where("status", "pending")
       .orderBy("createdAt", "desc")
       .orderBy("requestId", "desc")
       .limit(pageSize);
