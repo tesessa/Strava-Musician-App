@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/navigation/BottomNav"
 import "./calendar.css";
 
 type EventType = "Lesson" | "Practice" | "Recital" | "Friend Recital" | "Other" | "";
+
 type ReminderUnit = "minutes" | "hours" | "days" | "weeks";
 
 interface CalendarEvent {
@@ -69,28 +71,28 @@ function isSameDate(a: Date, b: Date): boolean {
 
 
 export default function CalendarPage() {
-const testNotification = async () => {
-  alert("Test button clicked");
+// const testNotification = async () => {
+//   alert("Test button clicked");
 
-  if (!("Notification" in window)) {
-    alert("This browser does not support notifications.");
-    return;
-  }
+//   if (!("Notification" in window)) {
+//     alert("This browser does not support notifications.");
+//     return;
+//   }
 
-  const permission = await Notification.requestPermission();
-  alert(`Permission result: ${permission}`);
-  console.log("Notification.permission =", permission);
+//   const permission = await Notification.requestPermission();
+//   alert(`Permission result: ${permission}`);
+//   console.log("Notification.permission =", permission);
 
-  if (permission === "granted") {
-    new Notification("Test notification", {
-      body: "If you can see this, notifications are working.",
-    });
+//   if (permission === "granted") {
+//     new Notification("Test notification", {
+//       body: "If you can see this, notifications are working.",
+//     });
 
-    alert("Notification was created.");
-  } else {
-    alert("Notifications are not allowed.");
-  }
-};
+//     alert("Notification was created.");
+//   } else {
+//     alert("Notifications are not allowed.");
+//   }
+// };
 //----------------
 
   const navigate = useNavigate();
@@ -102,6 +104,7 @@ const testNotification = async () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showDayView, setShowDayView] = useState(false);
 
   const [eventType, setEventType] = useState<EventType>("");
   const [eventTitle, setEventTitle] = useState("");
@@ -283,43 +286,39 @@ const testNotification = async () => {
         : undefined,
     };
 
-    try {
-      const saved = await createCalendarEvent(newEvent);
-      setEvents((prev) => [...prev, saved]);
 
-      if (showReminder) {
+        try {
+      await createCalendarEvent(newEvent);
+      setEvents((prev) => [...prev, newEvent]);
+ 
+      if (newEvent.reminder) {
         const hasPermission = await requestNotificationPermission();
-
         if (hasPermission) {
-          if (!newEvent.startTime) {
-            alert("Please choose a start time for reminders.");
-          } else {
-            const eventStart = new Date(`${newEvent.date}T${newEvent.startTime}`);
-            const reminderOffset = convertToMs(reminderValue, reminderUnit);
-            const delay = eventStart.getTime() - Date.now() - reminderOffset;
-
-            console.log("eventStart:", eventStart);
-            console.log("reminderOffset:", reminderOffset);
-            console.log("delay:", delay);
-
-            if (delay > 0) {
-              setTimeout(() => {
-                new Notification(`Reminder: ${newEvent.title}`, {
-                  body: `${newEvent.type} starting soon`,
-                });
-              }, delay);
-            } else {
-              alert("That reminder time is already in the past.");
-            }
+          const eventDate = parseDateKey(selectedDate);
+          const [hours, minutes] = startTime.split(":").map(Number);
+          eventDate.setHours(hours, minutes, 0, 0);
+ 
+          const reminderMs = convertToMs(reminderValue, reminderUnit);
+          const reminderTime = eventDate.getTime() - reminderMs;
+          const now = Date.now();
+ 
+          if (reminderTime > now) {
+            const delay = reminderTime - now;
+            setTimeout(() => {
+              new Notification(`Reminder: ${eventTitle}`, {
+                body: `${eventType} starts at ${startTime}`,
+              });
+            }, delay);
           }
         }
       }
-
+ 
       resetForm();
       setShowModal(false);
+      setShowDayView(false);
     } catch (error) {
-      console.error("Failed to save event:", error);
-      alert("Failed to save event.");
+      console.error("Failed to add event:", error);
+      alert("Failed to add event.");
     }
   };
 
@@ -332,6 +331,55 @@ const testNotification = async () => {
       alert("Failed to delete event.");
     }
   };
+  //   try {
+  //     const saved = await createCalendarEvent(newEvent);
+  //     setEvents((prev) => [...prev, saved]);
+
+  //     if (showReminder) {
+  //       const hasPermission = await requestNotificationPermission();
+
+  //       if (hasPermission) {
+  //         if (!newEvent.startTime) {
+  //           alert("Please choose a start time for reminders.");
+  //         } else {
+  //           const eventStart = new Date(`${newEvent.date}T${newEvent.startTime}`);
+  //           const reminderOffset = convertToMs(reminderValue, reminderUnit);
+  //           const delay = eventStart.getTime() - Date.now() - reminderOffset;
+
+  //           console.log("eventStart:", eventStart);
+  //           console.log("reminderOffset:", reminderOffset);
+  //           console.log("delay:", delay);
+
+  //           if (delay > 0) {
+  //             setTimeout(() => {
+  //               new Notification(`Reminder: ${newEvent.title}`, {
+  //                 body: `${newEvent.type} starting soon`,
+  //               });
+  //             }, delay);
+  //           } else {
+  //             alert("That reminder time is already in the past.");
+  //           }
+  //         }
+  //       }
+  //     }
+
+  //     resetForm();
+  //     setShowModal(false);
+  //   } catch (error) {
+  //     console.error("Failed to save event:", error);
+  //     alert("Failed to save event.");
+  //   }
+  // };
+
+  // const handleDeleteEvent = async (id: string) => {
+  //   try {
+  //     await deleteCalendarEvent(id);
+  //     setEvents((prev) => prev.filter((e) => e.id !== id));
+  //   } catch (error) {
+  //     console.error("Failed to delete event:", error);
+  //     alert("Failed to delete event.");
+  //   }
+  // };
 
   /* ============================= */
   /* DISPLAY HELPERS               */
@@ -370,22 +418,16 @@ const testNotification = async () => {
     }
   };
 
+
   return (
     <div className="calendar-container">
-      <button className="back-button" onClick={() => navigate("/home")}>
+      {/* <button className="back-button" onClick={() => navigate("/home")}>
         ←
-      </button>
-
+      </button> */}
+ 
       <div className="purple-bg" />
-
+ 
       <div className="calendar-sheet">
-        <div className="stats-grid">
-          <div className="stat-card">
-            <h4>Practice Streak</h4>
-            <p>{practiceStreak} day{practiceStreak !== 1 ? "s" : ""}</p>
-          </div>
-        </div>
-
         <div className="calendar-header">
           <button onClick={() => changeMonth(-1)}>◀</button>
           <h2>
@@ -394,21 +436,21 @@ const testNotification = async () => {
           </h2>
           <button onClick={() => changeMonth(1)}>▶</button>
         </div>
-
+ 
         <div className="weekdays">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div key={day}>{day}</div>
           ))}
         </div>
-
+ 
         <div className="calendar-grid">
           {daysArray.map((_, index) => {
             const dayNumber = index - startDay + 1;
-
+ 
             if (index < startDay) {
               return <div key={index} className="empty" />;
             }
-
+ 
             const cellDate = new Date(
               currentMonth.getFullYear(),
               currentMonth.getMonth(),
@@ -417,7 +459,7 @@ const testNotification = async () => {
             const dateKey = formatDateKey(cellDate);
             const dayEvents = eventsForDate(dateKey);
             const isToday = isSameDate(cellDate, today);
-
+ 
             return (
               <div
                 key={dateKey}
@@ -426,23 +468,35 @@ const testNotification = async () => {
                 }`}
                 onClick={() => {
                   setSelectedDate(dateKey);
-                  setShowModal(true);
+                  setShowDayView(true);
                 }}
               >
                 <span className="day-number">{dayNumber}</span>
-
-                <div className="event-dots">
-                  {dayEvents.slice(0, 3).map((event, i) => (
-                    <span key={i} className={`dot ${dotClass(event.type)}`} />
+ 
+                <div className="event-preview">
+                  {dayEvents.slice(0, 2).map((event, i) => (
+                    <div key={i} className={`event-chip ${dotClass(event.type)}`}>
+                      {event.title}
+                    </div>
                   ))}
-                  {dayEvents.length > 3 && <span className="more">+</span>}
+                  {dayEvents.length > 2 && (
+                    <span className="more">+{dayEvents.length - 2} more</span>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
-
+ 
+        {/* Practice Streak moved to bottom */}
         <div className="month-events">
+          <div className="stats-grid" style={{ marginBottom: '16px' }}>
+            <div className="stat-card">
+              <h4>Practice Streak</h4>
+              <p>{practiceStreak} day{practiceStreak !== 1 ? "s" : ""}</p>
+            </div>
+          </div>
+ 
           {monthEvents.length === 0 ? (
             <p className="no-events">No events this month</p>
           ) : (
@@ -459,18 +513,100 @@ const testNotification = async () => {
           )}
         </div>
       </div>
-
+ 
+      {/* Floating + button */}
+      {/* <button
+        className="add-event-fab"
+        onClick={() => {
+          setSelectedDate(formatDateKey(today));
+          setShowModal(true);
+        }}
+        aria-label="Add event"
+      >
+        +
+      </button> */}
+ 
+      {/* Day View Modal */}
+      {showDayView && selectedDate && (
+        <div className="modal-overlay" onClick={() => setShowDayView(false)}>
+          <div className="modal day-view-modal" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>{parseDateKey(selectedDate).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</h3>
+              <button
+                className="secondary-btn"
+                onClick={() => setShowDayView(false)}
+                style={{ padding: '6px 12px', fontSize: '13px' }}
+              >
+                Close
+              </button>
+            </div>
+ 
+            <div className="day-view-content">
+              {eventsForDate(selectedDate).length === 0 ? (
+                <p className="no-events">No events scheduled</p>
+              ) : (
+                <div className="day-view-events">
+                  {eventsForDate(selectedDate)
+                    .sort((a, b) => {
+                      if (!a.startTime || !b.startTime) return 0;
+                      return a.startTime.localeCompare(b.startTime);
+                    })
+                    .map((event) => (
+                      <div key={event.id} className={`event-item ${colorClass(event.type)}`}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <span className={`dot ${dotClass(event.type)}`} />
+                            <strong>{event.type}</strong>
+                          </div>
+                          <div style={{ fontSize: '15px', marginBottom: '4px' }}>{event.title}</div>
+                          {event.startTime && event.endTime && (
+                            <div style={{ fontSize: '13px', color: '#a5b4fc' }}>
+                              {event.startTime} - {event.endTime}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteEvent(event.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+ 
+            <button
+              className="primary-btn"
+              onClick={() => {
+                setShowDayView(false);
+                setShowModal(true);
+              }}
+              style={{ marginTop: '12px' }}
+            >
+              Add Event
+            </button>
+          </div>
+        </div>
+      )}
+ 
+      {/* Add/Edit Event Modal */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Add Event</h3>
-
+ 
             {selectedDate && (
               <div className="selected-date">
                 {parseDateKey(selectedDate).toLocaleDateString()}
               </div>
             )}
-
+ 
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value as EventType)}
@@ -482,14 +618,14 @@ const testNotification = async () => {
               <option value="Friend Recital">Friend Recital</option>
               <option value="Other">Other</option>
             </select>
-
+ 
             <input
               type="text"
               placeholder="Event Title"
               value={eventTitle}
               onChange={(e) => setEventTitle(e.target.value)}
             />
-
+ 
             <div className="time-row">
               <input
                 type="time"
@@ -503,22 +639,7 @@ const testNotification = async () => {
                 onChange={(e) => setEndTime(e.target.value)}
               />
             </div>
-
-            <div className="modal-buttons">
-              <button className="primary-btn" onClick={addEvent} disabled={!canSave}>
-                Save
-              </button>
-              <button
-                className="secondary-btn"
-                onClick={() => {
-                  resetForm();
-                  setShowModal(false);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-
+ 
             <button
               type="button"
               className="reminder-toggle"
@@ -526,7 +647,7 @@ const testNotification = async () => {
             >
               {showReminder ? "Hide Reminder" : "Add Reminder"}
             </button>
-
+ 
             {showReminder && (
               <div className="reminder-row">
                 <input
@@ -545,48 +666,28 @@ const testNotification = async () => {
                   <option value="weeks">weeks</option>
                 </select>
               </div>
-
             )}
-            
-            {selectedDate &&
-              eventsForDate(selectedDate).map((event) => (
-                <div key={event.id} className={`event-item ${colorClass(event.type)}`}>
-                  <div>
-                    <strong>{event.type}</strong>: {event.title}{" "}
-                    {event.startTime && event.endTime
-                      ? `(${event.startTime} - ${event.endTime})`
-                      : ""}
-                  </div>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteEvent(event.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
+ 
+            <div className="modal-buttons">
+              <button className="primary-btn" onClick={addEvent} disabled={!canSave}>
+                Save
+              </button>
+              <button
+                className="secondary-btn"
+                onClick={() => {
+                  resetForm();
+                  setShowModal(false);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* test button */}
-      return (
-        <div className="calendar-container">
-          <div className="purple-bg" />
-
-          <button className="back-button" onClick={() => navigate("/home")}>
-            ←
-          </button>
-
-          <div className="calendar-sheet">
-            ...
-          </div>
-        </div>
-      );
-      <button className="test-notification-btn" onClick={testNotification}>
-      🔔 Test Reminder
-    </button>
-      {/* ---------------- */}
+ 
+      <BottomNav active="calendar" />
     </div>
   );
+
 }
