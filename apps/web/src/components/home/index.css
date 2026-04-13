@@ -1,5 +1,5 @@
 /* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap");
 
 /* ============================= */
 /* HOME CONTAINER                 */
@@ -9,7 +9,11 @@
   min-height: 100vh;
   background: #0e0e10;
   color: white;
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "DM Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   display: flex;
   flex-direction: column;
   padding-bottom: 70px; /* Space for bottom nav */
@@ -23,19 +27,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 0 16px;
   border-bottom: 1px solid #1e1e22;
   background: #0e0e10;
   position: sticky;
   top: 0;
   z-index: 10;
+  min-height: unset;
 }
 
 .home-title {
-  font-weight: 700;
-  font-size: 20px;
-  color: white;
   margin: 0;
+  padding: 0;
+  line-height: 0;
+  font-size: 0;
+}
+
+.home-title-logo {
+  display: block;
+  height: 60px;
+  width: auto;
+  max-width: min(160px, 42vw);
 }
 
 .home-actions {
@@ -197,7 +209,7 @@
   cursor: pointer;
   border: none;
   transition: all 0.2s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .notification-accept-btn {
@@ -264,7 +276,7 @@
   background: #18181b;
   color: white;
   border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .header-search-input::placeholder {
@@ -377,7 +389,7 @@
   cursor: pointer;
   transition: background-color 0.2s;
   flex-shrink: 0;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .user-result-follow:hover {
@@ -429,7 +441,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   cursor: pointer;
 }
 
@@ -568,7 +580,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .feed-menu-item:hover {
@@ -741,7 +753,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .feed-action-btn:hover {
@@ -794,7 +806,7 @@
   font-size: 0.9rem;
   background: #18181b;
   color: white;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .comment-input:focus {
@@ -814,7 +826,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .comment-send:hover {
@@ -851,7 +863,7 @@
   padding: 8px;
   cursor: pointer;
   transition: color 0.2s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .nav-btn:hover {
