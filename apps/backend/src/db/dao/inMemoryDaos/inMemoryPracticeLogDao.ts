@@ -6,52 +6,69 @@ const authDao = createAuthDAO();
 
 export const practiceLogs = new Map<string, PracticeLog>();
 
-export const PracticeLogDao: PracticeLogDAO = {
+class InMemoryPracticeLogDao implements PracticeLogDAO {
+  async getUserPracticeLogs(userId: string, lastItemId: string | null, pageSize: number) {
+    // Get all practice logs for the user, sorted chronologically by createdAt
+    const userPracticeLogs = Array.from(practiceLogs.values())
+      .filter((log) => log.userId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    if (!lastItemId) {
+      return userPracticeLogs.slice(0, pageSize);
+    }
+    const idx = userPracticeLogs.findIndex((l) => l.practiceLogId === lastItemId);
+    if (idx === -1 || idx === userPracticeLogs.length - 1) {
+      return [];
+    }
+    return userPracticeLogs.slice(idx + 1, idx + 1 + pageSize);
+  }
+
   async createPracticeLog(practiceLog: PracticeLog) {
     const id = practiceLog.practiceLogId;
     practiceLogs.set(id, practiceLog);
     return practiceLog;
-  },
+  }
 
   async getFeed(lastItemId: string | null, pageSize: number, token: string) {
     const user = await authDao.getUserByToken(token);
     if (!user) return [];
 
-    // Get all practice logs for this user, sorted chronologically by createdAt
-    const userPracticeLogs = Array.from(practiceLogs.values())
-      .filter((log) => log.userId === user.userId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    // Get friend userIds (assuming inMemorySocialState is imported and available)
+    const { inMemorySocialState } = await import("./inMemorySocialState");
+    const friendIds = inMemorySocialState.friendships
+      .filter(f => f.userId === user.userId)
+      .map(f => f.friendId);
 
-    // If lastItemId is null, return the first pageSize items
+    // Collect logs from user and friends
+    const feedLogs = Array.from(practiceLogs.values())
+      .filter((log) => log.userId === user.userId || friendIds.includes(log.userId))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     if (!lastItemId) {
-      return userPracticeLogs.slice(0, pageSize);
+      return feedLogs.slice(0, pageSize);
     }
-
-    // Find the index of the lastItemId
-    const idx = userPracticeLogs.findIndex((l) => l.practiceLogId === lastItemId);
-
-    // If lastItemId not found or is the last item, return empty list
-    if (idx === -1 || idx === userPracticeLogs.length - 1) {
+    const idx = feedLogs.findIndex((l) => l.practiceLogId === lastItemId);
+    if (idx === -1 || idx === feedLogs.length - 1) {
       return [];
     }
+    return feedLogs.slice(idx + 1, idx + 1 + pageSize);
+  }
 
-    // Return the next pageSize items after lastItemId
-    return userPracticeLogs.slice(idx + 1, idx + 1 + pageSize);
-  },
-
-  async getPracticeLog(practiceLogId) {
+  async getPracticeLog(practiceLogId: string) {
     return practiceLogs.get(practiceLogId) ?? null;
-  },
+  }
 
-  async updatePracticeLog(practiceLogId, patch) {
+  async updatePracticeLog(practiceLogId: string, patch: Partial<PracticeLog>) {
     const existing = practiceLogs.get(practiceLogId);
     if (!existing) return null;
     const updated = { ...existing, ...patch };
     practiceLogs.set(practiceLogId, updated);
     return updated;
-  },
+  }
 
-  async deletePracticeLog(practiceLogId) {
+  async deletePracticeLog(practiceLogId: string) {
     return practiceLogs.delete(practiceLogId);
-  },
+  }
 };
+
+export const PracticeLogDao = new InMemoryPracticeLogDao();

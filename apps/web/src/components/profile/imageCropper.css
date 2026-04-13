@@ -1,0 +1,159 @@
+.image-cropper-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.image-cropper-modal {
+  background: #16161a;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  border: 1px solid #1e1e22;
+}
+
+.cropper-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.cropper-instructions {
+  font-size: 0.875rem;
+  color: #888;
+  margin: 0 0 20px 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.cropper-canvas-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: #0e0e10;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.cropper-canvas {
+  max-width: 100%;
+  height: auto;
+  cursor: move;
+  border-radius: 8px;
+}
+
+.cropper-zoom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.zoom-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #6c4ef6;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.zoom-btn:hover {
+  background: #5a3dd5;
+}
+
+.zoom-btn:active {
+  background: #4a2dc5;
+}
+
+.zoom-label {
+  font-size: 0.875rem;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cropper-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cropper-cancel-btn,
+.cropper-apply-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.cropper-cancel-btn {
+  background: #1e1e24;
+  color: #aaa;
+}
+
+.cropper-cancel-btn:hover {
+  background: #2a2a35;
+}
+
+.cropper-apply-btn {
+  background: #6c4ef6;
+  color: white;
+}
+
+.cropper-apply-btn:hover {
+  background: #5a3dd5;
+}
+
+.cropper-apply-btn:active {
+  background: #4a2dc5;
+}
+
+@media (max-width: 640px) {
+  .image-cropper-modal {
+    padding: 20px;
+  }
+
+  .cropper-title {
+    font-size: 1.1rem;
+  }
+
+  .cropper-instructions {
+    font-size: 0.8rem;
+  }
+
+  .cropper-canvas-container {
+    padding: 12px;
+  }
+
+  .zoom-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+}

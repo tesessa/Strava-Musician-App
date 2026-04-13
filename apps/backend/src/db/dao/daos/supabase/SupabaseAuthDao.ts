@@ -7,7 +7,7 @@ import { User as SupabaseUser, AuthSession } from "./config/SupabaseTableTypes";
 
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
   return {
-    id: supabaseUser.id,
+    userId: supabaseUser.id,
     email: supabaseUser.email,
     username: supabaseUser.username,
     profilePhoto: supabaseUser.image_url || undefined,
@@ -27,6 +27,12 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
 
 export class SupabaseAuthDao implements AuthDAO {
   TOKEN_TTL_MS = 1000 * 60 * 30; // 30 minutes
+  //check if db connection is working
+  constructor() {
+    db.raw("SELECT 1")
+      .then(() => console.log("Database connection established"))
+      .catch((err) => console.error("Database connection error:", err));
+  }
 
   async createTokenForUser(userId: string): Promise<AuthToken> {
     const token = randomUUID();
@@ -50,6 +56,10 @@ export class SupabaseAuthDao implements AuthDAO {
   }
 
   async getUserByToken(token: string): Promise<User | null> {
+    const isValid = await this.checkTokenValidity(token);
+    if (!isValid) {
+      return null;
+    }
     const user = await db("AuthSession")
       .join("User", "AuthSession.user_id", "User.id")
       .where("AuthSession.token", token)
@@ -63,19 +73,15 @@ export class SupabaseAuthDao implements AuthDAO {
 
   async refreshSession(token: string): Promise<void> {
     const newExpiresAt = new Date(Date.now() + this.TOKEN_TTL_MS);
+
+    const isValid = await this.checkTokenValidity(token);
+    if (!isValid) {
+      return;
+    }
+
     await db<AuthSession>("AuthSession")
       .where({ token: token })
       .update({ expires_at: newExpiresAt });
-  }
-
-  async checkAndRefreshSession(token: string): Promise<boolean> {
-    const isValid = await this.checkTokenValidity(token);
-    if (!isValid) {
-      return false;
-    }
-
-    await this.refreshSession(token);
-    return true;
   }
 
   async checkTokenValidity(token: string): Promise<boolean> {
@@ -111,5 +117,9 @@ export class SupabaseAuthDao implements AuthDAO {
     await db<AuthSession>("AuthSession")
       .where("expires_at", "<", new Date())
       .del();
+  }
+
+  async clearAll(): Promise<void> {
+    await db<AuthSession>("AuthSession").del();
   }
 }

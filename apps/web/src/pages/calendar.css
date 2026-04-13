@@ -14,6 +14,8 @@
   overflow-x: hidden;
 }
 
+
+/* Background Layer */
 .purple-bg {
   position: absolute;
   inset: 0;
@@ -39,9 +41,11 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
+
 .calendar-sheet.open {
-  height: 90%;
+ height: 90%;
 }
+
 
 .drag-handle {
   width: 45px;
@@ -122,6 +126,7 @@
   margin-bottom: 12px;
 }
 
+
 .weekdays div {
   font-weight: 600;
   color: #8b8fbf;
@@ -131,6 +136,7 @@
 .calendar-grid {
   margin-bottom: 20px;
 }
+
 
 .day {
   min-height: 84px;
@@ -161,8 +167,9 @@
   outline-offset: 0;
 }
 
+
 .empty {
-  visibility: hidden;
+ visibility: hidden;
 }
 
 .day-number {
@@ -276,6 +283,7 @@
   color: #d1d5ff;
 }
 
+
 .sheet-date {
   font-size: 12px;
   color: #8b8fbf;
@@ -291,6 +299,7 @@
   z-index: 1001;
   padding: 20px;
 }
+
 
 .modal {
   background: #1c1d2b;
@@ -315,6 +324,7 @@
   color: #a5b4fc;
   margin-top: -6px;
 }
+
 
 .modal select,
 .modal input {
@@ -382,11 +392,14 @@
   color: white;
 }
 
+
+/* Modal Buttons */
 .modal-buttons {
   display: flex;
   justify-content: space-between;
   gap: 10px;
 }
+
 
 .primary-btn {
   background: linear-gradient(135deg, #ff7b54, #ff9770);
@@ -412,6 +425,7 @@
   cursor: pointer;
   flex: 1;
 }
+
 
 .delete-btn {
   background: #ef4444;

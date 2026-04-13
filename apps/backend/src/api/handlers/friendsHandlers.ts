@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { createFriendsService } from "../services/friendsService";
+import { FriendsService } from "../services/friendsService";
 import { authenticateToken } from "../utils/authenticateToken";
 import { createFriendsDAO } from "@/db/dao/factories/friendsDaoFactory";
 
-const friendsService = createFriendsService(createFriendsDAO());
+const friendsService = new FriendsService(createFriendsDAO());
 
 export async function listFriends(req: Request) {
   const auth = await authenticateToken(req);
   if (auth.error) return auth.error;
-  let lastFriendId = null;
+  let lastFriendId: string | null = null;
   let pageSize = 20;
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     const url = new URL(req.url);
-    lastFriendId = url.searchParams.get('lastFriendId');
-    const pageSizeParam = url.searchParams.get('pageSize');
+    lastFriendId = url.searchParams.get("lastFriendId");
+    const pageSizeParam = url.searchParams.get("pageSize");
     if (pageSizeParam && !isNaN(Number(pageSizeParam))) {
       pageSize = Number(pageSizeParam);
     }
@@ -21,20 +21,13 @@ export async function listFriends(req: Request) {
     try {
       const body = await req.json();
       lastFriendId = body.lastFriendId ?? null;
-      pageSize = typeof body.pageSize === 'number' ? body.pageSize : 20;
-    } catch (e) {
-      // If no body or invalid JSON, use defaults
+      pageSize = typeof body.pageSize === "number" ? body.pageSize : 20;
+    } catch {
+      // use defaults
     }
   }
   const friends = await friendsService.listFriends(auth.user.userId, { lastFriendId, pageSize });
   return NextResponse.json(friends);
-}
-
-export async function sendOrAcceptFriendRequest(req: Request, friendId: string) {
-  const auth = await authenticateToken(req);
-  if (auth.error) return auth.error;
-  const result = await friendsService.sendOrAcceptFriendRequest(auth.user.userId, friendId);
-  return NextResponse.json(result);
 }
 
 export async function removeFriend(req: Request, friendId: string) {
@@ -45,7 +38,7 @@ export async function removeFriend(req: Request, friendId: string) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   await friendsService.removeFriend(auth.user.userId, friendId);
-  return NextResponse.json({ success: true });
+  return new NextResponse(null, { status: 204 });
 }
 
 export async function isFriend(req: Request, userId: string) {

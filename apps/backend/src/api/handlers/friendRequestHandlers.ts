@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { createFriendRequestsService } from "../services/friendRequestsService";
+import { FriendRequestsService } from "../services/friendRequestsService";
 import { authenticateToken } from "../utils/authenticateToken";
 import { createFriendRequestsDAO } from "../../db/dao/factories/friendRequestsDaoFactory";
 import { createUserDAO } from "../../db/dao/factories/userDaoFactory";
 
-const friendRequestsService = createFriendRequestsService(createFriendRequestsDAO());
+const friendRequestsService = new FriendRequestsService(
+  createFriendRequestsDAO(),
+);
 
 export async function createFriendRequest(req: Request, receiverId: string) {
   const auth = await authenticateToken(req);
@@ -17,19 +19,31 @@ export async function createFriendRequest(req: Request, receiverId: string) {
   if (!receiver) {
     return NextResponse.json({ error: "user_not_found" }, { status: 404 });
   }
-  const result = await friendRequestsService.createFriendRequest(auth.user.userId, receiverId);
-  return NextResponse.json(result);
+  //fixme check for duplicate friend request or existing friendship
+  // const existingRequest = await friendRequestsService.listOutgoing(auth.user.userId, { pageSize: 100 });
+  // if (existingRequest.some(req => req.receiverId === receiverId)) {
+  //   return NextResponse.json({ error: "request_already_sent" }, { status: 400 });
+  // }
+  // const existingIncoming = await friendRequestsService.listIncoming(auth.user.userId, { pageSize: 100 });
+  // if (existingIncoming.some(req => req.senderId === receiverId)) {
+  //   return NextResponse.json({ error: "request_already_received" }, { status: 400 });
+  // }
+  const friendRequest = await friendRequestsService.createFriendRequest(
+    auth.user.userId,
+    receiverId,
+  );
+  return NextResponse.json(friendRequest, { status: 201 });
 }
 
 export async function listIncoming(req: Request) {
   const auth = await authenticateToken(req);
   if (auth.error) return auth.error;
-  let lastRequestId = null;
+  let lastRequestId: string | null = null;
   let pageSize = 20;
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     const url = new URL(req.url);
-    lastRequestId = url.searchParams.get('lastRequestId');
-    const pageSizeParam = url.searchParams.get('pageSize');
+    lastRequestId = url.searchParams.get("lastRequestId");
+    const pageSizeParam = url.searchParams.get("pageSize");
     if (pageSizeParam && !isNaN(Number(pageSizeParam))) {
       pageSize = Number(pageSizeParam);
     }
@@ -37,24 +51,27 @@ export async function listIncoming(req: Request) {
     try {
       const body = await req.json();
       lastRequestId = body.lastRequestId ?? null;
-      pageSize = typeof body.pageSize === 'number' ? body.pageSize : 20;
-    } catch (e) {
-      // If no body or invalid JSON, use defaults
+      pageSize = typeof body.pageSize === "number" ? body.pageSize : 20;
+    } catch {
+      // use defaults
     }
   }
-  const requests = await friendRequestsService.listIncoming(auth.user.userId, { lastRequestId, pageSize });
+  const requests = await friendRequestsService.listIncoming(auth.user.userId, {
+    lastRequestId: lastRequestId ?? undefined,
+    pageSize,
+  });
   return NextResponse.json(requests);
 }
 
 export async function listOutgoing(req: Request) {
   const auth = await authenticateToken(req);
   if (auth.error) return auth.error;
-  let lastRequestId = null;
+  let lastRequestId: string | null = null;
   let pageSize = 20;
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     const url = new URL(req.url);
-    lastRequestId = url.searchParams.get('lastRequestId');
-    const pageSizeParam = url.searchParams.get('pageSize');
+    lastRequestId = url.searchParams.get("lastRequestId");
+    const pageSizeParam = url.searchParams.get("pageSize");
     if (pageSizeParam && !isNaN(Number(pageSizeParam))) {
       pageSize = Number(pageSizeParam);
     }
@@ -62,41 +79,47 @@ export async function listOutgoing(req: Request) {
     try {
       const body = await req.json();
       lastRequestId = body.lastRequestId ?? null;
-      pageSize = typeof body.pageSize === 'number' ? body.pageSize : 20;
-    } catch (e) {
-      // If no body or invalid JSON, use defaults
+      pageSize = typeof body.pageSize === "number" ? body.pageSize : 20;
+    } catch {
+      // use defaults
     }
   }
-  const requests = await friendRequestsService.listOutgoing(auth.user.userId, { lastRequestId, pageSize });
+  const requests = await friendRequestsService.listOutgoing(auth.user.userId, {
+    lastRequestId: lastRequestId ?? undefined,
+    pageSize,
+  });
   return NextResponse.json(requests);
 }
 
 export async function acceptRequest(req: Request, requestId: string) {
   const auth = await authenticateToken(req);
   if (auth.error) return auth.error;
-  const request = await friendRequestsService.getFriendRequestById(requestId);
-  if (!request) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (request.receiverId !== auth.user.userId) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const fr = await friendRequestsService.getFriendRequestById(requestId);
+  if (!fr) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  if (fr.receiverId !== auth.user.userId)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   await friendRequestsService.acceptRequest(requestId);
-  return NextResponse.json({ success: true });
+  return new NextResponse(null, { status: 204 });
 }
 
 export async function rejectRequest(req: Request, requestId: string) {
   const auth = await authenticateToken(req);
   if (auth.error) return auth.error;
-  const request = await friendRequestsService.getFriendRequestById(requestId);
-  if (!request) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (request.receiverId !== auth.user.userId) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const fr = await friendRequestsService.getFriendRequestById(requestId);
+  if (!fr) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  if (fr.receiverId !== auth.user.userId)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   await friendRequestsService.rejectRequest(requestId);
-  return NextResponse.json({ success: true });
+  return new NextResponse(null, { status: 204 });
 }
 
 export async function cancelRequest(req: Request, requestId: string) {
   const auth = await authenticateToken(req);
   if (auth.error) return auth.error;
-  const request = await friendRequestsService.getFriendRequestById(requestId);
-  if (!request) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (request.senderId !== auth.user.userId) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const fr = await friendRequestsService.getFriendRequestById(requestId);
+  if (!fr) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  if (fr.senderId !== auth.user.userId)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   await friendRequestsService.cancelRequest(requestId);
-  return NextResponse.json({ success: true });
+  return new NextResponse(null, { status: 204 });
 }

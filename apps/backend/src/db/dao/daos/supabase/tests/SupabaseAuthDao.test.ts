@@ -30,14 +30,15 @@ describe("SupabaseAuthDao", () => {
     expect(authToken).toHaveProperty("timestamp");
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toMatchObject({
-      id: testUserId,
+      userId: testUserId,
       email: "test@example.com",
-      createdAt: expect.any(Date),
       username: "testuser",
-      imageUrl: "",
-      bio: "",
-      visibility: "private",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
     });
   });
 
@@ -48,14 +49,15 @@ describe("SupabaseAuthDao", () => {
     await authDao.refreshSession(authToken.token);
     const user = await authDao.getUserByToken(authToken.token);
     expect(user).toMatchObject({
-      id: testUserId,
+      userId: testUserId,
       email: "test@example.com",
-      createdAt: expect.any(Date),
       username: "testuser",
-      imageUrl: "",
-      bio: "",
-      visibility: "private",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
     });
     const newTimeStamp = await authDao.getTokenExpiration(authToken.token);
     expect(newTimeStamp).not.toBeNull();
@@ -64,8 +66,9 @@ describe("SupabaseAuthDao", () => {
 
   it("should check and refresh token", async () => {
     const authToken = await authDao.createTokenForUser(testUserId);
-    const isValid = await authDao.checkAndRefreshSession(authToken.token);
-    expect(isValid).toBe(true);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(true);
+    await authDao.refreshSession(authToken.token);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(true);
   });
 
   it("should not refresh expired token", async () => {
@@ -75,8 +78,9 @@ describe("SupabaseAuthDao", () => {
 
     const authToken = await authDao.createTokenForUser(testUserId);
     await new Promise((resolve) => setTimeout(resolve, 2000)); // wait 2 seconds to ensure token is expired
-    const isValid = await authDao.checkAndRefreshSession(authToken.token);
-    expect(isValid).toBe(false);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(false);
+    await authDao.refreshSession(authToken.token);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(false);
 
     // restore original TOKEN_TTL_MS
     (authDao as any).TOKEN_TTL_MS = originalTokenTtl;

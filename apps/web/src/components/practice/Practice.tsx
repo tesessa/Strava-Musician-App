@@ -29,6 +29,9 @@ export default function Practice() {
     audioRecordTime,
     videoRecording,
     videoRecordTime,
+    aiFeedbackById,
+    aiErrorById,
+    aiLoadingById,
     videoPreviewRef,
     uploadRef,
     startAudio,
@@ -51,8 +54,17 @@ export default function Practice() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
 
+  const [showTuner, setShowTuner] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [cents, setCents] = useState(0);
+  const [listening, setListening] = useState(false);
+  const streamRef = useRef<MediaStream | null>(null);
+
   const metronomeRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioCtxTunerRef = useRef<AudioContext | null>(null);
 
   const hasMedia = recordings.length > 0 || uploads.length > 0;
 
@@ -80,6 +92,133 @@ export default function Practice() {
     if (metronomeRef.current) clearInterval(metronomeRef.current);
     audioCtxRef.current?.close();
     setMetronomeRunning(false);
+  };
+  // tuner code
+  const startTuner = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    streamRef.current = stream; 
+
+    const audioCtx = new AudioContext();
+    await audioCtx.resume();
+
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+
+    source.connect(analyser);
+
+    analyserRef.current = analyser;
+    audioCtxTunerRef.current = audioCtx;
+
+    setListening(true);
+    updatePitch();
+  };
+
+  const stopTuner = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+
+    audioCtxTunerRef.current?.close();
+    audioCtxTunerRef.current = null;
+
+    analyserRef.current = null;
+
+    setListening(false);
+
+    // reset UI. This helps get rid of old notes
+    setNote(null);
+    setCents(0);
+  };
+
+  const NOTE_STRINGS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+  function frequencyToNote(freq: number) {
+    const A4 = 440;
+    const noteNum = 12 * Math.log2(freq / A4);
+    const midi = Math.round(noteNum) + 69;
+
+    const noteIndex = ((midi % 12) + 12) % 12;
+    const note = NOTE_STRINGS[noteIndex];
+
+    const cents = Math.round((noteNum - Math.round(noteNum)) * 100);
+
+    return {
+      note,
+      cents,
+    };
+  }
+
+  function autoCorrelate(buffer: Float32Array, sampleRate: number) {
+    let SIZE = buffer.length;
+    let rms = 0;
+
+    for (let i = 0; i < SIZE; i++) {
+      let val = buffer[i];
+      rms += val * val;
+    }
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < 0.01) return -1;
+
+    let r1 = 0, r2 = SIZE - 1;
+    for (let i = 0; i < SIZE / 2; i++) {
+      if (Math.abs(buffer[i]) < 0.2) { r1 = i; break; }
+    }
+    for (let i = 1; i < SIZE / 2; i++) {
+      if (Math.abs(buffer[SIZE - i]) < 0.2) { r2 = SIZE - i; break; }
+    }
+
+    buffer = buffer.slice(r1, r2);
+    SIZE = buffer.length;
+
+    let c = new Array(SIZE).fill(0);
+    for (let i = 0; i < SIZE; i++) {
+      for (let j = 0; j < SIZE - i; j++) {
+        c[i] += buffer[j] * buffer[j + i];
+      }
+    }
+
+    let d = 0;
+    while (c[d] > c[d + 1]) d++;
+
+    let maxval = -1, maxpos = -1;
+    for (let i = d; i < SIZE; i++) {
+      if (c[i] > maxval) {
+        maxval = c[i];
+        maxpos = i;
+      }
+    }
+
+    let T0 = maxpos;
+    return sampleRate / T0;
+  }
+
+  const updatePitch = () => {
+    const analyser = analyserRef.current;
+    const audioCtx = audioCtxTunerRef.current;
+
+    if (!analyser || !audioCtx) return;
+
+    const buffer = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buffer);
+
+    const freq = autoCorrelate(buffer, audioCtx.sampleRate);
+
+    if (freq !== -1) {
+      const data = frequencyToNote(freq);
+
+      let adjustedCents = data.cents;
+
+      // makes it less precise (real life isn't exact) Also helps it not jump around a lot
+      if (Math.abs(adjustedCents) < 8) {
+        adjustedCents = 0;
+      }
+
+      setNote(data.note);
+      setCents(adjustedCents);
+    }
+
+    requestAnimationFrame(updatePitch);
   };
 
   // navigate to /practice-log page with right state variables
@@ -159,7 +298,7 @@ export default function Practice() {
       <div className="bottom-panel">
         {/* Tools row */}
         <div className="sheet-section tools-row">
-          <button className="tool-btn" onClick={() => navigate("/tuner")}>
+          <button className="tool-btn" onClick={() => setShowTuner(true)}>
             Tuner
           </button>
           {metronomeRunning ? (
@@ -306,9 +445,10 @@ export default function Practice() {
                       <div className="media-card-actions">
                         <button
                           className={`media-action-btn ai-btn ${r.aiRequested ? "ai-active" : ""}`}
+                          disabled={Boolean(aiLoadingById[r.id])}
                           onClick={() => toggleAI(r.id)}
                         >
-                          ✦ AI Feedback
+                          {aiLoadingById[r.id] ? "Analyzing..." : "✦ AI Feedback"}
                         </button>
                         <button
                           className={`media-action-btn save-btn ${r.savedForPracticeLog ? "save-active" : ""}`}
@@ -323,6 +463,12 @@ export default function Practice() {
                           🗑
                         </button>
                       </div>
+                      {aiFeedbackById[r.id] && (
+                        <p className="ai-feedback-text">{aiFeedbackById[r.id]}</p>
+                      )}
+                      {aiErrorById[r.id] && (
+                        <p className="ai-feedback-error">{aiErrorById[r.id]}</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -466,6 +612,63 @@ export default function Practice() {
           </div>
         </div>
       )}
+
+      {/*-- Tuner popup -- */}
+      {showTuner && (
+        <div className="popup-overlay" onClick={() => { stopTuner(); setShowTuner(false); }}>
+          <div className="tuner-popup" onClick={(e) => e.stopPropagation()}>
+            <h3>Tuner</h3>
+            <div className="tuner-display">
+
+              <div className="tuner-arc">
+                {Array.from({ length: 11 }).map((_, i) => {
+                  const position = i - 5; 
+                  const threshold = Math.round(cents / 10);
+
+                  let className = "tuner-segment";
+
+                  if (position === 0 && Math.abs(cents) < 5) {
+                    className += " active-center";
+                  } else if (position < 0 && position >= threshold) {
+                    className += " active-flat";
+                  } else if (position > 0 && position <= threshold) {
+                    className += " active-sharp";
+                  }
+
+                  return <div key={i} className={className}></div>;
+                })}
+              </div>
+
+              <div className="tuner-note">{note || "--"}</div>
+
+            </div>
+            {!listening ? (
+              <div className="tuner-actions">
+                <button className="start-btn" onClick={startTuner}>
+                  Start
+                </button>
+                <button
+                  className="cancel-btn"
+                  onClick={() => { stopTuner(); setShowTuner(false); }}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="tuner-actions">
+                <button
+                  className="start-btn"
+                  onClick={() => { stopTuner(); setShowTuner(false); }}
+                  style={{ background: "#c0392b" }}
+                >
+                  Stop
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

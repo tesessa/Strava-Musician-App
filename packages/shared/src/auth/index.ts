@@ -8,9 +8,6 @@ export interface RegisterRequest {
   email: string;
   username: string;
   password: string;
-  profilePhoto?: string;
-  bio?: string;
-  instruments?: string[];
 }
 
 /**
@@ -39,7 +36,6 @@ export interface AuthToken {
 }
 
 /**
- * GET /auth/me — authenticated user profile (same shape as User DTO, no password).
- * Typically returned as { user: User }.
+ * GET /auth/me — response body is the authenticated `User` (no password).
  */
 export type MeResponse = User;

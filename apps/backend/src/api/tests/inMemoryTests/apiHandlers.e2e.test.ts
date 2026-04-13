@@ -30,9 +30,9 @@ describe("API Handlers Integration (Comprehensive)", () => {
       });
     expect(res.status).toBe(201);
     expect(res.body.user).toBeDefined();
-    expect(res.body.AuthToken.token).toBeDefined();
-    userId = res.body.user.id;
-    authToken = res.body.AuthToken.token;
+    expect(res.body.token).toBeDefined();
+    userId = res.body.user.userId;
+    authToken = res.body.token;
   });
 
   it("should not register with duplicate email", async () => {
@@ -69,8 +69,8 @@ describe("API Handlers Integration (Comprehensive)", () => {
         password: "secret"
       });
     expect(res.status).toBe(200);
-    expect(res.body.authToken.token).toBeDefined();
-    authToken = res.body.authToken.token;
+    expect(res.body.token).toBeDefined();
+    authToken = res.body.token;
     userId = res.body.user.userId;
   });
 
@@ -101,7 +101,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .get("/auth/me")
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.user.email).toBe("alice@example.com");
+    expect(res.body.email).toBe("alice@example.com");
   });
 
   it("should fail to get profile with no token", async () => {
@@ -125,14 +125,14 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .get(`/users/${userId}`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.user.userId).toBe(userId);
+    expect(res.body.userId).toBe(userId);
   });
 
   it("should fail to get user with wrong token", async () => {
     const res = await request(API)
       .get(`/users/${userId}`)
       .set("Authorization", "Bearer invalidtoken");
-    expect(res.status).toBe(403); // or 401 depending on your logic
+    expect(res.status).toBe(401); // or 401 depending on your logic
   });
 
   it("should fail to get user with no token", async () => {
@@ -163,7 +163,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .get(`/users/search?query=alice`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.users)).toBe(true);
+    expect(Array.isArray(res.body)).toBe(true);
   });
 
   it("should fail to search users with no token", async () => {
@@ -191,8 +191,8 @@ describe("API Handlers Integration (Comprehensive)", () => {
         visibility: "public"
       });
     expect(res.status).toBe(201);
-    expect(res.body.practiceLog).toBeDefined();
-    practiceLogId = res.body.practiceLog.practiceLogId;
+    expect(res.body.practiceLogId).toBeDefined();
+    practiceLogId = res.body.practiceLogId;
   });
 
   it("should create another practice log", async () => {
@@ -205,8 +205,8 @@ describe("API Handlers Integration (Comprehensive)", () => {
         visibility: "private"
       });
     expect(res.status).toBe(201);
-    expect(res.body.practiceLog).toBeDefined();
-    deletedPracticeLogId = res.body.practiceLog.practiceLogId;
+    expect(res.body.practiceLogId).toBeDefined();
+    deletedPracticeLogId = res.body.practiceLogId;
   });
 
   it("should get the practice log feed", async () => {
@@ -214,8 +214,8 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .get("/practice-logs/feed?pageSize=5")
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.practiceLogs)).toBe(true);
-    expect(res.body.practiceLogs.length).toBeGreaterThan(0);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
   it("should get a practice log by id", async () => {
@@ -223,7 +223,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .get(`/practice-logs/${practiceLogId}`)
       .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.practiceLog.practiceLogId).toBe(practiceLogId);
+    expect(res.body.practiceLogId).toBe(practiceLogId);
   });
 
   it("should fail to get practice log with invalid id", async () => {
@@ -239,7 +239,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       .set("Authorization", `Bearer ${authToken}`)
       .send({ postText: "Updated notes" });
     expect(res.status).toBe(200);
-    expect(res.body.practiceLog.postText).toBe("Updated notes");
+    expect(res.body.postText).toBe("Updated notes");
   });
 
   it("should fail to update practice log with invalid token", async () => {
@@ -276,7 +276,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
       });
     expect(res.status).toBe(201);
     secondUserId = res.body.user.userId;
-    secondUserToken = res.body.AuthToken.token;
+    secondUserToken = res.body.token;
   });
 
   it("should not allow second user to update first user's practice log", async () => {
@@ -336,7 +336,7 @@ describe("API Handlers Integration (Comprehensive)", () => {
     const res = await request(API)
       .get(`/users/${secondUserId}`)
       .set("Authorization", `Bearer ${secondUserToken}`);
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401); //or 404 depending on your logic
   });
 
   // --- HEALTH CHECK ---

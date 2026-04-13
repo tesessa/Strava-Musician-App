@@ -2,33 +2,40 @@ import db from "../config/SupabaseKnexConnection";
 import { SupabaseUserDao } from "../SupabaseUserDao";
 import { User } from "@strava-musician-app/shared";
 import { randomUUID } from "crypto";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  it,
+} from "@jest/globals";
 
 describe("SupabaseUserDao", () => {
   const userDao = new SupabaseUserDao();
-  const testUserId1 = randomUUID();
+  let testUserId1 = "";
   beforeAll(async () => {
     // Clear the User table before running tests
     await db("User").del();
     // create base user
-    const user: User = {
-      id: testUserId1,
+    const user: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
       email: "tester@example.com",
-      createdAt: new Date(),
       username: "testyuser",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "",
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     };
     const passwordHash = "hashedpassword";
 
-    await userDao.createUser(user, passwordHash);
+    const currUser = await userDao.createUser(user, passwordHash);
+    testUserId1 = currUser.userId;
   });
 
   it("should create a user an check it's there", async () => {
-    const testUserId2 = randomUUID();
-    const user: User = {
-      id: testUserId2,
+    let testUserId2 = "";
+    const user: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
       email: "test@example.com",
       username: "testuser",
       profilePhoto: "",
@@ -39,13 +46,14 @@ describe("SupabaseUserDao", () => {
     const passwordHash = "hashedpassword";
 
     const createdUser = await userDao.createUser(user, passwordHash);
+    testUserId2 = createdUser.userId;
 
     expect(createdUser).toMatchObject({
-      id: testUserId2,
+      userId: testUserId2,
       email: "test@example.com",
       username: "testuser",
-      profilePhoto: "",
-      bio: "",
+      profilePhoto: undefined,
+      bio: undefined,
       postVisibility: "private",
       instruments: [],
     });
@@ -55,11 +63,11 @@ describe("SupabaseUserDao", () => {
 
     const foundUser = await userDao.findUserByEmail("test@example.com");
     expect(foundUser).toMatchObject({
-      id: testUserId2,
+      userId: testUserId2,
       email: "test@example.com",
       username: "testuser",
-      profilePhoto: "",
-      bio: "",
+      profilePhoto: undefined,
+      bio: undefined,
       postVisibility: "private",
       instruments: [],
     });
@@ -68,13 +76,13 @@ describe("SupabaseUserDao", () => {
   it("should get user by id", async () => {
     const foundUser = await userDao.findUserById(testUserId1);
     expect(foundUser).toMatchObject({
-      id: testUserId1,
+      userId: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
-      imageUrl: "",
-      bio: "",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
   });
 
@@ -87,13 +95,13 @@ describe("SupabaseUserDao", () => {
   it("should get user by username", async () => {
     const foundUser = await userDao.findUserByUsername("testyuser");
     expect(foundUser).toMatchObject({
-      id: testUserId1,
+      userId: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
-      imageUrl: "",
-      bio: "",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
   });
 
@@ -105,13 +113,13 @@ describe("SupabaseUserDao", () => {
   it("should get by email", async () => {
     const foundUser = await userDao.findUserByEmail("tester@example.com");
     expect(foundUser).toMatchObject({
-      id: testUserId1,
+      userId: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
-      imageUrl: "",
-      bio: "",
+      profilePhoto: undefined,
+      bio: undefined,
+      postVisibility: "private",
       instruments: [],
-      visibility: "private",
     });
   });
 
@@ -126,13 +134,13 @@ describe("SupabaseUserDao", () => {
       "hashedpassword",
     );
     expect(validUser).toMatchObject({
-      id: testUserId1,
+      userId: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
-      imageUrl: "",
-      bio: "",
+      profilePhoto: undefined,
+      bio: undefined,
       instruments: [],
-      visibility: "private",
+      postVisibility: "private",
     });
   });
 
@@ -158,13 +166,15 @@ describe("SupabaseUserDao", () => {
       instruments: ["guitar", "piano"],
     });
     expect(updatedUser).toMatchObject({
-      id: testUserId1,
+      userId: testUserId1,
       email: "tester@example.com",
       username: "testyuser",
-      imageUrl: "",
+      profilePhoto: undefined,
       bio: "Updated bio",
       instruments: ["guitar", "piano"],
-      visibility: "private",
+      postVisibility: "private",
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
     });
   });
 
@@ -177,39 +187,40 @@ describe("SupabaseUserDao", () => {
   });
 
   it("should search users", async () => {
-    const testUserId2 = randomUUID();
-    const user2: User = {
-      id: testUserId2,
-      createdAt: new Date(),
+    let testUserId2 = "";
+    const user2: Omit<User, "userId" | "createdAt" | "updatedAt"> = {
       email: "testyuser2@example.com",
       username: "user2",
-      imageUrl: "",
+      profilePhoto: "",
       bio: "User 2 bio",
       instruments: ["drums"],
-      visibility: "private",
+      postVisibility: "private",
     };
-    await userDao.createUser(user2, "hashedpassword");
+    const currUser = await userDao.createUser(user2, "hashedpassword");
+    testUserId2 = currUser.userId;
 
     const searchResults = await userDao.searchUsers("testy");
     expect(searchResults).toContainEqual({
-      id: testUserId2,
-      createdAt: expect.any(Date),
+      userId: testUserId2,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
       email: "testyuser2@example.com",
       username: "user2",
-      imageUrl: "",
+      profilePhoto: undefined,
       bio: "User 2 bio",
       instruments: ["drums"],
-      visibility: "private",
+      postVisibility: "private",
     });
     expect(searchResults).toContainEqual({
-      id: testUserId1,
-      createdAt: expect.any(Date),
+      userId: testUserId1,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
       email: "tester@example.com",
       username: "testyuser",
-      imageUrl: "",
-      bio: expect.any(String),
+      profilePhoto: undefined,
       instruments: expect.any(Array),
-      visibility: "private",
+      postVisibility: "private",
+      bio: expect.anything(),
     });
   });
 

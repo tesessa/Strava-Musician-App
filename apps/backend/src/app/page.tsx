@@ -1,8 +1,8 @@
 import { APP_CONFIG } from "@strava-musician-app/shared";
-import type { PracticeLog } from "@strava-musician-app/shared";
 
 export default function Home() {
   const routes = [
+    // --- Health ---
     {
       path: "/health",
       method: "GET",
@@ -11,13 +11,104 @@ export default function Home() {
       responseBody: "{ status: 'ok', timestamp: string }",
       exampleCurl: `curl -i http://localhost:3001/health`,
     },
+    // --- Comments ---
+    {
+      path: "/practice-logs/:practiceLogId/comments",
+      method: "POST",
+      purpose: "Add a comment.",
+      requestBody: "{ text }",
+      responseBody: "Comment (201) or { error } (400/401/404)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/comments \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{\"text\":\"Nice work!\"}'`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/comments",
+      method: "GET",
+      purpose: "List comments.",
+      requestBody: "none",
+      responseBody: "Comment[] (200) or { error } (401/403/404)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/comments \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/comments/:commentId",
+      method: "DELETE",
+      purpose: "Delete a comment.",
+      requestBody: "none",
+      responseBody: "204 No Content on success, or { error } (401/403/404)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/comments/<commentId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    // --- Challenges ---
+    // {
+    //   path: "/challenges",
+    //   method: "GET",
+    //   purpose: "List all challenges.",
+    //   requestBody: "none",
+    //   responseBody: "Challenge[] (200) or { error } (401)",
+    //   exampleCurl: `curl -X GET http://localhost:3001/challenges \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // {
+    //   path: "/challenges",
+    //   method: "POST",
+    //   purpose: "Create a challenge (admin only; may be done manually in DB).",
+    //   requestBody: "{ description, task, targetNumber, instrument? }",
+    //   responseBody: "Challenge (201) or { error } (400/401/403)",
+    //   exampleCurl: `curl -X POST http://localhost:3001/challenges \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{\"description\":\"30 days of practice\",\"task\":\"Practice every day\",\"targetNumber\":30}'`,
+    // },
+    // {
+    //   path: "/challenges/:challengeId",
+    //   method: "GET",
+    //   purpose: "Fetch a challenge.",
+    //   requestBody: "none",
+    //   responseBody: "Challenge (200) or { error } (404/401)",
+    //   exampleCurl: `curl -X GET http://localhost:3001/challenges/<challengeId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // {
+    //   path: "/challenges/:challengeId/complete",
+    //   method: "POST",
+    //   purpose: "Mark challenge as completed for the user.",
+    //   requestBody: "none",
+    //   responseBody: "{ success: true } (200) or { error } (404/401/403)",
+    //   exampleCurl: `curl -X POST http://localhost:3001/challenges/<challengeId>/complete \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // {
+    //   path: "/users/:userId/completed-challenges",
+    //   method: "GET",
+    //   purpose: "List completed challenges for a user.",
+    //   requestBody: "none",
+    //   responseBody: "Challenge[] (200) or { error } (401/404)",
+    //   exampleCurl: `curl -X GET http://localhost:3001/users/<userId>/completed-challenges \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    // },
+    // --- Notifications ---
+    {
+      path: "/notifications",
+      method: "GET",
+      purpose: "List notifications for the user.",
+      requestBody: "none",
+      responseBody: "Notification[] (200) or { error } (401)",
+      exampleCurl: `curl -X GET http://localhost:3001/notifications \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/notifications/:notificationId/read",
+      method: "PATCH",
+      purpose: "Mark a notification as read.",
+      requestBody: "none",
+      responseBody: "Notification (200) or { error } (404/401/403)",
+      exampleCurl: `curl -X PATCH http://localhost:3001/notifications/<notificationId>/read \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/notifications/:notificationId",
+      method: "DELETE",
+      purpose: "Delete a notification.",
+      requestBody: "none",
+      responseBody: "204 No Content on success, or { error } (404/401/403)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/notifications/<notificationId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
     {
       path: "/auth/register",
       method: "POST",
       purpose: "Create a new user account",
       requestBody:
         "{ email: string, username: string, password: string, visibility: 'public' | 'private' | 'friends', imageUrl?: string, bio?: string, instruments?: string[]}",
-      responseBody: "{ token: string, expiresAt: number, user: User } (201) or { error } (4xx/409)",
+      responseBody: "{ authToken: { token: string, expiresAt: number }, user: User } (201) or { error } (4xx/409)",
       exampleCurl: `curl -i -X POST http://localhost:3001/auth/register \\
   -H "Content-Type: application/json" \\
   -d '{"email":"alice@example.com","username":"alice","password":"secret","visibility":"public"}'`,
@@ -53,7 +144,7 @@ export default function Home() {
     {
       path: "/users/:userId",
       method: "GET",
-      purpose: "Get a user's profile (must be the user)",
+      purpose: "Get a user's profile by ID. (Does not require ou to be the user)",
       requestBody: "none (must send Authorization header)",
       responseBody: "{ user: User } (200) or { error } (404/401/403)",
       exampleCurl: `curl -X GET http://localhost:3001/users/<userId> \\
@@ -88,27 +179,34 @@ export default function Home() {
       exampleCurl: `curl -X GET "http://localhost:3001/users/search?query=alice" \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
+    {
+      path: "/users/:userId/practice-logs",
+      method: "GET",
+      purpose: "List visible practice logs for a user (paginated, keyset). Returns logs if you are the user, a friend (and not private), or if the user's logs are public.",
+      requestBody: "none (must send Authorization header, use query params: lastItemId?, pageSize?)",
+      responseBody: "{ practiceLogs: PracticeLog[] } (200) or { error } (403/401/404)",
+      exampleCurl: `curl -X GET "http://localhost:3001/users/<userId>/practice-logs?pageSize=5" \\\n  -H "Authorization: Bearer <TOKEN>"`,
+    },
     // --- Practice Log Routes ---
     {
       path: "/practice-logs",
       method: "POST",
       purpose: "Create a new practice log",
       requestBody:
-        "{ title: string, durationMinutes: number, visibility: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
+        "{ title: string, durationMinutes: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
       responseBody: "{ practiceLog: PracticeLog } (201) or { error } (400/401)",
       exampleCurl: `curl -X POST http://localhost:3001/practice-logs \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer <TOKEN>" \\
-  -d '{"title":"Practice Piano","durationMinutes":60,"visibility":"public"}'`,
+  -d '{"title":"Practice Piano","durationMinutes":60}'`,
     },
     {
       path: "/practice-logs/feed",
       method: "GET",
-      purpose: "Get a paginated feed of your practice logs",
+      purpose: "Get a paginated feed of practice logs created by the authenticated user and their friends. Returns logs in reverse chronological order.",
       requestBody: "none (must send Authorization header, use query params: lastItemId?, pageSize?)",
       responseBody: "{ practiceLogs: PracticeLog[] } (200) or { error } (400/401)",
-      exampleCurl: `curl -X GET "http://localhost:3001/practice-logs/feed?lastItemId=<last_id>&pageSize=5" \\
--H "Authorization: Bearer <TOKEN>"`,
+      exampleCurl: `curl -X GET "http://localhost:3001/practice-logs/feed?lastItemId=<last_id>&pageSize=5" \\\n-H "Authorization: Bearer <TOKEN>"`,
     },
     {
       path: "/practice-logs/:practiceLogId",
@@ -124,7 +222,7 @@ export default function Home() {
       method: "PATCH",
       purpose: "Update a practice log by ID",
       requestBody:
-        "{ title?: string, durationMinutes?: number, visibility?: 'public' | 'private' | 'friends', postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
+        "{ title?: string, durationMinutes?: number, postText?: string, privateText?: string, instrument?: string, tempo?: number, pieceTitle?: string, composer?: string } (must send Authorization header)",
       responseBody: "{ practiceLog: PracticeLog } (200) or { error } (404/401)",
       exampleCurl: `curl -X PATCH http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Content-Type: application/json" \\
@@ -140,7 +238,57 @@ export default function Home() {
       exampleCurl: `curl -X DELETE http://localhost:3001/practice-logs/<practiceLogId> \\
   -H "Authorization: Bearer <TOKEN>"`,
     },
-    // --- Friends & Friend Requests ---
+    // --- Media Routes ---
+    {
+      path: "/practice-logs/:practiceLogId/media",
+      method: "POST",
+      purpose: "Add media to a practice log (must be the owner)",
+      requestBody: "{ type: 'image' | 'audio' | 'video', url: string } (must send Authorization header)",
+      responseBody: "Media (201) or { error } (400/401/403/404)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/media \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer <TOKEN>\" \\\n  -d '{"type":"image","url":"http://example.com/img.png"}'`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/media",
+      method: "GET",
+      purpose: "List media for a practice log (must have access to the log)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "Media[] (200) or { error } (401/403/404)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/media \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/media/:mediaId",
+      method: "DELETE",
+      purpose: "Delete a media item (must be the owner)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (401/403/404)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/media/<mediaId> \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    // --- Likes Routes ---
+    {
+      path: "/practice-logs/:practiceLogId/likes",
+      method: "POST",
+      purpose: "Like a practice log (must have access to the log)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "201 No Content (empty body) or { error } (400/401/403/404)",
+      exampleCurl: `curl -X POST http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/likes",
+      method: "DELETE",
+      purpose: "Unlike a practice log (must have previously liked it)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "204 No Content on success, or { error } (401/403/404)",
+      exampleCurl: `curl -X DELETE http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+    {
+      path: "/practice-logs/:practiceLogId/likes",
+      method: "GET",
+      purpose: "List users who liked the practice log (must have access to the log)",
+      requestBody: "none (must send Authorization header)",
+      responseBody: "Like[] (200) or { error } (401/403/404)",
+      exampleCurl: `curl -X GET http://localhost:3001/practice-logs/<practiceLogId>/likes \\\n  -H \"Authorization: Bearer <TOKEN>\"`,
+    },
+     // --- Friends and Friend Requests Routes ---
     {
       path: "/friends",
       method: "GET",
@@ -151,18 +299,10 @@ export default function Home() {
     },
     {
       path: "/friends/:friendId",
-      method: "POST",
-      purpose: "Send or accept a friend request",
-      requestBody: "none (must send Authorization header)",
-      responseBody: "{ requestId, status } or { error }",
-      exampleCurl: `curl -X POST http://localhost:3001/friends/<friendId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
-    },
-    {
-      path: "/friends/:friendId",
       method: "DELETE",
       purpose: "Remove a friend",
       requestBody: "none (must send Authorization header)",
-      responseBody: "{ success: true } (200) or { error } (403/401)",
+      responseBody: "204 No Content on success, or { error } (403/401)",
       exampleCurl: `curl -X DELETE http://localhost:3001/friends/<friendId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
     },
     {
@@ -221,6 +361,7 @@ export default function Home() {
       responseBody: "{ success: true } (200) or { error } (404/403/401)",
       exampleCurl: `curl -X DELETE http://localhost:3001/friend-requests/<requestId> \\\n  -H "Authorization: Bearer <TOKEN>"`,
     },
+    
   ];
 
   // Group routes by section
@@ -235,11 +376,46 @@ export default function Home() {
     },
     {
       title: "Practice Logs",
-      routes: routes.filter(r => r.path.startsWith("/practice-logs")),
+      routes: routes.filter(r =>
+        r.path.startsWith("/practice-logs") &&
+        !r.path.includes("/media") &&
+        !r.path.includes("/likes") &&
+        !r.path.includes("/comments")
+      ),
+    },
+    {
+      title: "Media",
+      routes: routes.filter(r =>
+        r.path.includes("/media") || r.path.startsWith("/media")
+      ),
     },
     {
       title: "Friends & Friend Requests",
       routes: routes.filter(r => r.path.startsWith("/friends") || r.path.startsWith("/friend-requests")),
+    },
+    {
+      title: "Likes",
+      routes: routes.filter(r =>
+        r.path.includes("/likes") || r.path.startsWith("/likes")
+      ),
+    },
+    {
+      title: "Comments",
+      routes: routes.filter(r =>
+        r.path.includes("/comments") || r.path.startsWith("/comments")
+      ),
+    },
+    // {
+    //   title: "Challenges",
+    //   routes: routes.filter(r =>
+    //     r.path.startsWith("/challenges") || r.path.includes("/completed-challenges")
+    //   ),
+    // },
+    {
+      title: "Notifications",
+      routes: routes.filter(r =>
+        r.path.startsWith("/notifications")
+      ),
     },
   ];
 
