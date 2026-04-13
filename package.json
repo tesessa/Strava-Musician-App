@@ -13,7 +13,8 @@
     "start:backend": "npm run dev -w apps/backend",
     "build": "npm run build -w packages/shared && npm run build -w apps/web && npm run build -w apps/backend",
     "database_test": "NODE_ENV=test jest --runInBand",
-    "start:ai": "node scripts/run-ai-server.js"
+    "start:ai": "node scripts/run-ai-server.js",
+    "seed:demo": "tsx apps/backend/scripts/seed-demo.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -22,7 +23,8 @@
     "concurrently": "^8.2.2",
     "jest": "^30.2.0",
     "supertest": "^7.2.2",
-    "ts-jest": "^29.4.6"
+    "ts-jest": "^29.4.6",
+    "tsx": "^4.19.2"
   },
   "dependencies": {
     "concurrently": "^8.2.2",
