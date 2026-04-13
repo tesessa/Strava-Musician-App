@@ -1,6 +1,6 @@
-import type { NotificationsDAO } from '../daos/notificationsDao';
-import { NotificationsDao } from '../inMemoryDaos/inMemoryNotificationsDao';
+import type { NotificationsDAO } from "../daos/notificationsDao";
+import { SupabaseNotificationsDao } from "../daos/supabase/SupabaseNotificationsDao";
 
 export function createNotificationsDao(): NotificationsDAO {
-  return NotificationsDao;
+  return new SupabaseNotificationsDao();
 }

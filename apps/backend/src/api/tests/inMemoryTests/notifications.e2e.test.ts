@@ -1,6 +1,5 @@
 import request from "supertest";
-
-const API = "http://localhost:3001";
+import { API, establishFriendship } from "./testHelpers";
 
 describe("NOTIFICATIONS API Integration", () => {
   let userToken: string, userId: string, friendToken: string, friendId: string, strangerToken: string, strangerId: string;
@@ -14,7 +13,7 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "NotifUser"
     });
-    userToken = res.body.authToken.token;
+    userToken = res.body.token;
     userId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -23,7 +22,7 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "NotifFriend"
     });
-    friendToken = res.body.authToken.token;
+    friendToken = res.body.token;
     friendId = res.body.user.userId;
 
     res = await request(API).post("/auth/register").send({
@@ -32,36 +31,34 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "NotifStranger"
     });
-    strangerToken = res.body.authToken.token;
+    strangerToken = res.body.token;
     strangerId = res.body.user.userId;
 
-    // Make user and friend friends
-    await request(API).post(`/friends/${friendId}`).set("Authorization", `Bearer ${userToken}`);
-    await request(API).post(`/friends/${userId}`).set("Authorization", `Bearer ${friendToken}`);
+    await establishFriendship(userToken, friendToken, friendId);
 
     // Create practice logs
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${userToken}`)
       .send({ title: "User Log", durationMinutes: 10 });
-    practiceLogId = res.body.practiceLog.practiceLogId;
+    practiceLogId = res.body.practiceLogId;
 
     res = await request(API)
       .post("/practice-logs")
       .set("Authorization", `Bearer ${friendToken}`)
       .send({ title: "Friend Log", durationMinutes: 10 });
-    friendPracticeLogId = res.body.practiceLog.practiceLogId;
+    friendPracticeLogId = res.body.practiceLogId;
 
     // Create a challenge as admin
     res = await request(API)
       .post("/auth/register")
       .send({ email: "adminnotif@example.com", username: "adminnotif", password: "secret", displayName: "AdminNotif" });
-    const adminToken = res.body.authToken.token;
+    const adminToken = res.body.token;
     res = await request(API)
       .post("/challenges")
       .set("Authorization", `Bearer ${adminToken}`)
       .send({ description: "Notif challenge", task: "Practice 1 day", targetNumber: 1, instrument: "piano" });
-    challengeId = res.body.challenge.challengeId;
+    challengeId = res.body.challengeId;
   });
 
   it("should create a notification when a log is liked", async () => {
@@ -73,7 +70,8 @@ describe("NOTIFICATIONS API Integration", () => {
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.notifications.some((n: any) => n.type === "like" && n.entityId === practiceLogId)).toBe(true);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((n: { type: string; entityId: string }) => n.type === "like" && n.entityId === practiceLogId)).toBe(true);
   });
 
   it("should create a notification when a log is commented on", async () => {
@@ -85,7 +83,8 @@ describe("NOTIFICATIONS API Integration", () => {
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.body.notifications.some((n: any) => n.type === "comment" && n.entityId === practiceLogId)).toBe(true);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((n: { type: string; entityId: string }) => n.type === "comment" && n.entityId === practiceLogId)).toBe(true);
   });
 
   it("should create a notification when a friend request is sent", async () => {
@@ -97,31 +96,33 @@ describe("NOTIFICATIONS API Integration", () => {
     const notifRes = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${strangerToken}`);
-    expect(notifRes.body.notifications.some((n: any) => n.type === "friendRequest" && n.entityId === friendRequestId)).toBe(true);
+    expect(Array.isArray(notifRes.body)).toBe(true);
+    expect(notifRes.body.some((n: { type: string; entityId: string }) => n.type === "friendRequest" && n.entityId === friendRequestId)).toBe(true);
   });
 
   it("should create a notification when a challenge is completed", async () => {
     await request(API)
       .post(`/challenges/${challengeId}/complete`)
       .set("Authorization", `Bearer ${userToken}`)
-      .expect(200);
+      .expect(204);
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.body.notifications.some((n: any) => n.type === "challengeCompleted" && n.entityId === challengeId)).toBe(true);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((n: { type: string; entityId: string }) => n.type === "challengeCompleted" && n.entityId === challengeId)).toBe(true);
   });
 
   it("should only allow the owner to mark a notification as read", async () => {
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications.find((n: any) => !n.isRead);
+    const notification = res.body.find((n: { isRead: boolean }) => !n.isRead);
     expect(notification).toBeTruthy();
     // Mark as read as owner
     await request(API)
       .patch(`/notifications/${notification.notificationId}/read`)
       .set("Authorization", `Bearer ${userToken}`)
-      .expect(200);
+      .expect(204);
     // Try as non-owner
     await request(API)
       .patch(`/notifications/${notification.notificationId}/read`)
@@ -133,12 +134,12 @@ describe("NOTIFICATIONS API Integration", () => {
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications[0];
+    const notification = res.body[0];
     // Delete as owner
     await request(API)
       .delete(`/notifications/${notification.notificationId}`)
       .set("Authorization", `Bearer ${userToken}`)
-      .expect(200);
+      .expect(204);
     // Try as non-owner
     await request(API)
       .delete(`/notifications/${notification.notificationId}`)
@@ -160,12 +161,12 @@ describe("NOTIFICATIONS API Integration", () => {
       password: "secret",
       displayName: "EmptyUser"
     });
-    const emptyToken = res.body.authToken.token;
+    const emptyToken = res.body.token;
     const notifRes = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${emptyToken}`);
-    expect(Array.isArray(notifRes.body.notifications)).toBe(true);
-    expect(notifRes.body.notifications.length).toBe(0);
+    expect(Array.isArray(notifRes.body)).toBe(true);
+    expect(notifRes.body.length).toBe(0);
   });
 
   it("should not allow listing notifications with an invalid token", async () => {
@@ -194,7 +195,7 @@ describe("NOTIFICATIONS API Integration", () => {
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications.find((n: any) => !n.isRead);
+    const notification = res.body.find((n: { isRead: boolean }) => !n.isRead);
     if (notification) {
       await request(API)
         .patch(`/notifications/${notification.notificationId}/read`)
@@ -207,7 +208,7 @@ describe("NOTIFICATIONS API Integration", () => {
     const res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications[0];
+    const notification = res.body[0];
     if (notification) {
       await request(API)
         .delete(`/notifications/${notification.notificationId}`)
@@ -224,7 +225,7 @@ describe("NOTIFICATIONS API Integration", () => {
       .get("/notifications")
       .set("Authorization", `Bearer ${friendToken}`);
     // Should not see the same notifications
-    expect(friendRes.body.notifications.some((n: any) => userRes.body.notifications.map((u: any) => u.notificationId).includes(n.notificationId))).toBe(false);
+    expect(friendRes.body.some((n: { notificationId: string }) => userRes.body.map((u: { notificationId: string }) => u.notificationId).includes(n.notificationId))).toBe(false);
   });
 
   it("should not see deleted notifications in the list", async () => {
@@ -241,18 +242,18 @@ describe("NOTIFICATIONS API Integration", () => {
     let res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications.find((n: any) => n.type === "like" && n.entityId === practiceLogId);
+    const notification = res.body.find((n: { type: string; entityId: string }) => n.type === "like" && n.entityId === practiceLogId);
     expect(notification).toBeTruthy();
     // Delete it
     await request(API)
       .delete(`/notifications/${notification.notificationId}`)
       .set("Authorization", `Bearer ${userToken}`)
-      .expect(200);
+      .expect(204);
     // Should not appear in the list anymore
     res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    expect(res.body.notifications.some((n: any) => n.notificationId === notification.notificationId)).toBe(false);
+    expect(res.body.some((n: { notificationId: string }) => n.notificationId === notification.notificationId)).toBe(false);
   });
 
   it("should allow marking as read on an already read notification (idempotent)", async () => {
@@ -269,17 +270,17 @@ describe("NOTIFICATIONS API Integration", () => {
     let res = await request(API)
       .get("/notifications")
       .set("Authorization", `Bearer ${userToken}`);
-    const notification = res.body.notifications.find((n: any) => n.type === "like" && n.entityId === practiceLogId);
+    const notification = res.body.find((n: { type: string; entityId: string }) => n.type === "like" && n.entityId === practiceLogId);
     expect(notification).toBeTruthy();
     // Mark as read
     await request(API)
       .patch(`/notifications/${notification.notificationId}/read`)
       .set("Authorization", `Bearer ${userToken}`)
-      .expect(200);
+      .expect(204);
     // Mark as read again (should still succeed)
     await request(API)
       .patch(`/notifications/${notification.notificationId}/read`)
       .set("Authorization", `Bearer ${userToken}`)
-      .expect(200);
+      .expect(204);
   });
 });

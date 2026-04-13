@@ -39,13 +39,11 @@ export interface UserSearchResult {
 }
 
 /**
- * GET /users/:userId/practice-logs body (keyset pagination)
+ * GET /users/:userId/practice-logs query (keyset pagination)
  */
 export interface UserPracticeLogsRequest {
-  /**
-   * practiceLogId of the last item in the previous page
-   */
-  lastItem?: string;
+  /** practiceLogId cursor from the previous page */
+  lastItemId?: string;
   pageSize?: number;
 }
 

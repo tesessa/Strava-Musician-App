@@ -35,10 +35,10 @@ export interface CreatePracticeLogRequest {
 export type UpdatePracticeLogRequest = Partial<CreatePracticeLogRequest>;
 
 /**
- * GET /practice-logs/feed body (keyset pagination)
+ * GET /practice-logs/feed query (keyset pagination). Cursor is the last practiceLogId from the previous page.
  */
 export interface FeedRequest {
-  lastItem?: string; // practiceLogId of the last item in the previous page
+  lastItemId?: string;
   pageSize?: number;
 }
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search } from "lucide-react";
 import type { PracticeLog, Instrument, UserSearchResult, User, FriendRequest } from "@strava-musician-app/shared";
-import { INSTRUMENTS } from "@strava-musician-app/shared";
+import { APP_CONFIG, INSTRUMENTS } from "@strava-musician-app/shared";
 import "./index.css";
 import FeedPracticeLogCard from "./FeedPracticeLogCard";
 import BottomNav from "../navigation/BottomNav";
@@ -289,7 +289,13 @@ const Home = () => {
       <header className="home-topbar">
         {!searchOpen ? (
           <>
-            <h1 className="home-title">Home</h1>
+            <h1 className="home-title">
+              <img
+                className="home-title-logo"
+                src="/koda-main-logo.png"
+                alt={APP_CONFIG.appName}
+              />
+            </h1>
 
             <div className="home-actions">
               <button

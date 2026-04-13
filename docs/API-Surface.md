@@ -2,6 +2,21 @@
 
 Use this document to find endpoint contracts quickly. It mirrors backend route groups and request/response expectations.
 
+## HTTP semantics
+
+- Treat **2xx** responses as success; **4xx** and **5xx** as failure. Do not rely on a JSON `success` flag.
+- Successful responses return the resource directly (for example a user object, an array, or an empty body with **204** for deletes and some updates). Errors typically use `{ "error": "<code_or_message>" }` with an appropriate status code.
+
+## Pagination (query parameters)
+
+Use these keyset cursors (not generic `lastItem` everywhere):
+
+| Context | Cursor parameter | Also |
+| ------- | ---------------- | ---- |
+| Feed, user practice logs | `lastItemId` | `pageSize` |
+| Friends list | `lastFriendId` | `pageSize` |
+| Incoming / outgoing friend requests | `lastRequestId` | `pageSize` |
+
 ## Users and Auth
 
 | Method | Path                           | Description                                                             | Body                                                                |
@@ -12,7 +27,7 @@ Use this document to find endpoint contracts quickly. It mirrors backend route g
 | GET    | `/auth/me`                     | Return the authenticated user profile if token is valid.                | none                                                                |
 | GET    | `/users/:userId`               | Fetch a user profile.                                                   | none                                                                |
 | PATCH  | `/users/:userId`               | Update profile fields.                                                  | `{ username?, bio?, profilePhoto?, instruments?, postVisibility? }` |
-| GET    | `/users/:userId/practice-logs` | List visible practice logs for a user (keyset pagination).              | `{ lastItem, pageSize }`                                            |
+| GET    | `/users/:userId/practice-logs` | List visible practice logs for a user (keyset pagination).              | `lastItemId`, `pageSize` query params                               |
 | GET    | `/users/search?query=...`      | List users whose name, username, or bio match the search query.         | none                                                                |
 
 ## Friends
@@ -20,15 +35,15 @@ Use this document to find endpoint contracts quickly. It mirrors backend route g
 | Method | Path                 | Description                                                     | Body                     |
 | ------ | -------------------- | --------------------------------------------------------------- | ------------------------ |
 | DELETE | `/friends/:friendId` | Remove a friend (delete both rows).                             | none                     |
-| GET    | `/friends`           | List all friends of the authenticated user (keyset pagination). | `{ lastItem, pageSize }` |
+| GET    | `/friends`           | List all friends of the authenticated user (keyset pagination). | `lastFriendId`, `pageSize` query params |
 
 ## Friend Requests
 
 | Method | Path                                 | Description                                                                         | Body                     |
 | ------ | ------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------ |
 | POST   | `/friend-requests/:receiverId`       | Create a new friend request from authenticated user to `:receiverId`.               | none                     |
-| GET    | `/friend-requests/incoming`          | List pending requests where authenticated user is the receiver (keyset pagination). | `{ lastItem, pageSize }` |
-| GET    | `/friend-requests/outgoing`          | List pending requests the authenticated user has sent (keyset pagination).          | `{ lastItem, pageSize }` |
+| GET    | `/friend-requests/incoming`          | List pending requests where authenticated user is the receiver (keyset pagination). | `lastRequestId`, `pageSize` query params |
+| GET    | `/friend-requests/outgoing`          | List pending requests the authenticated user has sent (keyset pagination).          | `lastRequestId`, `pageSize` query params |
 | POST   | `/friend-requests/:requestId/accept` | Accept a friend request (inserts two rows into Friends: A<->B and B<->A).           | none                     |
 | POST   | `/friend-requests/:requestId/reject` | Reject a friend request (`status = rejected`).                                      | none                     |
 | DELETE | `/friend-requests/:requestId`        | Cancel a pending request the user sent (`status = canceled`).                       | none                     |
@@ -38,7 +53,7 @@ Use this document to find endpoint contracts quickly. It mirrors backend route g
 | Method | Path                            | Description                                        | Body                                                                                                                                                                                 |
 | ------ | ------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | POST   | `/practice-logs`                | Create a practice log.                             | `{ title, postText?, privateText?, instrument?, durationMinutes (number), tempo?, pieceTitle?, composer? }` (visibility is the authenticated user postVisibility from their profile) |
-| GET    | `/practice-logs/feed`           | Get one page of practice logs visible to the user. | `{ lastItem, pageSize }`                                                                                                                                                             |
+| GET    | `/practice-logs/feed`           | Get one page of practice logs visible to the user. | `lastItemId`, `pageSize` query params                                                                                                                                                 |
 | GET    | `/practice-logs/:practiceLogId` | Fetch a single practice log.                       | none                                                                                                                                                                                 |
 | PATCH  | `/practice-logs/:practiceLogId` | Update a practice log.                             | any editable practice log fields                                                                                                                                                     |
 | DELETE | `/practice-logs/:practiceLogId` | Delete a practice log.                             | none                                                                                                                                                                                 |

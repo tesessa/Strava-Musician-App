@@ -156,7 +156,7 @@ export class FakeDataHelper {
       .filter((log) => this.canViewPracticeLog(me.userId, log))
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(logs, "practiceLogId", request.lastItem, request.pageSize);
+    return this.paginate(logs, "practiceLogId", request.lastItemId, request.pageSize);
   }
 
   searchUsers(query: string): UserSearchResult[] {
@@ -180,28 +180,6 @@ export class FakeDataHelper {
   // Friends
   // ===================
 
-  upsertFriend(friendId: string): void {
-    const me = this.requireAuthUser();
-    this.requireUser(friendId);
-    if (friendId === me.userId) throw new Error("Cannot friend yourself.");
-
-    if (this.areFriends(me.userId, friendId)) return;
-
-    const incomingPending = this.friendRequests.find(
-      (r) =>
-        r.senderId === friendId &&
-        r.receiverId === me.userId &&
-        r.status === "pending",
-    );
-
-    if (incomingPending) {
-      this.acceptFriendRequest(incomingPending.requestId);
-      return;
-    }
-
-    this.createFriendRequest(friendId);
-  }
-
   deleteFriend(friendId: string): void {
     const me = this.requireAuthUser();
     this.requireUser(friendId);
@@ -221,14 +199,14 @@ export class FakeDataHelper {
       .filter((f) => f.userId === me.userId)
       .sort((a, b) => b.friendsSince.localeCompare(a.friendsSince));
 
-    return this.paginate(myFriends, "friendId", request.lastItem, request.pageSize);
+    return this.paginate(myFriends, "friendId", request.lastFriendId, request.pageSize);
   }
 
   // ===================
   // Friend Requests
   // ===================
 
-  createFriendRequest(receiverId: string): void {
+  createFriendRequest(receiverId: string): FriendRequest {
     const me = this.requireAuthUser();
     this.requireUser(receiverId);
     if (receiverId === me.userId) throw new Error("Cannot send request to yourself.");
@@ -245,14 +223,14 @@ export class FakeDataHelper {
     if (existing) throw new Error("Friend request already pending.");
 
     const requestId = this.newId("request");
-    const request: FriendRequest = {
+    const fr: FriendRequest = {
       requestId,
       senderId: me.userId,
       receiverId,
       status: "pending",
       createdAt: this.nowIso(),
     };
-    this.friendRequests.push(request);
+    this.friendRequests.push(fr);
 
     this.createNotification({
       userId: receiverId,
@@ -262,8 +240,7 @@ export class FakeDataHelper {
       entityId: me.userId,
     });
 
-    // temporary remove later
-    // this.upsertFriend(receiverId);
+    return { ...fr };
   }
 
   getIncomingFriendRequests(
@@ -274,7 +251,7 @@ export class FakeDataHelper {
       .filter((r) => r.receiverId === me.userId && r.status === "pending")
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(incoming, "requestId", request.lastItem, request.pageSize);
+    return this.paginate(incoming, "requestId", request.lastRequestId, request.pageSize);
   }
 
   getOutgoingFriendRequests(
@@ -285,7 +262,7 @@ export class FakeDataHelper {
       .filter((r) => r.senderId === me.userId && r.status === "pending")
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(outgoing, "requestId", request.lastItem, request.pageSize);
+    return this.paginate(outgoing, "requestId", request.lastRequestId, request.pageSize);
   }
 
   acceptFriendRequest(requestId: string): void {
@@ -359,7 +336,7 @@ export class FakeDataHelper {
       .filter((log) => this.canViewPracticeLog(me.userId, log))
       .sort(this.byCreatedAtDesc);
 
-    return this.paginate(visible, "practiceLogId", request.lastItem, request.pageSize);
+    return this.paginate(visible, "practiceLogId", request.lastItemId, request.pageSize);
   }
 
   getPracticeLog(practiceLogId: string): PracticeLog {

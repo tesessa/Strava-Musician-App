@@ -58,7 +58,7 @@ export class CommentsService {
     if (!comment) return { error: "not_found", status: 404 };
     if (comment.userId !== userId) return { error: "forbidden", status: 403 };
     await this.commentsDao.removeComment(commentId);
-    return { success: true };
+    return;
   }
 };
 

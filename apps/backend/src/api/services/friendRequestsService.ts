@@ -11,8 +11,11 @@ export class FriendRequestsService {
   }
 
   async createFriendRequest(senderId: string, receiverId: string) {
+    console.log(`Creating friend request from ${senderId} to ${receiverId}`);
     const result = await this.friendRequestsDao.createFriendRequest(senderId, receiverId);
+    console.log(`Friend request created with ID: ${result.requestId}`);
     // Notify the receiver
+    console.log(`Creating notification for receiver ${receiverId} about new friend request from ${senderId}`);
     await this.notificationsService.createNotification({
       userId: receiverId,
       actorId: senderId,
@@ -22,6 +25,7 @@ export class FriendRequestsService {
       createdAt: new Date().toISOString(),
       isRead: false,
     });
+    console.log(`Notification created for friend request ID: ${result.requestId}`);
     return result;
   }
   async getFriendRequestById(requestId: string) {

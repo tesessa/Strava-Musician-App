@@ -9,7 +9,7 @@ type TokenRecord = { userId: string; expiresAt: number };
 export const tokens = new Map<string, TokenRecord>();
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 
-class InMemoryAuthDao implements AuthDAO{
+class InMemoryAuthDao implements AuthDAO {
   async createTokenForUser(userId: string): Promise<AuthToken> {
     const token = crypto.randomUUID();
     const expiresAt = Date.now() + TOKEN_TTL_MS;
@@ -33,12 +33,12 @@ class InMemoryAuthDao implements AuthDAO{
     return UserDao.findUserById(rec.userId);
   }
 
-    async refreshSession(token: string): Promise<void> {
+  async refreshSession(token: string): Promise<void> {
     const rec = tokens.get(token);
     if (!rec) return;
     const newExpiresAt = Date.now() + TOKEN_TTL_MS;
     tokens.set(token, { userId: rec.userId, expiresAt: newExpiresAt });
   }
-};
+}
 
 export const AuthDao = new InMemoryAuthDao();

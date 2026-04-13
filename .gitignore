@@ -41,3 +41,5 @@ apps/backend/ai/testAudio/
 apps/backend/ai/venv/
 apps/backend/ai/__pycache__/
 venv/
+
+databaseCreation.sql

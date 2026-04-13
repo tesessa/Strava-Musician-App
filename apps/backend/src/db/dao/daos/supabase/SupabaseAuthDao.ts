@@ -27,6 +27,12 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser): User {
 
 export class SupabaseAuthDao implements AuthDAO {
   TOKEN_TTL_MS = 1000 * 60 * 30; // 30 minutes
+  //check if db connection is working
+  constructor() {
+    db.raw("SELECT 1")
+      .then(() => console.log("Database connection established"))
+      .catch((err) => console.error("Database connection error:", err));
+  }
 
   async createTokenForUser(userId: string): Promise<AuthToken> {
     const token = randomUUID();
@@ -111,5 +117,9 @@ export class SupabaseAuthDao implements AuthDAO {
     await db<AuthSession>("AuthSession")
       .where("expires_at", "<", new Date())
       .del();
+  }
+
+  async clearAll(): Promise<void> {
+    await db<AuthSession>("AuthSession").del();
   }
 }

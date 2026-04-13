@@ -8,13 +8,11 @@ export interface Friend {
 }
 
 /**
- * GET /friends body (keyset pagination)
+ * GET /friends query (keyset pagination)
  */
 export interface FriendsListRequest {
-  /**
-   * friendId of the last item in the previous page
-   */
-  lastItem?: string;
+  /** friendId cursor from the previous page */
+  lastFriendId?: string;
   pageSize?: number;
 }
 

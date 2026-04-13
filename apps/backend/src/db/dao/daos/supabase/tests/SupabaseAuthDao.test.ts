@@ -66,8 +66,9 @@ describe("SupabaseAuthDao", () => {
 
   it("should check and refresh token", async () => {
     const authToken = await authDao.createTokenForUser(testUserId);
-    const isValid = await authDao.checkAndRefreshSession(authToken.token);
-    expect(isValid).toBe(true);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(true);
+    await authDao.refreshSession(authToken.token);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(true);
   });
 
   it("should not refresh expired token", async () => {
@@ -77,8 +78,9 @@ describe("SupabaseAuthDao", () => {
 
     const authToken = await authDao.createTokenForUser(testUserId);
     await new Promise((resolve) => setTimeout(resolve, 2000)); // wait 2 seconds to ensure token is expired
-    const isValid = await authDao.checkAndRefreshSession(authToken.token);
-    expect(isValid).toBe(false);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(false);
+    await authDao.refreshSession(authToken.token);
+    expect(await authDao.checkTokenValidity(authToken.token)).toBe(false);
 
     // restore original TOKEN_TTL_MS
     (authDao as any).TOKEN_TTL_MS = originalTokenTtl;
